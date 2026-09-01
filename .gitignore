@@ -1,0 +1,14 @@
+# Student workspace playground
+TutorialSolution/
+tutorialsolution/
+Workspace/
+workspace/
+
+# Build artifacts and temp files
+dist/
+dist_*/
+*.nupkg
+*.zip
+.DS_Store
+*.log
+node_modules/

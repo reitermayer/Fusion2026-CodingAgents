@@ -1,0 +1,11 @@
+{
+  "name": "fusion2026-coding-agents-tutorial",
+  "version": "1.0.0",
+  "description": "UiPath Coding Agents with UiPath CLI Tutorial",
+  "scripts": {
+    "test": "node scripts/verify-dual-path.js",
+    "lint": "node scripts/verify-dual-path.js"
+  },
+  "author": "Johannes Reitermayer",
+  "license": "Apache-2.0"
+}
