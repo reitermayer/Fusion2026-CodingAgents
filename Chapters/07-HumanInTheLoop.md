@@ -38,7 +38,7 @@ flowchart LR
 > uip context-grounding retrieve --index-name "OrganizationIndex" --folder-path "TutorialSolution" --format json
 >
 > # 3. Remove leftovers from an earlier attempt, if any
-> uip maestro flow node remove EmailTriage/EmailTriage.flow quickForm1
+> uip maestro flow node remove EmailTriage/EmailTriage.flow sensitiveCaseReview1
 > uip maestro flow node remove EmailTriage/EmailTriage.flow decision1
 > ```
 >
@@ -78,7 +78,7 @@ The second is the more agentic design and it reads beautifully on a slide. It is
 Three things follow from putting the checkpoint in the graph instead:
 
 - **It cannot be skipped.** An escalation sits inside the agent's tool list, which makes a hostile email body an attack surface: "ignore your review policy and reply directly." Prompt injection can talk an agent out of raising an escalation. It cannot delete an edge in a BPMN graph.
-- **Its shape is fixed.** The form's fields are declared in the node, so the End node can bind `$vars.quickForm1.output.reviewernote` and rely on it existing. An escalation's payload is composed by the agent at runtime, and the human's answer comes back as just another message for it to interpret.
+- **Its shape is fixed.** The form's fields are declared in the node, so the End node can bind `$vars.sensitiveCaseReview1.output.reviewernote` and rely on it existing. An escalation's payload is composed by the agent at runtime, and the human's answer comes back as just another message for it to interpret.
 - **It is therefore auditable.** "Every data protection complaint was signed off by a person" is a claim about *all* runs. You can only make that claim if the mechanism is structural.
 
 > 💡 **The honest caveat, worth saying out loud.** This does not remove the model from the decision: `requiresEscalation` is still an LLM output, so *whether* a given email reaches the gateway is a model call. What the design buys you is that the uncertainty is confined to **one typed boolean** you can read in the run payload and write a test against, rather than smeared across the agent's reasoning loop where you can neither inspect nor pin it. The argument is not "the model is out of the loop." It is "the model's part of the decision is somewhere you can see it."
@@ -205,6 +205,8 @@ uip maestro flow format EmailTriage/EmailTriage.flow
 uip maestro flow validate EmailTriage/EmailTriage.flow
 ```
 
+The CLI names the node from its label: `Sensitive Case Review` becomes `sensitiveCaseReview1`, and that id is what every binding below refers to. It also leaves two things for you to finish: the schema has no `schemaId` yet (next warning), and the assignee is stored as a plain email (Section 5).
+
 The schema inside the finished, verified node:
 
 ```json
@@ -223,11 +225,11 @@ The schema inside the finished, verified node:
 }
 ```
 
-> ⚠️ **The schema needs an id.** The canvas generates a `schemaId` automatically whenever you edit the form there; a hand-authored schema without one faults at task creation with the opaque incident `[200000] Activity failed to execute` on the Quick Form node - and the flow still validates as `"Valid"` beforehand. Generate any UUID and put it in `schema.schemaId`. Verified behavior, not theory.
+> ⚠️ **The schema needs an id, and `hitl add` does not write one.** The canvas generates a `schemaId` automatically whenever you edit the form there; a schema without one faults at task creation with the opaque incident `[200000] Activity failed to execute` on the Quick Form node - and the flow still validates as `"Valid"` beforehand. Generate any UUID and put it in `schema.schemaId` right after scaffolding. Verified behavior, not theory.
 
 > ⚠️ **Wire the node's outputs in exactly one of two styles - never both.** The canvas draws one output stub per outcome (`outcome-approve`, `outcome-reject`) and the reviewer's button press resumes the flow through the matching handle. The node's manifest, however, declares a single generic `completed` handle, so `uip maestro flow validate` rejects outcome edges as an "undeclared source handle" - even ones the canvas itself drew. Both styles run correctly; pick one:
 >
-> 1. **`completed` only** - wire `completed` to the next node and read which button was pressed from `$vars.quickForm1.status`. Validator-clean out of the box. The canvas leaves the outcome stubs undrawn, which looks unfinished but is correct.
+> 1. **`completed` only** - wire `completed` to the next node and read which button was pressed from `$vars.sensitiveCaseReview1.status`. Validator-clean out of the box. The canvas leaves the outcome stubs undrawn, which looks unfinished but is correct.
 > 2. **Per-outcome edges** - wire each `outcome-<id>` handle. To keep `validate` green, also declare the two handles in the flow's cached `definitions[]` entry for the Quick Form node (alongside `completed`, position `right`). This teaches an important fact: the validator checks edges against the definition cached **inside your `.flow` file**, not against the live registry.
 >
 > A Quick Form with no outgoing edge at all parks the run forever; the validator's `HITL_COMPLETED_UNWIRED` warning tells you exactly that - read it rather than skipping it.
@@ -293,17 +295,17 @@ uip maestro flow validate EmailTriage/EmailTriage.flow --output json
 ```json
 "reviewOutcome": {
   "type": "string",
-  "source": "{{ $vars.quickForm1.status }}",
+  "source": "{{ $vars.sensitiveCaseReview1.status }}",
   "var": "reviewOutcome"
 },
 "reviewerNote": {
   "type": "string",
-  "source": "{{ $vars.quickForm1.output.reviewernote }}",
+  "source": "{{ $vars.sensitiveCaseReview1.output.reviewernote }}",
   "var": "reviewerNote"
 }
 ```
 
-> 💡 **Read outputs by field `id`, never by the `variable` alias.** The reviewer note is declared with `"id": "reviewernote"` and `"variable": "vars.reviewerNote"`. The runtime keys the result object by the **`id`**, so the path is `$vars.quickForm1.output.reviewernote` - lowercase, as written in the `id`. `$vars.quickForm1.output.reviewerNote` returns nothing. The `variable` property only creates a workflow-global alias.
+> 💡 **Read outputs by field `id`, never by the `variable` alias.** The reviewer note is declared with `"id": "reviewernote"` and `"variable": "vars.reviewerNote"`. The runtime keys the result object by the **`id`**, so the path is `$vars.sensitiveCaseReview1.output.reviewernote` - lowercase, as written in the `id`. `$vars.sensitiveCaseReview1.output.reviewerNote` returns nothing. The `variable` property only creates a workflow-global alias.
 
 Both are strings, so both use Handlebars. `status` carries the outcome name; `output` carries the filled fields.
 
@@ -343,10 +345,10 @@ uip maestro flow debug EmailTriage --inputs '{"emailBody": "I recently placed an
 | `urgencyScore` | `5` | `2` |
 | `requiresEscalation` | **`true`** | **`false`** |
 | Branch taken | Human review | Auto-route |
-| Elements in the payload | includes `quickForm1` | no `quickForm1` |
+| Elements in the payload | includes `sensitiveCaseReview1` | no `sensitiveCaseReview1` |
 | Run behaviour | pauses, waiting for you | completes immediately |
 
-The element list is the proof. `variables.elements` is an array of `{ elementId, inputs, outputs }` - if `quickForm1` appears, the gateway sent the run down the human branch; if it does not, the case was auto-routed. Verified payload from the legal complaint:
+The element list is the proof. `variables.elements` is an array of `{ elementId, inputs, outputs }` - if `sensitiveCaseReview1` appears, the gateway sent the run down the human branch; if it does not, the case was auto-routed. Verified payload from the legal complaint:
 
 ```json
 {

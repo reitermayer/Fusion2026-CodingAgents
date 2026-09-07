@@ -142,7 +142,7 @@ uip maestro flow node configure EmailTriage/EmailTriage.flow sendEmail1 --detail
   "bodyParameters": {
     "To": "you@example.com",
     "Subject": "[Triage] {{ $vars.agent_triage.output.category }} - urgency {{ $vars.agent_triage.output.urgencyScore }}",
-    "Body": "A new customer email has been triaged.\n\nDepartment: {{ $vars.agent_triage.output.category }}\nUrgency: {{ $vars.agent_triage.output.urgencyScore }}\nHuman review: {{ $vars.agent_triage.output.requiresEscalation }}\nReview outcome: {{ $vars.quickForm1.status }}\n\nOriginal email:\n{{ $vars.start.output.emailBody }}"
+    "Body": "A new customer email has been triaged.\n\nDepartment: {{ $vars.agent_triage.output.category }}\nUrgency: {{ $vars.agent_triage.output.urgencyScore }}\nHuman review: {{ $vars.agent_triage.output.requiresEscalation }}\nReview outcome: {{ $vars.sensitiveCaseReview1.status }}\n\nOriginal email:\n{{ $vars.start.output.emailBody }}"
   }
 }' --output json
 ```
@@ -190,10 +190,10 @@ The final edge list:
 start        output     -> agent_triage
 agent_triage success    -> decision1
 agent_triage context    -> organizationindex1
-decision1    true       -> quickForm1
+decision1    true       -> sensitiveCaseReview1
 decision1    false      -> sendEmail1
-quickForm1   outcome-approve -> sendEmail1
-quickForm1   outcome-reject  -> sendEmail1
+sensitiveCaseReview1   outcome-approve -> sendEmail1
+sensitiveCaseReview1   outcome-reject  -> sendEmail1
 sendEmail1   output     -> end1
 ```
 
@@ -246,7 +246,7 @@ Three things to read, in order:
 
 | # | Check | Why it matters |
 | :-: | :--- | :--- |
-| **1** | `elements` contains `sendEmail1` but **not** `quickForm1` | the gateway took the auto-route branch, as a non-sensitive case should |
+| **1** | `elements` contains `sendEmail1` but **not** `sensitiveCaseReview1` | the gateway took the auto-route branch, as a non-sensitive case should |
 | **2** | `sendEmail1.output.id` is a real message id and `labelIds` contains `SENT` | Gmail accepted and sent it - this is the difference between "the node ran" and "an email exists" |
 | **3** | `sendEmail1.error` is `null` | no swallowed failure |
 
@@ -274,7 +274,7 @@ uip maestro flow debug EmailTriage \
   --inputs '{"emailBody": "This is my third attempt to get my data deleted. I have instructed my solicitor and we will be filing a formal GDPR complaint with the regulator unless you confirm erasure within 7 days."}'
 ```
 
-This run pauses at the Quick Form. Approve or reject the task in Action Center, and the email goes out afterwards with `Review outcome` filled in from `{{ $vars.quickForm1.status }}` - empty on the auto-routed path, `Approve` or `Reject` here. One template, both branches, no duplicated node.
+This run pauses at the Quick Form. Approve or reject the task in Action Center, and the email goes out afterwards with `Review outcome` filled in from `{{ $vars.sensitiveCaseReview1.status }}` - empty on the auto-routed path, `Approve` or `Reject` here. One template, both branches, no duplicated node.
 
 ---
 
