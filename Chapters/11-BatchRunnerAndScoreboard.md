@@ -118,7 +118,7 @@ node scripts/run-batch.js --help 2>/dev/null || sed -n 1,20p scripts/run-batch.j
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
 ```text
-Run the phase 1 batch: node scripts/run-batch.js --phase 1 from the repository root. It starts nine cloud debug runs of TutorialSolution/EmailTriage in parallel and each one pauses on a Triage Review task. Tell me as soon as the nine tasks are waiting in Action Center, then wait for the runner to return while I review them.
+Run the phase 1 batch: node scripts/run-batch.js --phase 1 from the repository root. It starts nine cloud debug runs of TutorialSolution/EmailTriage, one upload at a time, and each one pauses on a Triage Review task. Tell me as soon as the nine tasks are waiting in Action Center, then wait for the runner to return while I review them.
 ```
 
 ### 💻 Underlying CLI Command (What the Agent Executes)

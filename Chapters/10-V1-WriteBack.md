@@ -153,7 +153,7 @@ The three places that must agree, as in Chapter 05: `outputSchema.properties` in
 ]
 ```
 
-> ⚠️ **Put the Required rule first, and say it wins.** Verified with gpt-4o: as a bullet among equals ("never above 50 when Required") the rule is ignored, and a GDPR letter routed to Legal & Compliance came back at 85 with a reasoning that cited only the matching Handles text. Numbered and placed first, with "this rule wins over every rule below", the same email drops to 50 or less. Language models apply the rule they read first; put the floor there.
+> ⚠️ **Put the Required rule first, and say it wins.** Verified with gpt-4o: as a bullet among equals ("never above 50 when Required") the rule is ignored, and a GDPR letter routed to Legal & Compliance came back at 85 with a reasoning that cited only the matching Handles text. Numbered and placed first, with "this rule wins over every rule below", the same email came back at exactly 50 with a reasoning that cited rule 1. Language models apply the rule they read first; put the floor there.
 
 > 💡 **Why the cap at 85 is written into the V1 prompt.** It looks pointless now: nothing reads the number in V1. It matters in Chapter 12, when the gate opens at 90. A V1 row with confidence 97 would let the V2 agent cite "97" as if it had been earned. Capping V1 at 85 keeps every V1 row honest: it says "one department fit, nobody had checked yet".
 

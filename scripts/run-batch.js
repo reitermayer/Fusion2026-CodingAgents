@@ -23,6 +23,10 @@ const path = require('path');
 const { spawn, execFileSync } = require('child_process');
 
 const args = process.argv.slice(2);
+if (args.includes('--help') || args.includes('-h')) {
+  console.log(fs.readFileSync(__filename, 'utf8').split('*/')[0].replace(/^\/\*\*|^ \* ?/gm, ''));
+  process.exit(0);
+}
 const opt = (name, def) => {
   const i = args.indexOf(`--${name}`);
   return i >= 0 && args[i + 1] !== undefined ? args[i + 1] : def;
