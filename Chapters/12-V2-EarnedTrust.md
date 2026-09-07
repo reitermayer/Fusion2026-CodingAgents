@@ -312,10 +312,10 @@ node scripts/scoreboard.js --phase 2
 Phase  | Rows  | Auto  | Approved  | Modified  | Denied  | AutoResolved  | Escalations
 ------------------------------------------------------------------------------------
 1      | 9     | 0     | 7         | 2         | 0       | 0             | 9 of 9
-2      | 9     | 5     | 4         | 0         | 0       | 0             | 4 of 9
+2      | 9     | 6     | 3         | 0         | 0       | 0             | 3 of 9
 ```
 
-**4 of 9.** Five routine emails routed on the evidence of the phase 1 reviews. The two ambiguous ones came back for a second opinion, and the two Required ones came back because the floor never moves. Nothing was trained. The table grew, and the gate was told to trust it.
+**4 of 9 by design; 3 to 5 in practice.** The verified run read 3 of 9: five routine emails routed on the evidence of the phase 1 reviews, one of the two corrected emails came back for its second opinion (T06, rule 4) while the other (T07) was let through on its own correction as if it were a confirmed precedent, and the two Required ones came back because the floor never moves. An earlier run of the same batch read 5, with a routine email under-scored. The number moves by one either way because a language model applies rules imperfectly; the shape of the curve does not move, because the floor is in the graph. Nothing was trained. The table grew, and the gate was told to trust it.
 
 ---
 
