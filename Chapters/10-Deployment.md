@@ -150,3 +150,4 @@ uip or processes list --folder-path "Shared/TutorialSolutionProd"
 ## 🔗 Navigation Links
 - ⬅️ [Back to Chapter 09: Receiving Emails](./09-ReceivingEmails.md)
 - 🏠 [Return to Main README](../README.md)
+- ➡️ [Proceed to Chapter 11: Data Fabric - Recording Every Triage Decision](./11-DataFabric.md)

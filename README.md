@@ -96,7 +96,9 @@ Tutorial/
 │   ├── 07-HumanInTheLoop.md                 <-- Decision gateways, Quick Form tasks & human approval checkpoints
 │   ├── 08-SendingEmails.md                  <-- Integration Service connections & the Gmail Send Email connector
 │   ├── 09-ReceivingEmails.md                <-- Gmail connector trigger, entry points & optional-chained bindings
-│   └── 10-Deployment.md                     <-- Packaging, Cloud Solutions Management & Orchestrator deployment
+│   ├── 10-Deployment.md                     <-- Packaging, Cloud Solutions Management & Orchestrator deployment
+│   ├── 11-DataFabric.md                     <-- The TriageDecision entity: recording every decision in Data Fabric
+│   └── 12-Triage3PhaseDesign.md             <-- Part 2 design: V1 cold start, V2 earned trust, V3 auto-resolve
 └── TutorialSolution/                        <-- Active student solution (gitignored)
     ├── TutorialSolution.uipx                <-- Parent Solution manifest
     ├── EmailTriage/                         <-- Chapters 04 to 10 Email Triage flow
@@ -182,6 +184,17 @@ Tutorial/
    - Packaging the complete multi-project `TutorialSolution` into a `.zip` bundle (`uip solution pack`).
    - Publishing to the tenant solution feed (`uip solution publish`).
    - Deploying and provisioning processes in Orchestrator folders (`uip solution deploy run`), where the Chapter 09 trigger goes live.
+
+11. **[Chapter 11: Data Fabric - Recording Every Triage Decision](./Chapters/11-DataFabric.md)**
+   - Why the learning loop needs a queryable entity rather than a log, and why it is named `TriageDecision` rather than "approvals".
+   - The eleven attributes and the two that carry the design: `Confidence` (the agent's opinion) vs. `Outcome` (the verdict).
+   - Creating the `TriageOutcome` choice set and the entity with `uip df`, verifying the schema with a JMESPath filter, and a write-read-delete round trip.
+
+12. **[Chapter 12: The Three-Phase Triage Design](./Chapters/12-Triage3PhaseDesign.md)**
+   - Nothing is trained: facts live in the index, experience in the entity, policy in the graph.
+   - V1 reviews everything to produce evidence, V2 auto-routes where a human precedent exists, V3 answers FAQ emails itself.
+   - Rule-based confidence instead of a self-reported percentage, the compliance floor that never auto-routes, and the planted miss.
+   - A fixed batch of nine emails composed backwards from the escalation curve, and the one-query scoreboard.
 
 ---
 

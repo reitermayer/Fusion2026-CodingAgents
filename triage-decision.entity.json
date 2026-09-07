@@ -1,0 +1,17 @@
+{
+  "displayName": "Triage Decision",
+  "description": "One row per email per phase: what the agent proposed, what was decided, and by whom",
+  "fields": [
+    { "fieldName": "TicketId",            "type": "STRING",            "lengthLimit": 20,    "isRequired": true },
+    { "fieldName": "Phase",               "type": "DECIMAL",           "decimalPrecision": 0, "isRequired": true },
+    { "fieldName": "EmailBody",           "type": "MULTILINE_TEXT",    "lengthLimit": 10000, "isRequired": true },
+    { "fieldName": "ProposedDepartment",  "type": "STRING",            "lengthLimit": 200,   "isRequired": true },
+    { "fieldName": "Department",          "type": "STRING",            "lengthLimit": 200,   "isRequired": true },
+    { "fieldName": "Outcome",             "type": "CHOICE_SET_SINGLE", "choiceSetId": "a11ef34a-50aa-f111-9b32-000d3a69a13b", "isRequired": true },
+    { "fieldName": "Confidence",          "type": "DECIMAL",           "decimalPrecision": 2 },
+    { "fieldName": "HumanReviewRequired", "type": "BOOLEAN" },
+    { "fieldName": "Reasoning",           "type": "MULTILINE_TEXT",    "lengthLimit": 10000 },
+    { "fieldName": "Feedback",            "type": "MULTILINE_TEXT",    "lengthLimit": 2000 },
+    { "fieldName": "ReplyText",           "type": "MULTILINE_TEXT",    "lengthLimit": 5000 }
+  ]
+}
