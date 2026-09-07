@@ -16,4 +16,3 @@ node_modules/
 # Private working files (Studio Web exports, answer-key spreadsheet): never publish
 MySolution/
 Workshop/
-Departments_with_triage_examples.xlsx

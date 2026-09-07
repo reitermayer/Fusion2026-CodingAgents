@@ -107,6 +107,7 @@ Tutorial/
 ├── Data/
 │   ├── Departments.xlsx                     <-- The department directory indexed in Chapter 06
 │   ├── TriageBatch.csv                      <-- The nine test emails every phase runs (Chapter 11)
+│   ├── ExtraEmails.csv                      <-- Optional: 33 easy one-line emails, three per department, for extra runs (Chapter 11)
 │   └── SupportFAQ.txt                        <-- The knowledge base V3 answers from (Chapter 14)
 └── TutorialSolution/                        <-- Active student solution (gitignored)
     ├── TutorialSolution.uipx                <-- Parent Solution manifest

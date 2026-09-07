@@ -65,6 +65,8 @@ The nine emails live in `Data/TriageBatch.csv`, next to the department directory
 | `Subject` | Chapter 14 | the reply's subject line |
 | `Body` | the flow (`emailBody` input) | the customer's text |
 
+> 💡 **Optional extra input.** `Data/ExtraEmails.csv` holds 33 easy one-line emails, three per department, each labelled with the department it belongs to. They are not part of any phase and the scoreboard never counts them. Use them when you want more runs than nine: paste one into a single `flow debug` with its own `ticketId` (say `X01`) and `phase 0`, or append rows to `TriageBatch.csv` with new ids. Do not upload the file to the bucket: an index that contains the answers is not a cold start.
+
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
 ```text

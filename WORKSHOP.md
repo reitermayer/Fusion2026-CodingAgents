@@ -40,7 +40,7 @@ The batch uploads are the variable that decides the day. On a quiet tenant a nin
 - 10 min: V3 as a screen recording, Chapter 14: the FAQ sync, the reply branch, one reply email arriving, the phase 3 scoreboard, and T05's row (the planted miss, answered or refused).
 - 5 min: close on the last lesson. The loop is never switched off.
 
-Students who finish early run Chapter 13 and 14 themselves; the chapters are complete.
+Students who finish early run Chapter 13 and 14 themselves; the chapters are complete. Students who want more input than the nine tickets have `Data/ExtraEmails.csv`, 33 easy one-liners labelled by department, for single runs with their own ticket ids.
 
 ## What to record
 
