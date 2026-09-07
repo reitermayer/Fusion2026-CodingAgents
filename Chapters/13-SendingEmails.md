@@ -1,24 +1,22 @@
 # Chapter 13: Sending Emails
 
-Your flow now reads an email, retrieves the real department directory, classifies against it, and pauses for a human when the case is sensitive. Then it stops and returns a JSON object to whoever called it.
+Part 6: V3 - Auto-Resolve
 
-Nobody is waiting for that JSON. The support team is waiting for a message. Until the flow can act on its own conclusion, it is a very well-informed dead end.
+Since Chapter 12 the flow routes routine emails on its own. Nobody hears about it: the run writes a row and ends. The support team is waiting for a message, and Chapter 14 will need the flow to send a customer a reply. Both need the same thing, a flow that can send mail.
 
-This chapter closes the loop. You will connect the flow to **Gmail through Integration Service** and have it send the triage summary automatically, on both branches: immediately for routine cases, and after the human verdict for sensitive ones.
+This chapter connects the flow to **Gmail through Integration Service** and adds one node: a notification, sent to you, every time the gate routes an email without a review. It is the smallest useful send, it exercises the whole connector mechanism, and Chapter 14 reuses the node type unchanged for the reply.
 
 ```mermaid
 flowchart LR
     S["🟢 start"] --> A["🤖 agent_triage"]
-    A --> D{"🔀 Needs human review?"}
-    D -->|"Human review"| Q["👤 Sensitive Case Review"]
-    D -->|"Auto-route"| M["📧 Send Email<br/>Gmail connector"]
-    Q -->|"Approve"| M
-    Q -->|"Reject"| M
-    M -->|"output"| E["🔴 End"]
+    A --> D{"🔀 Confident and<br/>not Required?"}
+    D -->|"Human review"| Q["📝 triageReview1"] --> W["🗄️ write verdict"] --> E["🔴 end1"]
+    D -->|"Auto-route"| W0["🗄️ createEntityRecord4<br/>Outcome = Auto"] --> M["📧 sendEmail1<br/>Gmail connector"] --> E
     I["🔍 OrganizationIndex"] -.->|"context"| A
+    T["🔧 queryEntityRecords1"] -.-|"tool"| A
 ```
 
-Note where the email node sits: **after** the merge, not on one branch. Both paths converge on it, so there is one place that sends and one thing to change when the message needs editing.
+Note where the email node sits: **after the Auto write**, on the branch no human sees. The reviewed branch already has a human who knows what happened; the automated one is the branch that needs a witness.
 
 > 💡 **Choose Your Starting Point:**
 >
@@ -26,7 +24,7 @@ Note where the email node sits: **after** the merge, not on one branch. Both pat
 >
 > 💬 *Prompt your AI Coding Agent:*
 > ```text
-> Confirm we are at the Chapter 12 end state before starting Chapter 13. TutorialSolution/EmailTriage must validate and must contain the Triage AI Agent with the OrganizationIndex context node and the Query Entity Records tool, the confidence gate, the Quick Form task on its review branch, and the TriageDecision write nodes. If a Gmail send-email node from an earlier run of this chapter is present, remove it and re-wire both branches straight to the End node.
+> Confirm we are at the Chapter 12 end state before starting Chapter 13. TutorialSolution/EmailTriage must validate and must contain the Triage AI Agent with the OrganizationIndex context node and the Query Entity Records tool, the "Confident and not Required?" gate, the Triage Review form on its false branch, and the four TriageDecision write nodes. If a Gmail send-email node from an earlier run of this chapter is present, remove it and wire the Auto write node straight back to the End node.
 > ```
 > 💻 *Underlying CLI Commands:*
 > ```bash
@@ -34,6 +32,7 @@ Note where the email node sits: **after** the merge, not on one branch. Both pat
 > uip maestro flow validate EmailTriage/EmailTriage.flow
 > uip maestro flow node list EmailTriage/EmailTriage.flow --output json
 > uip maestro flow node remove EmailTriage/EmailTriage.flow sendEmail1
+> uip maestro flow edge add EmailTriage/EmailTriage.flow createEntityRecord4 end1
 > ```
 >
 > ---
@@ -41,13 +40,13 @@ Note where the email node sits: **after** the merge, not on one branch. Both pat
 > **Mode 2: ⚡ 1-Shot Autonomous Fast-Track**
 > 💬 *Paste this master prompt into your coding assistant to execute the entire Chapter 13 in one turn:*
 > ```text
-> Make the EmailTriage flow act on its own triage result by sending a notification email:
+> Make the EmailTriage flow report every email it routes without a review:
 > 1. Find the Gmail connection available in my tenant and tell me which folder it lives in.
-> 2. Add a Gmail Send Email node to the flow, placed after both branches merge, so it runs for auto-routed cases and for cases that went through human review.
-> 3. Address the email to me. Subject line: the department and the urgency score. Body: the department, the urgency, whether human review was required, the review outcome, and the original customer email.
-> 4. Wire the decision node's false branch and the Quick Form's Approve and Reject outcome handles all into the email node, and the email node's output into the End node.
+> 2. Add a Gmail Send Email node after the Auto write node (createEntityRecord4), so it runs only for cases the gate routed without a human.
+> 3. Address the email to me. Subject: "[Triage]", the ticket id and the department. Body: the department, the confidence, the agent's reasoning, and the original customer email.
+> 4. Wire the Auto write node's output into the email node, and the email node's output into the End node, replacing the Auto write's direct edge to the End node.
 > 5. Format and validate the flow.
-> 6. Run a cloud debug with a forgotten discount code email and confirm from the payload that the email node returned a real message id and that no error was recorded.
+> 6. Run a cloud debug with ticket T01 in phase 0 (the invoice download question, which has a phase 1 precedent) and confirm from the payload that the gate auto-routed, that the email node returned a real message id, and that no error was recorded. Then delete the Phase 0 row.
 > ```
 >
 > ---
@@ -123,7 +122,7 @@ Most Maestro nodes are **user-owned**: you write their JSON directly. Connector 
 ```text
 Add a Gmail Send Email node to EmailTriage and configure it with my Gmail connection.
 
-Address it to me. The subject should be "[Triage]" followed by the department the agent chose and the urgency score. The body should list the department, the urgency, whether human review was required and what the reviewer decided, then the original customer email underneath.
+Address it to me. The subject should be "[Triage]" followed by the ticket id and the department the agent chose. The body should say the ticket was routed without review, then list the department, the confidence and the agent's reasoning, then the original customer email underneath.
 ```
 
 ### 💻 Underlying CLI Commands (What the Agent Executes)
@@ -141,8 +140,8 @@ uip maestro flow node configure EmailTriage/EmailTriage.flow sendEmail1 --detail
   "endpoint": "/SendEmail",
   "bodyParameters": {
     "To": "you@example.com",
-    "Subject": "[Triage] {{ $vars.agent_triage.output.category }} - urgency {{ $vars.agent_triage.output.urgencyScore }}",
-    "Body": "A new customer email has been triaged.\n\nDepartment: {{ $vars.agent_triage.output.category }}\nUrgency: {{ $vars.agent_triage.output.urgencyScore }}\nHuman review: {{ $vars.agent_triage.output.requiresEscalation }}\nReview outcome: {{ $vars.sensitiveCaseReview1.status }}\n\nOriginal email:\n{{ $vars.start.output.emailBody }}"
+    "Subject": "[Triage] {{ $vars.start.output.ticketId }} auto-routed to {{ $vars.agent_triage.output.category }}",
+    "Body": "Ticket {{ $vars.start.output.ticketId }} was routed without review.\n\nDepartment: {{ $vars.agent_triage.output.category }}\nConfidence: {{ $vars.agent_triage.output.confidence }}\nReasoning: {{ $vars.agent_triage.output.reasoning }}\n\nOriginal email:\n{{ $vars.start.output.emailBody }}"
   }
 }' --output json
 ```
@@ -162,63 +161,65 @@ A successful configure reports what it wrote:
 > ```
 > Its `RequestFields` array is the authoritative list: `To` (the only required one), `Subject`, `Body`, `CC`, `BCC`, `ReplyTo`, `Importance`.
 
-> ⚠️ **All four `bodyParameters` values here are strings, so all four use Handlebars.** `{{ $vars.agent_triage.output.urgencyScore }}` is correct even though `urgencyScore` is a number - it is being interpolated into a subject line, and a subject line is text. The `=js:` form from Chapter 05 is for fields that must stay typed. Same paths, different wrapper, chosen by the destination field's type rather than the source value's.
+> ⚠️ **All three `bodyParameters` values here are strings, so all three use Handlebars.** `{{ $vars.agent_triage.output.confidence }}` is correct even though `confidence` is a number - it is being interpolated into a body, and a body is text. The `=js:` form from Chapter 05 is for fields that must stay typed. Same paths, different wrapper, chosen by the destination field's type rather than the source value's.
 
 ---
 
-## 4. Wiring It After the Merge
+## 4. Wiring It After the Auto Write
 
-The email node goes where both branches meet. That means moving two existing edges rather than adding a new terminal step.
+The email node goes between the Auto write and the End node. That means replacing one existing edge rather than adding a new terminal step.
 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
 ```text
-Rewire EmailTriage so both paths run through the email node: the decision node's false branch and the Quick Form's Approve and Reject outcome handles should all feed the Send Email node, and the Send Email node's output should feed the End node. Then format and validate the flow.
+Rewire EmailTriage so the Auto write node (createEntityRecord4) feeds the Send Email node instead of the End node, and the Send Email node's output feeds the End node. Then format and validate the flow.
 ```
 
 ### 💻 Underlying CLI Commands (What the Agent Executes)
 
 ```bash
 cd ./TutorialSolution
+# remove the edge createEntityRecord4 -> end1 by hand, then:
+uip maestro flow edge add EmailTriage/EmailTriage.flow createEntityRecord4 sendEmail1
+uip maestro flow edge add EmailTriage/EmailTriage.flow sendEmail1 end1
 uip maestro flow format EmailTriage/EmailTriage.flow
 uip maestro flow validate EmailTriage/EmailTriage.flow
 ```
 
-The final edge list:
+The edges that changed:
 
 ```text
-start        output     -> agent_triage
-agent_triage success    -> decision1
-agent_triage context    -> organizationindex1
-decision1    true       -> sensitiveCaseReview1
-decision1    false      -> sendEmail1
-sensitiveCaseReview1   outcome-approve -> sendEmail1
-sensitiveCaseReview1   outcome-reject  -> sendEmail1
-sendEmail1   output     -> end1
+decision1            true   -> createEntityRecord4
+createEntityRecord4  output -> sendEmail1        (was: -> end1)
+sendEmail1           output -> end1
 ```
 
-> 💡 **A connector node has two output handles, `output` and `error`.** Wiring only `output` means a Gmail failure faults the flow. That is the right default here: if the notification does not go out, the team never learns about the case, and a silent success would be worse than a visible failure. Wire `error` when you have a real fallback, not to make red disappear.
+> 💡 **A connector node has two output handles, `output` and `error`.** Wiring only `output` means a Gmail failure faults the flow. That is the right default here: if the notification does not go out, nobody learns that an email was routed unseen, and a silent success would be worse than a visible failure. Wire `error` when you have a real fallback, not to make red disappear.
 
 ---
 
 ## 5. Testing the Auto-Route Branch
 
-Use the discount-code email. It is not sensitive, so it skips the human task and goes straight to sending, which makes it the fastest way to prove the connector works.
+Use ticket T01 in phase 0. It has a phase 1 precedent, so the gate opens, no task is created, and the email goes out. Phase 0 rows never count on the scoreboard, and you delete the row afterwards.
 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
 ```text
-Debug the EmailTriage flow with emailBody: "I recently placed an order and forgot to enter my discount code at checkout."
+Debug the EmailTriage flow with ticketId "T01", phase 0, and the T01 body from Data/TriageBatch.csv.
 
-Then confirm from the run payload that the email node actually sent: I want the message id it returned and the value of its error output, not just the run status. Also tell me which elements ran.
+Then confirm from the run payload that the email node actually sent: I want the message id it returned and the value of its error output, not just the run status. Also tell me which elements ran. Finally delete the Phase 0 row from TriageDecision.
 ```
 
-### 💻 Underlying CLI Command (What the Agent Executes)
+### 💻 Underlying CLI Commands (What the Agent Executes)
 
 ```bash
 cd ./TutorialSolution
-uip maestro flow debug EmailTriage \
-  --inputs '{"emailBody": "I recently placed an order and forgot to enter my discount code at checkout."}'
+uip maestro flow debug EmailTriage --inputs '{"ticketId": "T01", "phase": 0, "emailBody": "Hello, our auditor has asked for copies of all invoices from the last quarter. I only have the email receipts and cannot find the PDF versions anywhere. Could you tell me where I can download them for our account? Thanks, Anna"}' --output json
+cd ..
+ENTITY_ID=$(uip df entities list --output plain --output-filter "[?Name=='TriageDecision'].Id | [0]")
+for ID in $(uip df records list "$ENTITY_ID" --limit 100 --output plain --output-filter "Items[?Phase==\`0\`].Id"); do
+  uip df records delete "$ENTITY_ID" "$ID" --yes --reason "Chapter 13 test row"
+done
 ```
 
 ### 5.1 What Proves It Worked
@@ -228,10 +229,10 @@ A verified run:
 ```json
 {
   "finalStatus": "Completed",
-  "elements": ["start", "agent_triage", "sendEmail1", "end1"],
+  "elements": ["start", "agent_triage", "decision1", "createEntityRecord4", "sendEmail1", "end1"],
   "globals": {
-    "category": "Promotions & Discounts",
-    "requiresEscalation": false,
+    "category": "Billing Operations",
+    "confidence": 95,
     "sendEmail1.output": {
       "threadId": "1a059b52db1d48a6",
       "id": "1a059b52db1d48a6",
@@ -246,7 +247,7 @@ Three things to read, in order:
 
 | # | Check | Why it matters |
 | :-: | :--- | :--- |
-| **1** | `elements` contains `sendEmail1` but **not** `sensitiveCaseReview1` | the gateway took the auto-route branch, as a non-sensitive case should |
+| **1** | `elements` contains `sendEmail1` but **not** `triageReview1` | the gate took the auto-route branch, as a case with a precedent should |
 | **2** | `sendEmail1.output.id` is a real message id and `labelIds` contains `SENT` | Gmail accepted and sent it - this is the difference between "the node ran" and "an email exists" |
 | **3** | `sendEmail1.error` is `null` | no swallowed failure |
 
@@ -254,36 +255,14 @@ Then check your inbox. That is the only check that cannot be faked by a green st
 
 > ⚠️ **A `Completed` status does not mean an email was sent.** Every chapter in this tutorial has made the same point from a different angle: Chapter 04 with empty `JobArguments`, Chapter 05 with `null` typed outputs, Chapter 06 with an ungrounded category, Chapter 07 with a task nobody was assigned. Here the tell is a `sendEmail1.output` with no `id`. Read the payload.
 
-### 5.2 Testing the Human-Review Branch
-
-The legal complaint takes the long path: agent, gateway, human task, and only then the email.
-
-### 💬 Prompt Your AI Coding Agent (Recommended)
-
-```text
-Debug EmailTriage with emailBody: "This is my third attempt to get my data deleted. I have instructed my solicitor and we will be filing a formal GDPR complaint with the regulator unless you confirm erasure within 7 days."
-
-Tell me which elements ran and where the run is waiting.
-```
-
-### 💻 Underlying CLI Command (What the Agent Executes)
-
-```bash
-cd ./TutorialSolution
-uip maestro flow debug EmailTriage \
-  --inputs '{"emailBody": "This is my third attempt to get my data deleted. I have instructed my solicitor and we will be filing a formal GDPR complaint with the regulator unless you confirm erasure within 7 days."}'
-```
-
-This run pauses at the Quick Form. Approve or reject the task in Action Center, and the email goes out afterwards with `Review outcome` filled in from `{{ $vars.sensitiveCaseReview1.status }}` - empty on the auto-routed path, `Approve` or `Reject` here. One template, both branches, no duplicated node.
-
 ---
 
 ## 6. Where to Take It Next
 
-The flow is now autonomous end to end: it reads, retrieves, classifies, escalates when the data says to, and acts. Two natural extensions, both of which reuse what you already built:
+The flow can now act on its own conclusion. Two extensions reuse exactly what you built:
 
-- **Route to the department's real mailbox.** Add a fourth column to `Departments.xlsx` holding each department's address, re-ingest, have the agent return it, and bind `To` to that output instead of a fixed address. Same lesson as Chapter 07's `Human Review` column: routing rules belong in data.
-- **Let the agent draft the reply.** Add a `draftReply` string to the agent's output schema, show it to the reviewer in the Quick Form so a human approves the wording, then send that instead of a template. This is the point where the Quick Form stops being an approval gate and becomes an editing step.
+- **Route to the department's real mailbox.** Add a fourth column to `Departments.xlsx` holding each department's address, re-sync the index, have the agent return it, and bind `To` to that output instead of a fixed address. Same lesson as Chapter 07's `Human Review` column: routing rules belong in data.
+- **Let the agent write the reply.** That is Chapter 14: a second Send Email node on a new branch, carrying an answer the agent composed from a knowledge base, and a row that records it.
 
 ---
 
@@ -294,7 +273,7 @@ The flow is now autonomous end to end: it reads, retrieves, classifies, escalate
 - [x] Learned that connector nodes are **CLI-owned**: `node add` then `node configure`, never hand-authored JSON.
 - [x] Read `method` and `endpoint` from `connectorMethodInfo`, and the request fields from `uip is resources describe`.
 - [x] Interpolated a number into a subject line with Handlebars, and understood why `=js:` is wrong there.
-- [x] Placed the email node after the branch merge so one template serves both paths.
+- [x] Placed the email node after the Auto write, on the branch that has no human witness.
 - [x] Verified the send by its returned message id and `SENT` label, not by the run status.
 
 ---

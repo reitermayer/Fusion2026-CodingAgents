@@ -216,7 +216,7 @@ The tutorial has six parts. Parts 1 and 2 build the tooling and the baseline tri
    - Discovering the Gmail connection (`uip is connections list --all-folders`) and its connector key.
    - Connector nodes are **CLI-owned**: `uip maestro flow node add` then `node configure`, never hand-authored JSON.
    - Reading `method` / `endpoint` from `connectorMethodInfo` and request fields from `uip is resources describe`.
-   - Placing the send after the branch merge so one template serves both paths.
+   - Placing the send after the Auto write, so every unreviewed routing has a witness.
    - Verifying the send by the returned Gmail message id and `SENT` label, not by the run status.
 
 14. **[Chapter 14: V3 - The FAQ, the Reply Branch and the Planted Miss](./Chapters/14-V3-AutoResolve.md)**
