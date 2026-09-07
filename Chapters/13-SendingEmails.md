@@ -234,8 +234,8 @@ A verified run:
     "category": "Billing Operations",
     "confidence": 95,
     "sendEmail1.output": {
-      "threadId": "1a059b52db1d48a6",
-      "id": "1a059b52db1d48a6",
+      "threadId": "1a079fded9b35a00",
+      "id": "1a079fded9b35a00",
       "labelIds": ["UNREAD", "SENT", "INBOX"]
     },
     "sendEmail1.error": null
@@ -251,7 +251,7 @@ Three things to read, in order:
 | **2** | `sendEmail1.output.id` is a real message id and `labelIds` contains `SENT` | Gmail accepted and sent it - this is the difference between "the node ran" and "an email exists" |
 | **3** | `sendEmail1.error` is `null` | no swallowed failure |
 
-Then check your inbox. That is the only check that cannot be faked by a green status.
+Then check your inbox: a message titled `[Triage] T01 auto-routed to Billing Operations`, with the confidence, the reasoning that names the precedent, and Anna's email underneath. That is the only check that cannot be faked by a green status.
 
 > ⚠️ **A `Completed` status does not mean an email was sent.** Every chapter in this tutorial has made the same point from a different angle: Chapter 04 with empty `JobArguments`, Chapter 05 with `null` typed outputs, Chapter 06 with an ungrounded category, Chapter 07 with a task nobody was assigned. Here the tell is a `sendEmail1.output` with no `id`. Read the payload.
 
