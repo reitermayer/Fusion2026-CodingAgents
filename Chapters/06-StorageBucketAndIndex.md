@@ -383,7 +383,7 @@ flowchart TD
 ```text
 Attach the OrganizationIndex from the TutorialSolution folder to the Triage AI Agent in TutorialSolution/EmailTriage as a semantic context resource named OrganizationContext, with a dynamic query, a result count of 3 and no threshold. Wire it into the flow as a context node connected to the agent node's context handle.
 
-Then rewrite the agent's system prompt so that instead of classifying into the five hard-coded categories, it looks up the real department list in OrganizationContext and returns one of the retrieved department names as 'category'. Call the context at most 2 times per email, and after the last call decide with the evidence already retrieved. If the retrieved list does not cover the email's topic, fall back to the closest match and still return all four output fields.
+Then rewrite the agent's system prompt so that instead of classifying into the five hard-coded categories, it looks up the real department list in OrganizationContext and returns one of the retrieved department names as 'category'. Call the context at most 2 times per email, each time with a short plain-language query of at most 12 words naming the topic, never the full email text; after the last call decide with the evidence already retrieved. If the retrieved list does not cover the email's topic, fall back to the closest match and still return all four output fields.
 
 Finally, refresh and validate the inline agent and the flow, and refresh the solution resources.
 ```
@@ -472,6 +472,8 @@ If the search comes back empty, the registry cache is stale: `uip maestro flow r
 > 5. Appends two `debug_overwrites.json` entries (`Reference` type, both pointing at folder `TutorialSolution`) so cloud debug runs bind to the right folder.
 >
 > Every failure in this chain is a **warning, not an error**: the command completes successfully with an empty resource set. Always read the `Warnings` array in the output rather than trusting the exit code. A correct run reports `"Imported": 1` with `"Warnings": []`.
+
+> ⚠️ **Keep the retrieval query short, or the index rejects it.** Verified on two of nine emails in a batch: when the model passed a long, quote-laden query to the context, the agent faulted with `AGENT_RUNTIME.HTTP_ERROR ... Context grounding returned an error for index 'OrganizationIndex': One or more validation errors occurred.` (HTTP 400) before its first decision. The other seven emails, same index, were fine. The prompt above tells the model to query with a short topic phrase and never the full email text; the same model, re-run with that line, passed.
 
 > ⚠️ **Cap the retrieval calls or the agent will loop itself to death.** Telling a model to "ground your answer in the retrieved guidance" with no call limit makes it re-query the index with slightly different phrasings until the runtime kills it: `AGENT_RUNTIME.TERMINATION_MAX_ITERATIONS`, which surfaces in a flow as a failed node with incident `170002`. Raising `maxIterations` only moves the failure from 5 iterations to 25. The fix belongs in the prompt: state a hard cap ("call OrganizationContext at most 2 times"), state what to do afterwards ("decide with the evidence you already have"), and state a fallback for uncovered topics.
 
