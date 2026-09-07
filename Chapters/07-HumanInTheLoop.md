@@ -205,7 +205,13 @@ uip maestro flow format EmailTriage/EmailTriage.flow
 uip maestro flow validate EmailTriage/EmailTriage.flow
 ```
 
-The CLI names the node from its label: `Sensitive Case Review` becomes `sensitiveCaseReview1`, and that id is what every binding below refers to. It also leaves two things for you to finish: the schema has no `schemaId` yet (next warning), and the assignee is stored as a plain email (Section 5).
+The CLI names the node from its label: `Sensitive Case Review` becomes `sensitiveCaseReview1`, and that id is what every binding below refers to. It also leaves three things for you to finish, all plain edits to the node's `schema`:
+
+1. **Field types and the number.** The scaffolder writes every field as `"type": "text"`; Studio Web writes `"string"`, so use that. Quick Form fields are text fields, and a field bound to a number cannot be submitted: Action Center shows *Invalid input: expected string, received number* under the field and both buttons stop working. Do not change the field type to `number` (the form still validates it as a string); convert the value in the binding instead: `"=js:String($vars.agent_triage.output.urgencyScore)"`.
+2. **Labels.** The scaffolder uses each field's id as its label, so the reviewer sees `EMAILBODY` and `URGENCY`. Give the fields real labels.
+3. **`schemaId`**, see the warning after the JSON.
+
+The assignee is stored as a plain email and is resolved in Section 5.
 
 The schema inside the finished, verified node:
 
@@ -215,8 +221,8 @@ The schema inside the finished, verified node:
   "fields": [
     { "id": "emailbody",   "label": "Customer email",             "type": "string", "direction": "input",  "binding": "=js:$vars.start.output.emailBody" },
     { "id": "department",  "label": "Department the agent chose",  "type": "string", "direction": "input",  "binding": "=js:$vars.agent_triage.output.category" },
-    { "id": "urgency",     "label": "Urgency (1-5)",              "type": "number", "direction": "input",  "binding": "=js:$vars.agent_triage.output.urgencyScore" },
-    { "id": "reviewernote","label": "Reviewer note",              "type": "string", "direction": "output", "variable": "vars.reviewerNote", "required": false }
+    { "id": "urgency",     "label": "Urgency (1-5)",              "type": "string", "direction": "input",  "binding": "=js:String($vars.agent_triage.output.urgencyScore)" },
+    { "id": "reviewernote","label": "Reviewer note",              "type": "string", "direction": "output", "variable": "reviewerNote" }
   ],
   "outcomes": [
     { "id": "approve", "name": "Approve", "type": "string", "isPrimary": true,  "action": "Continue" },
@@ -305,7 +311,7 @@ uip maestro flow validate EmailTriage/EmailTriage.flow --output json
 }
 ```
 
-> 💡 **Read outputs by field `id`, never by the `variable` alias.** The reviewer note is declared with `"id": "reviewernote"` and `"variable": "vars.reviewerNote"`. The runtime keys the result object by the **`id`**, so the path is `$vars.sensitiveCaseReview1.output.reviewernote` - lowercase, as written in the `id`. `$vars.sensitiveCaseReview1.output.reviewerNote` returns nothing. The `variable` property only creates a workflow-global alias.
+> 💡 **Read outputs by field `id`, never by the `variable` alias.** The reviewer note is declared with `"id": "reviewernote"` and `"variable": "reviewerNote"`. The runtime keys the result object by the **`id`**, so the path is `$vars.sensitiveCaseReview1.output.reviewernote` - lowercase, as written in the `id`. `$vars.sensitiveCaseReview1.output.reviewerNote` returns nothing. The `variable` property only creates a workflow-global alias.
 
 Both are strings, so both use Handlebars. `status` carries the outcome name; `output` carries the filled fields.
 
