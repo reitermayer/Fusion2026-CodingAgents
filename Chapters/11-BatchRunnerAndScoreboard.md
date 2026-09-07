@@ -138,6 +138,8 @@ All 9 run(s) started after 550 s. Review the tasks in Action Center; the summary
 
 Each upload takes about a minute, so the ninth **Triage Review** task appears in your Action Center inbox roughly nine minutes after the start. You can begin reviewing as soon as the first one shows up. The command keeps waiting until the last task is actioned.
 
+> ⚠️ **`flow debug` stops waiting after ten minutes unless told otherwise.** The command polls the run for 600 seconds by default, then returns `Debug polling timed out after 600s` as a failure while the run itself keeps waiting on its task. A reviewer who takes a coffee break turns every open ticket into a red line in the summary. The runner therefore passes `--timeout 43200`; do the same whenever you start a run that pauses on a form.
+
 > 💡 **Reattaching.** If the terminal dies while tasks are open, the runs continue. `uip maestro flow instance list --folder-key <your workspace key> --limit 10` lists them, and the scoreboard reads the entity regardless of who was watching. Only the summary table is lost.
 
 ---

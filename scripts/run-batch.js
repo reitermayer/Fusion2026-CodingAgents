@@ -77,8 +77,9 @@ fs.mkdirSync(outDir, { recursive: true });
 
 function runOne(t) {
   return new Promise(resolve => {
-    const inputs = JSON.stringify({ ticketId: t.TicketId, phase, emailBody: t.Body });
-    const child = spawn('uip', ['maestro', 'flow', 'debug', project, '--inputs', inputs, '--output', 'json'],
+    const inputs = JSON.stringify({ ticketId: t.TicketId, phase, emailBody: t.Body, fromAddress: t.From || '', subject: t.Subject || '' });
+    // --timeout: the CLI stops polling after 600 s by default and reports a failure while the run keeps waiting on its task
+    const child = spawn('uip', ['maestro', 'flow', 'debug', project, '--inputs', inputs, '--timeout', '43200', '--output', 'json'],
       { cwd: solution, shell: process.platform === 'win32' });
     let out = '';
     child.stdout.on('data', d => { out += d; });

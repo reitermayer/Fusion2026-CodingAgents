@@ -45,16 +45,17 @@ A confidence number an LLM makes up on its own is not calibrated: ask for "confi
 
 | Situation | Confidence the prompt prescribes |
 | :--- | :--- |
-| Exactly one department fits **and** a human precedent exists for it | 95 to 100 |
+| The chosen department has `Human Review = Required` | never above 50, whatever else applies |
+| Exactly one department fits **and** a human confirmed a similar case for it | 95 to 100 |
+| Two or more reviewed rows for a similar case agree on the department (a correction later confirmed) | 95 to 100 |
+| The only precedent is a single human correction | 50 to 74: follow the correction, but a human confirms it once |
 | Exactly one department fits, no precedent yet | 75 to 85 |
 | Two departments fit, or the email mixes topics, or precedents disagree | 50 to 74 |
-| The email mixes topics, but two consistent human precedents exist for this same case | 95 to 100 |
 | Nothing fits | below 50 |
-| The chosen department has `Human Review = Required` | never above 50 |
 
-Read the second row again. Without a human precedent the number never exceeds 85, and the gate you will build opens at 90. That single rule is what makes one flow behave as V1 when the table is empty and as V2 once it is not.
+Read the fifth row. Without a human precedent the number never exceeds 85, and the gate you will build opens at 90. That single rule is what makes one flow behave as V1 when the table is empty and as V2 once it is not.
 
-The last row is the step-by-step part of "earned trust". One correction is not enough to let a mixed-topic email through: the reviewer sees it again in V2, and only when the second verdict agrees with the first does the case auto-route in V3. Trust is extended one phase at a time, and each step is backed by a row.
+The third and fourth rows are the step-by-step part of "earned trust". One correction is not enough to let a case through: the agent follows the corrected department, but the reviewer sees it once more in V2, and only when that second verdict agrees does the case auto-route in V3. Trust is extended one phase at a time, and each step is backed by a row.
 
 ---
 
@@ -92,7 +93,7 @@ V2 changes two things. The agent gets a second source: the `TriageDecision` enti
 
 That second condition is the compliance floor from Chapter 07, and it belongs in the decision expression where everyone can read it, not only inside the prompt. Legal & Compliance and Trust & Safety never auto-route, in any version. It is why the escalation count in V3 is not zero, and it is the same lesson Chapter 07 taught with a spreadsheet column: the gate lives in the graph, not in the agent.
 
-Nothing else changes. Same flow, same tickets, same reviewer. Routine emails that were approved in V1 now go straight through; the ambiguous ones, corrected once, still reach the form for a second opinion; the Required ones always do. Expected: 4 of 9.
+Nothing else changes. Same flow, same tickets, same reviewer. Routine emails that were approved in V1 now go straight through; the ambiguous ones, corrected once, reach the form again with the corrected department proposed, so the reviewer confirms the correction; the Required ones always do. Expected: 4 of 9.
 
 **What you build:** Chapter 12 attaches the `Query Entity Records` tool to the agent, rewrites the prompt with the precedent and confidence rules, and adds the decision node. The chapter ends by proving from the execution trace, not from the output, that the tool was actually called.
 
