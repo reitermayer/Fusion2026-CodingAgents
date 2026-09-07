@@ -114,7 +114,7 @@ V3 is the only version that adds a branch. For some emails the agent no longer *
 2. **Two new agent outputs:** `canAutoResolve` (boolean) and `replyText` (string). The prompt rule: `true` only when the FAQ contains a direct answer to the *whole* request; `false` the moment the email also asks for an action - a refund, a reset, a deactivation.
 3. **A reply node** on the new branch: the Gmail send node from Chapter 13, carrying `replyText`.
 
-Expected: 2 of 9, plus one wrong answer. The two Required emails are the floor and never go below it. The ambiguous ones now carry two agreeing human verdicts and auto-route. The extra row is a planted miss: an email that looks like an FAQ question but also asks for something to be done. The agent answers it, and it should not have. That miss is the closing lesson of the whole tutorial, and you leave it in: **the review loop is never switched off.** Autonomy is extended in steps, each step is checked, and the check is never retired.
+Expected: 2 of 9, plus one row to read closely. The two Required emails are the floor and never go below it. The ambiguous ones now carry two agreeing human verdicts and auto-route. The row to read is a planted miss: an email that looks like an FAQ question but also asks for something to be done. If the agent answers it, it should not have, and the reply text in the row proves it. If the agent refuses, the reasoning in the row shows the rule at work. Either way that row is the closing lesson of the whole tutorial: **the review loop is never switched off.** Autonomy is extended in steps, each step is checked, and the check is never retired.
 
 **What you build:** Chapter 14.
 
@@ -130,7 +130,7 @@ The escalation curve is not a property of the flow alone. It is a property of th
 | 2 | Ambiguous, spans two departments | "Sign-in through SSO has failed for the whole team since your latest release." | review, corrected | review, confirmed | auto |
 | 2 | `Human Review = Required` | A solicitor's letter. A phishing report. | review | review | review |
 
-Reading the columns: **V1 9, V2 4, V3 2 plus the planted miss.** The two ambiguous emails are where the reviewer's `Feedback` comes from in V1; the two Required ones are the floor in every column. The nine emails live in `Data/TriageBatch.csv` and are introduced in Chapter 11.
+Reading the columns: **V1 9, V2 4, V3 2, plus the planted miss to read.** The two ambiguous emails are where the reviewer's `Feedback` comes from in V1; the two Required ones are the floor in every column. The nine emails live in `Data/TriageBatch.csv` and are introduced in Chapter 11.
 
 The same nine emails, with the same `TicketId` values, run against every version. Never change the batch between versions: if the emails change, the curve measures the emails, not the flow.
 
@@ -146,7 +146,7 @@ Everything above reduces to one query. For each version, count rows in `TriageDe
 escalations(version) = Approved + Modified + Denied
 ```
 
-`Auto` and `AutoResolved` are the rows no human touched. The result of Parts 4 to 6 is this count for V1, V2 and V3, side by side, together with the planted miss and the two Required rows that never moved. Chapter 11 builds it from `uip df records` and a filter, and every later phase ends by running it again.
+`Auto` and `AutoResolved` are the rows no human touched. The result of Parts 4 to 6 is this count for V1, V2 and V3, side by side, together with the planted miss, answered or refused, and the two Required rows that never moved. Chapter 11 builds it from `uip df records` and a filter, and every later phase ends by running it again.
 
 ---
 
@@ -159,7 +159,7 @@ escalations(version) = Approved + Modified + Denied
 | 11 | The batch runner and the scoreboard | All nine tasks appear in Action Center; the reviewer works them once; the board reads 9 |
 | 12 | V2: Data Fabric tool, precedent prompt, decision node | Trace shows the tool call; the board reads 4 |
 | 13 | The Gmail send node | The flow can send mail, which V3 needs |
-| 14 | V3: FAQ in the index, `canAutoResolve`, reply branch | The board reads 2, plus the planted miss |
+| 14 | V3: FAQ in the index, `canAutoResolve`, reply branch | The board reads 2, and T05's row is read |
 
 ---
 
@@ -169,7 +169,7 @@ escalations(version) = Approved + Modified + Denied
 - [x] Learned the three memories and where each lives: facts in the index, experience in the entity, policy in the graph.
 - [x] Learned the difference between `Confidence` (the agent's opinion, prescribed by rules) and `Outcome` (the verdict), and why `Auto` rows are never precedent.
 - [x] Can describe each phase in one line: V1 reviews everything to produce evidence, V2 auto-routes where evidence exists, V3 answers where the knowledge base allows.
-- [x] Know why the escalation count never reaches zero, and why the planted miss stays in.
+- [x] Know why the escalation count never reaches zero, and why the planted miss stays in, whether the agent falls for it or not.
 - [x] Know that the batch is fixed across versions and composed deliberately: five routine, two ambiguous, two Required.
 
 ---
