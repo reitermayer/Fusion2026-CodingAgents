@@ -13,11 +13,11 @@ flowchart TD
             P1["📁 <b>Project03</b> (Scaffolded & Unassigned)"]
         end
 
-        subgraph Ch0409 ["Chapters 04 to 09: Agentic Flow, Data & HITL"]
-            P2["📁 <b>EmailTriage</b> (Email Triage Flow, Agent, Grounding & Gmail)"]
+        subgraph Ch0414 ["Chapters 04 to 14: Agentic Flow, Grounding, HITL & the Three Phases"]
+            P2["📁 <b>EmailTriage</b> (Email Triage Flow, Agent, Grounding, Data Fabric & Gmail)"]
         end
 
-        subgraph Appendix A2 ["Appendix A2: Packaging & Deployment"]
+        subgraph AppA2 ["Appendix A2: Packaging & Deployment"]
             P4["📦 <b>Packed .uipx solution</b> published to Orchestrator"]
         end
 
@@ -26,7 +26,7 @@ flowchart TD
         end
     end
 
-    SolutionRoot --> Ch03 & Ch0409 & Appendix A2 & Res
+    SolutionRoot --> Ch03 & Ch0414 & AppA2 & Res
 ```
 
 > 💡 **Choose Your Starting Point:**
@@ -188,7 +188,9 @@ uip solution projects list
     {
       "Name": "Project03",
       "Type": "Flow",
-      "ProjectRelativePath": "Project03/project.uiproj"
+      "Id": "<project GUID>",
+      "ProjectRelativePath": "Project03/project.uiproj",
+      "ProjectFilePath": "<absolute path>/TutorialSolution/Project03/project.uiproj"
     }
   ]
 }

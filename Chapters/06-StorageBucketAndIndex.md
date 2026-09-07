@@ -130,7 +130,7 @@ The `uip` CLI ships as a small core plus installable tools. Buckets and folders 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
 ```text
-Install the UiPath CLI tool for managing context grounding indexes, then confirm it is available.
+Install the UiPath CLI tool for managing context grounding indexes. It wraps the UiPath Python SDK, so install the Python package it needs, run the tool's setup, and confirm the command works by listing the indexes in my tenant.
 ```
 
 ### 💻 Underlying CLI Commands (What the Agent Executes)
@@ -142,11 +142,20 @@ uip tools search "" --output json --output-filter "[].Name"
 # 2. Install the context grounding tool
 uip tools install "@uipath/context-grounding-tool"
 
-# 3. Confirm the new command surfaced
-uip context-grounding --help
+# 3. Install the UiPath Python SDK it wraps (uv is the simplest route; pip works too)
+uv tool install uipath
+# or: python3 -m pip install uipath
+
+# 4. Point the tool at that Python environment
+uip context-grounding setup
+
+# 5. Confirm the command works end to end (an empty list is a fine answer)
+uip context-grounding list --format json
 ```
 
 > 💡 **Tip:** `uip context-grounding` is a thin wrapper over the UiPath Python SDK, so its flags follow Python conventions rather than the Node tools: it uses `--format json` where the rest of the CLI uses `--output json`. Both work on this command; the surrounding commands in this chapter only accept `--output`.
+
+> ⚠️ **"Python not configured" or "Package 'uipath' is not installed".** Every `uip context-grounding` command answers with one of these until steps 3 and 4 have run. The setup reports the Python it found and `"PackageInstalled": "Yes"`; if it lists a Python without the package, install the package into that interpreter (or with `uv tool install uipath` and `~/.local/bin` on your `PATH`) and run the setup again. Updating the tool with `uip tools update` can bring the message back on a machine where it used to work: re-run the setup.
 
 ---
 
