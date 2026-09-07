@@ -60,7 +60,7 @@ flowchart LR
 > 4. Add a decision node "Answerable from the FAQ?" between the agent and the "Confident and not Required?" gate, with the expression: canAutoResolve is true AND confidence is greater than 90 AND requiresEscalation is false. Its false branch goes to the existing gate. Its true branch goes to a new Gmail Send Email node that sends replyText to me with the subject "Re: " plus the ticket's subject and the customer's address in the first line of the body, then to a new Create Entity Record node that writes the same fields as the Auto write with Outcome 4 and ReplyText, then to the End node.
 > 5. Format and validate the flow, refresh and validate the inline agent, and remove the underscore-prefixed sort parameter from the tool resource again.
 > 6. Run a cloud debug with ticket T01 in phase 3 (the invoice download question): it must complete without a task, send me the reply, and write an AutoResolved row. Then run ticket T03 in phase 3 (a deactivation request): it must not auto-resolve. Delete both Phase 3 test rows.
-> 7. Run node scripts/run-batch.js --phase 3, tell me when the tasks are waiting, and after I have reviewed them run node scripts/scoreboard.js. Phase 3 must read 2 of 9, and T05 must appear as AutoResolved: that one is the planted miss.
+> 7. Run node scripts/run-batch.js --phase 3, tell me when the tasks are waiting, and after I have reviewed them run node scripts/scoreboard.js. Phase 3 must read 2 of 9. Then show me T05's Phase 3 row: if it is AutoResolved, that is the planted miss; if it is Auto with an empty ReplyText, the agent refused, and I want to see the reasoning.
 > ```
 >
 > ---
@@ -263,7 +263,7 @@ What to expect, and what to press:
 | :--- | :--- | :--- |
 | `T01` | reply (invoices are in the FAQ) | nothing |
 | `T02`, `T03`, `T04` | route on precedent | nothing |
-| `T05` | **reply, and it should not** (see Section 7) | nothing: the miss is the lesson |
+| `T05` | the planted miss: either a reply it should not send, or a refusal (see Section 7) | nothing either way |
 | `T06`, `T07` | route: two agreeing verdicts now exist, rule 3 | nothing |
 | `T08`, `T09` | review: the floor | **Approve** |
 
@@ -276,20 +276,25 @@ Phase  | Rows  | Auto  | Approved  | Modified  | Denied  | AutoResolved  | Escal
 ------------------------------------------------------------------------------------
 1      | 9     | 0     | 7         | 2         | 0       | 0             | 9 of 9
 2      | 9     | 5     | 4         | 0         | 0       | 0             | 4 of 9
-3      | 9     | 5     | 2         | 0         | 0       | 2             | 2 of 9
+3      | 9     | 6     | 2         | 0         | 0       | 1             | 2 of 9
 ```
 
-**2 of 9**, and two rows that no human touched in a new way: the agent answered them.
+**2 of 9**, and one row that no human touched in a new way: the agent answered it. Whether the AutoResolved column reads 1 or 2 depends on T05, which is the point of the next section.
 
 ---
 
 ## 7. The Planted Miss
 
-Open the phase 3 row for T05 and read its `ReplyText`. Then read the email again:
+Open the phase 3 row for T05. Then read the email again:
 
 > *Could you confirm the date on which our annual plan renews this year? ... Please also switch off auto-renewal on our account so that nothing is charged before our finance team has approved the renewal.*
 
-The FAQ answers the first sentence. Nothing in the knowledge base switches off auto-renewal, and the prompt said, twice, that a request for an action means `canAutoResolve = false`. If the model answered anyway, the customer received a friendly note about where to find the renewal date and no one switched anything off. The finance team finds out when the charge lands.
+The FAQ answers the first sentence. Nothing in the knowledge base switches off auto-renewal, and the prompt said, twice, that a request for an action means `canAutoResolve = false`. Two things can be in that row:
+
+- **`Outcome = AutoResolved`**, a reply text about where to find the renewal date, and nobody switched anything off. The finance team finds out when the charge lands. This is the miss the batch was designed to plant.
+- **`Outcome = Auto`**, no reply text, and a reasoning that names the switch-off request. The model refused. In the run that verified this chapter it did exactly that: *"the customer's request to confirm the renewal date and disable auto-renewal ... canAutoResolve: false"*, and T05 was routed to Billing Operations with the Chapter 13 notification.
+
+Both are the lesson. The refusal shows the rule working; the miss shows why the rule is not enough. Either way the row is there to be read, and in a real inbox nobody would have read it unless the design made someone look.
 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
@@ -305,9 +310,9 @@ uip df records list "$ENTITY_ID" --limit 100 --output json \
   --output-filter "Items[?Phase==\`3\` && TicketId=='T05'].{Outcome:Outcome,Reply:ReplyText,Reasoning:Reasoning}"
 ```
 
-This is the last lesson, and it is the reason the design never reaches 0 of 9. Each phase extended autonomy by one step, each step was backed by rows, and each step was measured. The step that failed was caught by the same measurement, one row at a time, by a person reading it. **The review loop is never switched off.** It gets smaller. It does not go away.
+This is the last lesson, and it is the reason the design never reaches 0 of 9. Each phase extended autonomy by one step, each step was backed by rows, and each step was measured. A step that fails is caught by the same measurement, one row at a time, by a person reading it. **The review loop is never switched off.** It gets smaller. It does not go away.
 
-If the model refused the miss and routed T05 to a human, good: read its reasoning, and try the same email with the action sentence moved to the front. The point is not that the model fails on cue; it is that when it does, the row is there to be read.
+If you want to see the miss rather than the refusal, send the same email with the two sentences swapped, so the action request comes first and the question last, or shorten the request to "please also turn off auto-renewal" at the very end. Models weigh the end of a message less than its beginning. The point is not that the model fails on cue; it is that when it does, the row is there to be read.
 
 ---
 
@@ -317,7 +322,7 @@ If the model refused the miss and routed T05 to a human, good: read its reasonin
 - [x] Gave the agent `canAutoResolve` and `replyText`, with "the whole request" as the rule.
 - [x] Built the reply branch: a third decision with three conditions, a Gmail send to yourself, an `AutoResolved` row with the reply text.
 - [x] Proved one reply and one refusal from the payloads and the entity.
-- [x] Read 2 of 9 on the scoreboard, and read the planted miss in T05's row.
+- [x] Read 2 of 9 on the scoreboard, and read T05's row: the miss, or the refusal, and why both matter.
 
 ---
 
