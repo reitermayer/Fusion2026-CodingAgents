@@ -19,6 +19,8 @@ Measured on one machine and one tenant while verifying the chapters. Every numbe
 | Chapters 13 and 14 (V3 build) | 10 min | plus two test runs |
 | Phase 3 batch | same again | two reviews |
 
+One hard constraint shapes every batch: **a debug run that is still waiting on its Action Center task about 35 minutes after it started is cancelled by the platform**, and its row is never written. Students must review each task as it appears, during the uploads, not after the batch. Tell them before the first batch starts, and keep Action Center open on the projector.
+
 The batch uploads are the variable that decides the day. On a quiet tenant a nine-email batch is ten minutes of uploads and five minutes of reviewing; on a busy one it is most of a block. Plan for the busy case and be pleasantly surprised.
 
 ## The split
@@ -56,6 +58,7 @@ Five recordings, each under four minutes, in the order the blocks need them. The
 | :--- | :--- |
 | No Chapter 07 flow on arrival | Paste the combined fast track below into the coding agent. About 25 minutes on a quiet tenant. |
 | Phase 1 batch not finished when Block 1 ends | Insert the rows: Chapter 11, the "Late to the workshop?" tip. The scoreboard reads 9 of 9 and phase 2 starts from the same state as everyone else. |
+| Tasks left unreviewed for half an hour | Those runs are cancelled and their tasks are orphans. Re-run just those tickets with `--tickets`, and review on arrival this time. |
 | Phase 2 batch not finished when Block 2 ends | Nothing to insert: the V2 point is made by the T01 test run and the Auto rows that already landed. Show the phase 2 scoreboard from the recording. |
 | Index cannot be created (no permission on the tenant) | Pair the student with a neighbour's tenant for the remaining chapters, or switch to the recordings from that point. |
 | Gmail connection missing | Chapter 13 and 14 become the recording. Phases 1 and 2 need no email. |
