@@ -35,7 +35,7 @@ flowchart LR
 > uip maestro flow validate EmailTriage/EmailTriage.flow
 >
 > # 2. The index must still be ingested
-> uip context-grounding retrieve --index-name "OrganizationIndex" --folder-path "TutorialSolution" --format json
+> uip maestro flow registry pull --force && uip maestro flow registry search "OrganizationIndex" --output json   # the index must be listed; check its Sync status in Orchestrator
 >
 > # 3. Remove leftovers from an earlier attempt, if any
 > uip maestro flow node remove EmailTriage/EmailTriage.flow sensitiveCaseReview1

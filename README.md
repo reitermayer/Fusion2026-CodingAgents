@@ -163,10 +163,10 @@ The tutorial has six parts. Parts 1 and 2 build the tooling and the baseline tri
 
 6. **[Chapter 06: Storage Buckets & Context Grounding Indexes](./Chapters/06-StorageBucketAndIndex.md)**
    - Why hard-coding organizational knowledge into a system prompt does not survive a reorganization.
-   - Installing the `@uipath/context-grounding-tool` CLI tool.
+   - Why indexes have no core CLI, and what stays in the browser.
    - Creating a **root** Orchestrator folder with its own package feed (`--feed-type FolderHierarchy`).
    - Creating the `OrganizationData` storage bucket and uploading `Departments.xlsx` to it.
-   - Building the `OrganizationIndex` over the bucket, triggering ingestion, and polling `last_ingestion_status` to completion.
+   - Creating and syncing the `OrganizationIndex` in Orchestrator, and finding its id in the flow registry.
    - Attaching the index to the inline agent: agent resource + flow `context` handle node + a retrieval-capped system prompt.
 
 7. **[Chapter 07: Human in the Loop](./Chapters/07-HumanInTheLoop.md)**

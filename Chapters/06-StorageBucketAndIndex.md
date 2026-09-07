@@ -24,7 +24,7 @@ flowchart LR
     end
 
     F -->|"bucket-files upload"| B
-    B -->|"context-grounding create"| I
+    B -->|"Add Index (browser)"| I
     I --> S
     S -->|"attached as Context"| A
 ```
@@ -41,7 +41,7 @@ flowchart LR
 >
 > First confirm the Chapter 05 flow is intact: TutorialSolution/EmailTriage must still validate and its Triage AI Agent must still return the four typed outputs category, urgencyScore, requiresEscalation and actionItems, forwarded by the End node. Do not edit, reformat or rebuild the flow.
 >
-> Then tear down any Orchestrator artifacts left over from an earlier run of this chapter, innermost first: delete the OrganizationIndex context grounding index, then the OrganizationData storage bucket including its files, then the TutorialSolution Orchestrator folder. Skip anything that does not exist rather than failing. Finish by showing me that none of the three remain.
+> Then tear down any Orchestrator artifacts left over from an earlier run of this chapter, innermost first. I will delete the OrganizationIndex context grounding index myself in the browser; confirm from the flow registry that it is gone. Then delete the OrganizationData storage bucket including its files, and the TutorialSolution Orchestrator folder. Skip anything that does not exist rather than failing. Finish by showing me that none of the three remain.
 > ```
 > 💻 *Underlying CLI / Shell Commands:*
 > ```bash
@@ -51,11 +51,12 @@ flowchart LR
 > # 2. See what is currently provisioned before removing anything
 > uip or folders list --limit 200 --output table
 > uip or buckets list --folder-path "TutorialSolution" --output table
-> uip context-grounding list --folder-path "TutorialSolution" --format json
+> uip maestro flow registry pull --force && uip maestro flow registry search "OrganizationIndex" --output json
 >
-> # 3. Innermost first: the index (always --dry-run before --confirm)
-> uip context-grounding delete --index-name "OrganizationIndex" --folder-path "TutorialSolution" --dry-run
-> uip context-grounding delete --index-name "OrganizationIndex" --folder-path "TutorialSolution" --confirm
+> # 3. Innermost first: the index. Indexes have no CLI in the core tools, so this
+> #    step is done in the browser: Orchestrator > TutorialSolution folder > Indexes >
+> #    context menu of OrganizationIndex > Delete. Then confirm it is gone:
+> uip maestro flow registry pull --force && uip maestro flow registry search "OrganizationIndex" --output json   # expect "Data": []
 >
 > # 4. Then the bucket - --force is required because it still holds Departments.xlsx
 > BUCKET_KEY=$(uip or buckets list --folder-path "TutorialSolution" --limit 200 \
@@ -66,7 +67,7 @@ flowchart LR
 > uip or folders delete "TutorialSolution" --yes
 > ```
 >
-> *The deletion order is not a style choice. `folders delete` refuses to remove a folder that still contains entities, and `buckets delete` refuses to remove a bucket that still holds files unless you pass `--force`. Deleting outside-in fails at the first step.*
+> *The deletion order is not a style choice. `folders delete` refuses to remove a folder that still contains entities, and `buckets delete` refuses to remove a bucket that still holds files unless you pass `--force`. Deleting outside-in fails at the first step. Once the folder is gone, `uip or buckets list --folder-path "TutorialSolution"` answers with an error rather than an empty list: that is the expected final state.*
 >
 > > 💡 **Tip:** The Orchestrator folder named `TutorialSolution` and the on-disk solution directory named `TutorialSolution/` are two unrelated things that happen to share a name. Deleting the cloud folder does not touch your local project, and this reset never runs a single command against the flow.
 >
@@ -80,12 +81,11 @@ flowchart LR
 > 1. In Orchestrator, create a root folder named TutorialSolution that owns its own package feed.
 > 2. Inside that folder, create a storage bucket named OrganizationData.
 > 3. Upload Data/Departments.xlsx from the tutorial repository into that bucket.
-> 4. Inside the same folder, create a context grounding index named OrganizationIndex backed by the OrganizationData bucket.
-> 5. Trigger ingestion on the index and poll until it reports a successful ingestion status. Do not continue while it is still running.
-> 6. Prove the index works by searching it for "Which department handles billing disputes?" and show me the snippet it returns.
-> 7. Attach OrganizationIndex to the Triage AI Agent in EmailTriage as a semantic context resource, and wire it to the agent node's context handle in the flow.
-> 8. Rewrite the agent's system prompt so it classifies emails into the departments it retrieves from the index instead of the five hard-coded categories. Cap the number of retrieval calls at 2 and tell it to decide with the evidence it has after that.
-> 9. Run a cloud debug of the flow with a billing dispute email, and report the actual returned category, urgencyScore, requiresEscalation and actionItems values from the payload.
+> 4. Stop and tell me to create the index in the browser: in Orchestrator, in the TutorialSolution folder, an index named OrganizationIndex backed by the OrganizationData bucket, then Sync it and wait for the ingestion status to show success. Continue only when I confirm.
+> 5. Prove the index is visible to flows: pull the flow node registry and search it for OrganizationIndex, and show me the node type it returns, which carries the index id.
+> 6. Attach OrganizationIndex to the Triage AI Agent in EmailTriage as a semantic context resource, and wire it to the agent node's context handle in the flow.
+> 7. Rewrite the agent's system prompt so it classifies emails into the departments it retrieves from the index instead of the five hard-coded categories. Cap the number of retrieval calls at 2 and tell it to decide with the evidence it has after that.
+> 8. Run a cloud debug of the flow with a billing dispute email, and report the actual returned category, urgencyScore, requiresEscalation and actionItems values from the payload.
 > ```
 >
 > ---
@@ -123,39 +123,18 @@ Each one lives inside the previous one. The folder is the permission boundary: w
 
 ---
 
-## 2. Installing the Context Grounding CLI Tool
+## 2. What the CLI Can and Cannot Do With Indexes
 
-The `uip` CLI ships as a small core plus installable tools. Buckets and folders live in the `or` (Orchestrator) tool you already have, but indexes are managed by a separate tool that is **not installed by default**.
+The `uip` CLI ships as a small core plus installable tools. Folders and buckets live in the `or` (Orchestrator) tool you already have. Context grounding **indexes do not**: the core CLI has no command to create, sync or delete one. UiPath publishes a separate `@uipath/context-grounding-tool`, but it is a wrapper over the UiPath Python SDK and needs a Python runtime with the `uipath` package installed. Installing a second language runtime for one chapter is not worth it, so this tutorial creates the index **in the browser** and does everything around it from the CLI:
 
-### 💬 Prompt Your AI Coding Agent (Recommended)
+| Step | Where | Why |
+| :--- | :--- | :--- |
+| Folder, bucket, file upload | CLI (`uip or`) | Orchestrator commands, no extra runtime |
+| Create the index, sync it, watch ingestion | **Browser** (Orchestrator, Indexes page) | No index commands in the core CLI |
+| Prove flows can see the index | CLI (`uip maestro flow registry`) | The flow registry lists every index in the tenant, with its id |
+| Attach the index to the agent, debug | CLI | Flow and agent files are CLI territory |
 
-```text
-Install the UiPath CLI tool for managing context grounding indexes. It wraps the UiPath Python SDK, so install the Python package it needs, run the tool's setup, and confirm the command works by listing the indexes in my tenant.
-```
-
-### 💻 Underlying CLI Commands (What the Agent Executes)
-
-```bash
-# 1. See which tools the registry offers
-uip tools search "" --output json --output-filter "[].Name"
-
-# 2. Install the context grounding tool
-uip tools install "@uipath/context-grounding-tool"
-
-# 3. Install the UiPath Python SDK it wraps (uv is the simplest route; pip works too)
-uv tool install uipath
-# or: python3 -m pip install uipath
-
-# 4. Point the tool at that Python environment
-uip context-grounding setup
-
-# 5. Confirm the command works end to end (an empty list is a fine answer)
-uip context-grounding list --format json
-```
-
-> 💡 **Tip:** `uip context-grounding` is a thin wrapper over the UiPath Python SDK, so its flags follow Python conventions rather than the Node tools: it uses `--format json` where the rest of the CLI uses `--output json`. Both work on this command; the surrounding commands in this chapter only accept `--output`.
-
-> ⚠️ **"Python not configured" or "Package 'uipath' is not installed".** Every `uip context-grounding` command answers with one of these until steps 3 and 4 have run. The setup reports the Python it found and `"PackageInstalled": "Yes"`; if it lists a Python without the package, install the package into that interpreter (or with `uv tool install uipath` and `~/.local/bin` on your `PATH`) and run the setup again. Updating the tool with `uip tools update` can bring the message back on a machine where it used to work: re-run the setup.
+> 💡 **If you already have Python.** `uip tools install "@uipath/context-grounding-tool"`, then `python3 -m pip install uipath` (or `uv tool install uipath`) and `uip context-grounding setup` give you `uip context-grounding create / ingest / retrieve / search / delete`, and every browser step below has a one-command equivalent. It is a fine route for your own machine. It is not the route this tutorial asks a room full of students to take.
 
 ---
 
@@ -316,174 +295,67 @@ FullPath          | ContentType              | Size | LastModified
 
 ---
 
-## 6. Creating the OrganizationIndex
+## 6. Creating the OrganizationIndex in the Browser
 
-The index is where the file becomes searchable. It reads from the bucket, chunks each document, and stores embeddings so an agent can query it semantically.
+The index is where the file becomes searchable. It reads from the bucket, chunks each document, and stores embeddings so an agent can query it semantically. This is the one step of the chapter done in the browser.
+
+### 🖱️ Do This in Orchestrator
+
+1. Open **Orchestrator** in your browser and switch to the **TutorialSolution** folder you created in Section 3.
+2. Open the **Indexes** page and select **Add Index**.
+3. Under **General Details**, set **Index name** to `OrganizationIndex` and **Description** to `Organizational department taxonomy`. Index names are unique per tenant and cannot contain `(`, `)` or `-`.
+4. Under **Data Settings**, choose **Storage Bucket** as the data source, pick the **TutorialSolution** folder and the **OrganizationData** bucket, and leave the file type on **All**.
+5. Under **Additional settings**, keep the **Basic** ingestion pattern: the spreadsheet is text, not images.
+6. Save. The index appears in the list with no ingestion yet.
+
+> 💡 **Creating an index does not index anything.** The vectors do not exist until the first sync. This is the single most common surprise in this chapter, and it is why Section 7 exists.
+
+> 💡 **Only bucket-backed indexes can be wired into a solution automatically.** Google Drive, OneDrive, Dropbox and Confluence sources have to be hand-authored later. Choosing **Storage Bucket** here is what lets `uip solution resources refresh` in Section 9 do its work.
+
+---
+
+## 7. Syncing the Index and Waiting for It
+
+Ingestion is the step that actually reads the bucket, extracts text, chunks it and embeds it. It is asynchronous, and it has to be repeated every time the source file changes: uploading a new `Departments.xlsx` does **not** update the index by itself.
+
+### 🖱️ Do This in Orchestrator
+
+1. On the **Indexes** page, open the context menu of **OrganizationIndex** and select **Sync**.
+2. Watch the index's ingestion status. It goes from queued, through in progress, to a successful state; for one small spreadsheet that is well under a minute. Refresh the page if it does not move.
+3. If it reports a failure, open the index to read the reason before doing anything else. A failed ingestion is almost always a file the extractor could not read.
+
+A successful status means ingestion did not crash. It does not yet prove the index returns anything useful. That proof comes in Section 10, when the agent's debug run returns a department name that exists only in the spreadsheet.
+
+---
+
+## 8. Proving the Index Is Visible to Flows
+
+Before attaching anything, confirm from the CLI that the index exists and learn its id. Maestro flows see every context grounding index in the tenant as a node type in the flow registry, and the node type name carries the index id.
 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
 ```text
-Inside the TutorialSolution folder, create a context grounding index called OrganizationIndex that is backed by the OrganizationData storage bucket. Then list the indexes in that folder so I can see it was created.
+Pull the Maestro flow node registry and search it for OrganizationIndex. Show me the node type it returns and extract the index id from it.
 ```
 
 ### 💻 Underlying CLI Commands (What the Agent Executes)
 
 ```bash
-# 1. Create the index over the bucket
-uip context-grounding create \
-  --index-name "OrganizationIndex" \
-  --bucket-source "OrganizationData" \
-  --folder-path "TutorialSolution" \
-  --description "Organizational department taxonomy" \
-  --format json
-
-# 2. Confirm the index exists and note its data source
-uip context-grounding list --folder-path "TutorialSolution" --format json
+# Pull first: search reads a local cache that expires after 30 minutes
+uip maestro flow registry pull --force
+uip maestro flow registry search "OrganizationIndex" --output json \
+  --output-filter "[*].{NodeType:NodeType,DisplayName:DisplayName,Avail:AvailableOnTenant}"
 ```
-
-The freshly created index looks like this. Read the two highlighted fields carefully:
 
 ```json
 {
-  "id": "d4c1a7f2-63e8-4b90-a2c5-1e8f7b4d9c03",
-  "name": "OrganizationIndex",
-  "extraction_strategy": "LLMV4",
-  "data_source": {
-    "folder": "TutorialSolution",
-    "bucketName": "OrganizationData",
-    "@odata.type": "#UiPath.Vdbs.Domain.Api.V20Models.StorageBucketDataSource",
-    "fileNameGlob": "**/*"
-  },
-  "last_ingestion_status": null,
-  "last_ingested": null
+  "NodeType": "uipath.agent.resource.context.index.organizationindex.d4c1a7f2-63e8-4b90-a2c5-1e8f7b4d9c03",
+  "DisplayName": "OrganizationIndex",
+  "Avail": true
 }
 ```
 
-- **`last_ingestion_status: null`** - creating an index does **not** index anything. The vectors do not exist yet. This is the single most common surprise in this chapter.
-- **`StorageBucketDataSource`** - this matters later. Only bucket-backed indexes can be wired into a solution automatically; Google Drive, OneDrive, Dropbox and Confluence sources have to be hand-authored.
-
-Save the `id` value. It becomes part of the flow node type name in Section 9.
-
----
-
-## 7. Syncing the Index
-
-Ingestion is the step that actually reads the bucket, extracts text, chunks it and embeds it. It is asynchronous: the command returns immediately and the work continues server-side.
-
-Run it now, and re-run it every time the source file changes. Uploading a new `Departments.xlsx` does **not** update the index by itself.
-
-### 💬 Prompt Your AI Coding Agent (Recommended)
-
-```text
-Trigger ingestion on the OrganizationIndex in the TutorialSolution folder to sync it with the contents of the storage bucket.
-```
-
-### 💻 Underlying CLI Command (What the Agent Executes)
-
-```bash
-uip context-grounding ingest \
-  --index-name "OrganizationIndex" \
-  --folder-path "TutorialSolution" \
-  --format json
-```
-
----
-
-## 8. Waiting for the Sync to Complete
-
-Because ingestion is asynchronous, you must poll before you can query. The `retrieve` command returns the whole index object, including its ingestion status.
-
-| `last_ingestion_status` | Meaning | What to do |
-| :--- | :--- | :--- |
-| `null` / `Queued` / `In Progress` | Still working | Keep polling |
-| `Successful` | Ready | Proceed to the search |
-| `Failed` | Ingestion broke | Stop and read `last_ingestion_failure_reason` |
-
-### 💬 Prompt Your AI Coding Agent (Recommended)
-
-```text
-Poll the OrganizationIndex in the TutorialSolution folder until its last ingestion status reaches Successful or Failed. Do not move on while it is still in progress, and if it fails, show me the failure reason instead of continuing.
-```
-
-### 💻 Underlying CLI Commands (What the Agent Executes)
-
-```bash
-# Single check
-uip context-grounding retrieve \
-  --index-name "OrganizationIndex" \
-  --folder-path "TutorialSolution" \
-  --format json
-
-# Poll until terminal, capped at 30 attempts (roughly 5 minutes)
-for i in $(seq 1 30); do
-  STATUS=$(uip context-grounding retrieve \
-    --index-name "OrganizationIndex" \
-    --folder-path "TutorialSolution" \
-    --format json | python3 -c "import json,sys; print(json.load(sys.stdin).get('last_ingestion_status'))")
-  echo "attempt $i: $STATUS"
-  case "$STATUS" in
-    Successful|Failed) break ;;
-  esac
-  sleep 10
-done
-```
-
-A finished index reports its health alongside the status:
-
-```json
-{
-  "name": "OrganizationIndex",
-  "last_ingestion_status": "Successful",
-  "last_ingestion_failure_reason": null,
-  "last_ingested": "2026-08-31T19:09:51.791602+00:00",
-  "index_health": {
-    "ingestion_reliability_score": 100.0
-  }
-}
-```
-
-Typical ingestion for a single small spreadsheet is two polls: `InProgress`, then `Successful` about ten seconds later.
-
-### 8.1 Proving the Index Actually Answers Questions
-
-A `Successful` status means ingestion did not crash. It does not mean the index returns anything useful. Ask it a real question before you wire it into an agent:
-
-### 💬 Prompt Your AI Coding Agent (Recommended)
-
-```text
-Search the OrganizationIndex for "Which department handles billing disputes?" and show me the snippet and similarity score it returns, so we know the index is genuinely queryable before we attach it to the agent.
-```
-
-### 💻 Underlying CLI Command (What the Agent Executes)
-
-```bash
-uip context-grounding search \
-  --index-name "OrganizationIndex" \
-  --query "Which department handles billing disputes?" \
-  --folder-path "TutorialSolution" \
-  --limit 3 \
-  --format json
-```
-
-You should get the department list back with a similarity score:
-
-```json
-{
-  "semantic_results": {
-    "values": [
-      {
-        "content": "Department Name: Billing Operations | Handles: Subscription charges, invoices, payment methods, plan renewals and billing cycle questions.\nDepartment Name: Billing Disputes | Handles: Duplicate charges, incorrect or unexpected charges, refund requests and card chargebacks.\nDepartment Name: Accounts Receivable | Handles: Overdue invoices, collections, purchase orders and negotiated payment terms.\n... (all eleven rows)",
-        "source": "Departments.xlsx",
-        "page_number": "1",
-        "score": 0.8164679725941203
-      }
-    ],
-    "metadata": { "strategy": "Hybrid" }
-  }
-}
-```
-
-An empty `values` array here, despite a `Successful` status, means the file was uploaded but produced no usable chunks. Re-check the upload before blaming the agent later.
+The node type is built from the lowercased index name and the index GUID. Save the GUID: it is the `<indexId>` in Section 9. An empty result right after creating the index means the registry cache is stale: pull again.
 
 ---
 
@@ -549,7 +421,7 @@ uip agent validate EmailTriage/<agentId> --inline-in-flow --output json
 uip solution resources refresh --output json
 ```
 
-The registry search in step 1 returns the exact node type. It is built from the lowercased index name and the index GUID you saved in Section 6:
+The registry search in step 1 is the same one as in Section 8 and returns the exact node type, built from the lowercased index name and the index GUID:
 
 ```json
 {
@@ -654,7 +526,7 @@ Grounding is only as current as the last sync. When Operations adds a department
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
 ```text
-I updated Departments.xlsx. Re-upload it to the OrganizationData bucket, re-sync the OrganizationIndex, wait for ingestion to complete, and confirm the new department is searchable.
+I updated Departments.xlsx. Re-upload it to the OrganizationData bucket and confirm the new file is in the bucket. Then remind me to Sync the OrganizationIndex in Orchestrator and wait for ingestion to complete.
 ```
 
 ### 💻 Underlying CLI Commands (What the Agent Executes)
@@ -662,11 +534,10 @@ I updated Departments.xlsx. Re-upload it to the OrganizationData bucket, re-sync
 ```bash
 uip or bucket-files upload "$BUCKET_KEY" "Departments.xlsx" \
   --folder-path "TutorialSolution" --file ./Data/Departments.xlsx
-
-uip context-grounding ingest --index-name "OrganizationIndex" --folder-path "TutorialSolution"
-
-uip context-grounding retrieve --index-name "OrganizationIndex" --folder-path "TutorialSolution" --format json
+uip or bucket-files list "$BUCKET_KEY" --folder-path "TutorialSolution" --output table
 ```
+
+Then **Sync** the index on the Indexes page, as in Section 7.
 
 No flow edit, no redeploy, no re-test of the agent. That is the whole point of grounding: the knowledge and the logic have separate lifecycles.
 
@@ -675,12 +546,12 @@ No flow edit, no redeploy, no re-test of the agent. That is the whole point of g
 ## 11. Summary Checklist
 
 - [x] Understood why hard-coding organizational knowledge into a prompt does not survive contact with a real company.
-- [x] Installed the `@uipath/context-grounding-tool` CLI tool.
+- [x] Learned that indexes have no core CLI, and split the work: Orchestrator objects from the CLI, the index in the browser.
 - [x] Created a **root** Orchestrator folder (`TutorialSolution`) owning its own package feed (`--feed-type FolderHierarchy`).
 - [x] Created the `OrganizationData` storage bucket inside that folder and confirmed it is folder-scoped.
 - [x] Uploaded `Departments.xlsx` from the repository's `Data/` folder and verified its size and content type in the bucket.
-- [x] Created the `OrganizationIndex` over the bucket, and learned that **creating an index does not ingest anything**.
-- [x] Triggered ingestion, polled `last_ingestion_status` to a terminal state, and proved the index answers a real query.
+- [x] Created the `OrganizationIndex` over the bucket in Orchestrator, and learned that **creating an index does not ingest anything**.
+- [x] Synced it, waited for a successful ingestion, and found its id in the flow registry.
 - [x] Attached the index to the inline agent through all three required pieces: the agent resource, the flow context node on the `context` handle, and the system prompt.
 - [x] Capped retrieval calls in the prompt to avoid `AGENT_RUNTIME.TERMINATION_MAX_ITERATIONS`.
 - [x] Verified grounding by the returned `category` value, not by a `Completed` status.

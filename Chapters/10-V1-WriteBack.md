@@ -42,7 +42,7 @@ Three things change against Chapter 07, and one thing goes away:
 >
 > # 1. The Chapter 07 flow must still compile and the index must still be ingested
 > uip maestro flow validate EmailTriage/EmailTriage.flow
-> uip context-grounding retrieve --index-name "OrganizationIndex" --folder-path "TutorialSolution" --format json
+> uip maestro flow registry pull --force && uip maestro flow registry search "OrganizationIndex" --output json   # the index must be listed; check its Sync status in Orchestrator
 >
 > # 2. The entity exists - and Phase 1 rows from an earlier run are deleted one by one
 > ENTITY_ID=$(uip df entities list --output plain --output-filter "[?Name=='TriageDecision'].Id | [0]")
