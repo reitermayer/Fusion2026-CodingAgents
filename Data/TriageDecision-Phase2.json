@@ -1,0 +1,110 @@
+[
+  {
+    "TicketId": "T01",
+    "Phase": 2,
+    "EmailBody": "Hello, our auditor has asked for copies of all invoices from the last quarter. I only have the email receipts and cannot find the PDF versions anywhere. Could you tell me where I can download them for our account? Thanks, Anna",
+    "ProposedDepartment": "Billing Operations",
+    "Department": "Billing Operations",
+    "Outcome": 0,
+    "Confidence": 95,
+    "HumanReviewRequired": false,
+    "Reasoning": "The Handles text for Billing Operations includes 'invoices,' which directly matches Anna's request for help locating PDF versions of invoices. Additionally, a reviewed precedent (TicketId T01) exists for a similar request, confirming Billing Operations as the correct department. Confidence rule 2 applies.",
+    "Feedback": ""
+  },
+  {
+    "TicketId": "T02",
+    "Phase": 2,
+    "EmailBody": "Since Tuesday every attempt to export our campaign report to CSV stops after a few seconds with the message 'Export failed (EXP-4102)'. Exporting to PDF still works. I have attached two screenshots and the report id is RPT-88213. Can someone look into this?",
+    "ProposedDepartment": "Technical Support",
+    "Department": "Technical Support",
+    "Outcome": 0,
+    "Confidence": 95,
+    "HumanReviewRequired": false,
+    "Reasoning": "The Handles text for Technical Support explicitly mentions 'failed exports' and 'error messages,' which directly match the issue described in the email. Additionally, a reviewed precedent (TicketId T02) exists for a similar issue, confirming the choice of Technical Support. This aligns with confidence rule 2, resulting in a confidence score of 95.",
+    "Feedback": ""
+  },
+  {
+    "TicketId": "T03",
+    "Phase": 2,
+    "EmailBody": "One of our project managers, Mark Ellis, left the company on Friday. Please deactivate his user account and remove his access to all shared workspaces. We would like his seat moved to Priya Raman, who starts on Monday and will need a standard user role.",
+    "ProposedDepartment": "Account & Access Management",
+    "Department": "Account & Access Management",
+    "Outcome": 0,
+    "Confidence": 95,
+    "HumanReviewRequired": false,
+    "Reasoning": "The request matches the 'Account & Access Management' department's Handles text, which includes user provisioning and deactivation, role permissions, and seat count changes. A reviewed precedent (TicketId T03) exists for an identical request, confirming this department. Confidence is 95 as per rule 2.",
+    "Feedback": ""
+  },
+  {
+    "TicketId": "T04",
+    "Phase": 2,
+    "EmailBody": "We are expanding the platform to two more sites and need a quote for 40 additional licences on our current plan. Is there a volume price break at that quantity, and can the new licences be aligned to our existing contract end date? A formal quote on company letterhead would be appreciated.",
+    "ProposedDepartment": "Sales",
+    "Department": "Sales",
+    "Outcome": 0,
+    "Confidence": 95,
+    "HumanReviewRequired": false,
+    "Reasoning": "The Sales department's Handles text explicitly covers 'new licenses, tier upgrades, pricing quotes, product demos and contract renewals,' which matches the customer's request. A reviewed precedent (TicketId T04) confirms this department for a similar request, so confidence is set to 95 as per rule 2.",
+    "Feedback": ""
+  },
+  {
+    "TicketId": "T05",
+    "Phase": 2,
+    "EmailBody": "Could you confirm the date on which our annual plan renews this year? We are reviewing all software subscriptions ahead of the new budget. Please also switch off auto-renewal on our account so that nothing is charged before our finance team has approved the renewal.",
+    "ProposedDepartment": "Billing Operations",
+    "Department": "Billing Operations",
+    "Outcome": 0,
+    "Confidence": 95,
+    "HumanReviewRequired": false,
+    "Reasoning": "The Handles text for Billing Operations includes 'plan renewals and billing cycle questions,' which directly matches the customer's request. Additionally, a reviewed precedent (TicketId T05) exists for an identical request, confirming Billing Operations as the correct department. Confidence rule 2 applies, resulting in a confidence score of 95.",
+    "Feedback": ""
+  },
+  {
+    "TicketId": "T06",
+    "Phase": 2,
+    "EmailBody": "Since your release notes went out yesterday evening, none of our users can sign in through SSO. The login page redirects to our identity provider, the user authenticates, and then the app shows a blank page. Your status page reports no outage. We suspect the new release changed the SAML handling, because nothing changed on our side. Fifty people are locked out.",
+    "ProposedDepartment": "Technical Support",
+    "Department": "Technical Support",
+    "Outcome": 1,
+    "Confidence": 85,
+    "HumanReviewRequired": false,
+    "Reasoning": "The Handles text for Technical Support includes 'product bugs' and 'error messages,' which directly match the issue described in the email. A reviewed precedent (TicketId T06) exists for a similar issue, confirming that Technical Support is the correct department. Confidence rule 2 applies, resulting in a confidence score of 85.",
+    "Feedback": ""
+  },
+  {
+    "TicketId": "T07",
+    "Phase": 2,
+    "EmailBody": "We received the renewal quote for next year and it is about 30 percent higher than what we paid last year, with no explanation. At that price we would have to consider moving to a lower tier or evaluating other vendors. We have been a customer for four years and would like someone to walk us through the options before we decide.",
+    "ProposedDepartment": "Customer Success",
+    "Department": "Customer Success",
+    "Outcome": 0,
+    "Confidence": 95,
+    "HumanReviewRequired": false,
+    "Reasoning": "The Handles text for Customer Success includes 'retention outreach for accounts at risk of churn,' which directly matches the customer's concerns about the renewal price and potential vendor evaluation. A reviewed precedent (TicketId T07) exists for a similar request, confirming Customer Success as the correct department. Confidence rule 2 applies, resulting in a confidence score of 95.",
+    "Feedback": ""
+  },
+  {
+    "TicketId": "T08",
+    "Phase": 2,
+    "EmailBody": "This is a formal request under Article 17 of the GDPR. Please erase all personal data you hold about me and the three users of our former account, and confirm in writing within 30 days that this has been done. If we do not receive confirmation by then we will refer the matter to the supervisory authority.",
+    "ProposedDepartment": "Legal & Compliance",
+    "Department": "Legal & Compliance",
+    "Outcome": 1,
+    "Confidence": 50,
+    "HumanReviewRequired": true,
+    "Reasoning": "The Handles text for Legal & Compliance explicitly mentions 'GDPR erasure demands,' which directly matches the customer's request. A reviewed precedent (TicketId T08) exists for an identical request, confirming this department. Confidence rule 1 applies because the department requires human review, limiting confidence to 50.",
+    "Feedback": ""
+  },
+  {
+    "TicketId": "T09",
+    "Phase": 2,
+    "EmailBody": "Several of our staff received an email this morning that claims to come from your support team and asks them to 'verify their account' through a link. The sender address is similar to yours but not identical, and the link goes to a domain we do not recognise. One person clicked it. We are reporting this so you can warn other customers.",
+    "ProposedDepartment": "Trust & Safety",
+    "Department": "Trust & Safety",
+    "Outcome": 1,
+    "Confidence": 50,
+    "HumanReviewRequired": true,
+    "Reasoning": "The Handles text for Trust & Safety includes 'phishing attempts, suspicious links, and impersonation,' which directly matches the email's description of a phishing attack. A reviewed precedent (TicketId T09) exists for an identical request, confirming this department. Confidence rule 1 applies because the department requires human review, limiting confidence to 50.",
+    "Feedback": ""
+  }
+]

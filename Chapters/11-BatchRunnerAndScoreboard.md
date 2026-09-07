@@ -243,6 +243,8 @@ Phase  | Rows  | Auto  | Approved  | Modified  | Denied  | AutoResolved  | Escal
 >   while read -r ROW; do uip df records insert "$ENTITY_ID" --body "$ROW" --output plain --output-filter "TicketId"; done
 > node scripts/scoreboard.js --phase 1
 > ```
+> `Data/TriageDecision-Phase2.json` does the same for phase 2, for a student who wants to start at Chapter 13.
+>
 > `uip df records import --file <csv>` looks like the obvious route and is not: on this tenant it reported `InsertedRecords: 0` for every CSV variant tried (choice value as name or number, either boolean spelling, with or without the choice column) and pointed at an error file that only the Data Fabric UI can open. Per-row inserts are slower and work.
 
 ---

@@ -130,7 +130,7 @@ The escalation curve is not a property of the flow alone. It is a property of th
 | 2 | Ambiguous, spans two departments | "Sign-in through SSO has failed for the whole team since your latest release." | review, corrected | review, confirmed | auto |
 | 2 | `Human Review = Required` | A solicitor's letter. A phishing report. | review | review | review |
 
-Reading the columns: **V1 9, V2 4, V3 2, plus the planted miss to read.** The two ambiguous emails are where the reviewer's `Feedback` comes from in V1; the two Required ones are the floor in every column. The nine emails live in `Data/TriageBatch.csv` and are introduced in Chapter 11.
+Reading the columns: **V1 9, V2 4, V3 2, plus the planted miss to read.** Those are the design's numbers. The run that verified Chapters 10 to 14 read 9, 3 and 3: one ambiguous email auto-routed a phase early on its own correction, one routine email came back a phase late on an under-scored confidence. A language model applies rules imperfectly in both directions; the floor of two Required reviews held in every phase, because it is in the graph, not in the prompt. The two ambiguous emails are where the reviewer's `Feedback` comes from in V1; the two Required ones are the floor in every column. The nine emails live in `Data/TriageBatch.csv` and are introduced in Chapter 11.
 
 The same nine emails, with the same `TicketId` values, run against every version. Never change the batch between versions: if the emails change, the curve measures the emails, not the flow.
 

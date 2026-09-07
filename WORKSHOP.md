@@ -28,7 +28,7 @@ The batch uploads are the variable that decides the day. On a quiet tenant a nin
 **Before the day (pre-work, sent with the invitation):** Chapters 01 to 07 and 09. That is the environment, the baseline flow and the entity. A student who arrives with a validating `EmailTriage` flow that pauses on a Quick Form, and an empty `TriageDecision` entity, is ready. The combined fast track below rebuilds all of it in one prompt for anyone who arrives without it.
 
 **Block 1 (45 min): V1, the evidence.**
-- 10 min: Chapter 08 as a talk. The three memories, Confidence versus Outcome, the curve 9 to 4 to 2.
+- 10 min: Chapter 08 as a talk. The three memories, Confidence versus Outcome, the curve 9 to 4 to 2 (measured: 9, 3, 3).
 - 10 min: Chapter 10, Mode 2. The V1 build in one prompt.
 - 20 min: Chapter 11. Start the phase 1 batch, review the nine tasks as they arrive, read 9 of 9.
 - 5 min: buffer, and the fast path for anyone whose batch is still uploading: insert the nine rows from `Data/TriageDecision-Phase1.json` and read the same scoreboard.
@@ -36,8 +36,8 @@ The batch uploads are the variable that decides the day. On a quiet tenant a nin
 **Block 2 (45 min): V2, the earned trust, and V3 as a recording.**
 - 5 min: Chapter 12 as a talk. The tool, the precedent rules, the gate, and the two ways the model can still get it wrong.
 - 10 min: Chapter 12, Mode 2. The V2 build in one prompt, and the T01 test that completes without a task.
-- 15 min: phase 2 batch. Four reviews. Read 4 of 9 next to 9 of 9.
-- 10 min: V3 as a screen recording, Chapter 14: the FAQ sync, the reply branch, one reply email arriving, the phase 3 scoreboard, and the planted miss in T05's row.
+- 15 min: phase 2 batch. Three or four reviews. Read the number next to 9 of 9.
+- 10 min: V3 as a screen recording, Chapter 14: the FAQ sync, the reply branch, one reply email arriving, the phase 3 scoreboard, and T05's row (the planted miss, answered or refused).
 - 5 min: close on the last lesson. The loop is never switched off.
 
 Students who finish early run Chapter 13 and 14 themselves; the chapters are complete.
@@ -50,7 +50,7 @@ Five recordings, each under four minutes, in the order the blocks need them. The
 2. **Phase 1 batch**: the runner starting, tasks arriving, one Approve, one Modify with a corrected department and feedback, the scoreboard.
 3. **V2**: the tool call in the reasoning ("TicketId T01"), the gate opening, the Auto row, the phase 2 scoreboard.
 4. **V3**: the FAQ in the bucket, the reply email in the inbox, the AutoResolved row.
-5. **The planted miss**: T05's row, its reply text, and the sentence in the email it ignored.
+5. **The planted miss**: T05's row, and either the reply text next to the sentence it ignored, or the refusal and why the rule held.
 
 ## Fast paths
 
@@ -59,7 +59,7 @@ Five recordings, each under four minutes, in the order the blocks need them. The
 | No Chapter 07 flow on arrival | Paste the combined fast track below into the coding agent. About 25 minutes on a quiet tenant. |
 | Phase 1 batch not finished when Block 1 ends | Insert the rows: Chapter 11, the "Late to the workshop?" tip. The scoreboard reads 9 of 9 and phase 2 starts from the same state as everyone else. |
 | Tasks left unreviewed for half an hour | Those runs are cancelled and their tasks are orphans. Re-run just those tickets with `--tickets`, and review on arrival this time. |
-| Phase 2 batch not finished when Block 2 ends | Nothing to insert: the V2 point is made by the T01 test run and the Auto rows that already landed. Show the phase 2 scoreboard from the recording. |
+| Phase 2 batch not finished when Block 2 ends | Insert `Data/TriageDecision-Phase2.json` the same way as phase 1, or show the phase 2 scoreboard from the recording; the V2 point is made by the T01 test run and the Auto rows that already landed. |
 | Index cannot be created (no permission on the tenant) | Pair the student with a neighbour's tenant for the remaining chapters, or switch to the recordings from that point. |
 | Gmail connection missing | Chapter 13 and 14 become the recording. Phases 1 and 2 need no email. |
 

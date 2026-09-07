@@ -276,10 +276,10 @@ Phase  | Rows  | Auto  | Approved  | Modified  | Denied  | AutoResolved  | Escal
 ------------------------------------------------------------------------------------
 1      | 9     | 0     | 7         | 2         | 0       | 0             | 9 of 9
 2      | 9     | 5     | 4         | 0         | 0       | 0             | 4 of 9
-3      | 9     | 6     | 2         | 0         | 0       | 1             | 2 of 9
+3      | 9     | 5     | 3         | 0         | 0       | 1             | 3 of 9
 ```
 
-**2 of 9**, and one row that no human touched in a new way: the agent answered it. Whether the AutoResolved column reads 1 or 2 depends on T05, which is the point of the next section.
+**2 of 9 by design; the verified run read 3 of 9**, because T06 came back once more with the same under-scoring wobble Chapter 12 describes (rule 2 named, 85 written). The two Required rows are the floor, and one row is new in kind: T01 was answered, not routed. Whether the AutoResolved column reads 1 or 2 depends on T05, which is the point of the next section.
 
 ---
 
@@ -292,7 +292,7 @@ Open the phase 3 row for T05. Then read the email again:
 The FAQ answers the first sentence. Nothing in the knowledge base switches off auto-renewal, and the prompt said, twice, that a request for an action means `canAutoResolve = false`. Two things can be in that row:
 
 - **`Outcome = AutoResolved`**, a reply text about where to find the renewal date, and nobody switched anything off. The finance team finds out when the charge lands. This is the miss the batch was designed to plant.
-- **`Outcome = Auto`**, no reply text, and a reasoning that names the switch-off request. The model refused. In the run that verified this chapter it did exactly that: *"the customer's request to confirm the renewal date and disable auto-renewal ... canAutoResolve: false"*, and T05 was routed to Billing Operations with the Chapter 13 notification.
+- **`Outcome = Auto`**, no reply text, and `canAutoResolve = false`. The model refused. In both runs that verified this chapter it did exactly that, once naming the switch-off request in its reasoning (*"the customer's request to confirm the renewal date and disable auto-renewal"*) and once not, and T05 was routed to Billing Operations with the Chapter 13 notification each time.
 
 Both are the lesson. The refusal shows the rule working; the miss shows why the rule is not enough. Either way the row is there to be read, and in a real inbox nobody would have read it unless the design made someone look.
 
