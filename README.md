@@ -102,8 +102,8 @@ Tutorial/
 │   ├── 12-V2-EarnedTrust.md                 <-- Part 5: V2 - the precedent tool and the decision gate
 │   ├── 13-SendingEmails.md                  <-- Part 6: Integration Service connections & the Gmail Send Email connector
 │   ├── 14-V3-AutoResolve.md                 <-- Part 6: V3 - the FAQ, the reply branch and the planted miss
-│   ├── A1-ReceivingEmails.md                <-- Appendix: Gmail connector trigger, entry points & optional-chained bindings
-│   └── A2-Deployment.md                     <-- Appendix: Packaging, Cloud Solutions Management & Orchestrator deployment
+│   ├── A1-ReceivingEmails.md                <-- Optional appendix: Gmail connector trigger, entry points & optional-chained bindings
+│   └── A2-Deployment.md                     <-- Optional appendix: Packaging, Cloud Solutions Management & Orchestrator deployment
 ├── Data/
 │   ├── Departments.xlsx                     <-- The department directory indexed in Chapter 06
 │   ├── TriageBatch.csv                      <-- The nine test emails every phase runs (Chapter 11)
@@ -225,7 +225,9 @@ The tutorial has six parts. Parts 1 and 2 build the tooling and the baseline tri
    - Two new agent outputs, `canAutoResolve` and `replyText`, and the reply branch that sends them.
    - Rerun the batch: 2, plus the one the agent should not have answered.
 
-### Appendix
+### Appendix (optional)
+
+The two appendices are not part of the three-phase arc and are not needed for the workshop. Read them when the finished flow has to run without anyone pressing the button (A1) or has to leave your laptop (A2).
 
 - **[Appendix A1: Receiving Emails](./Chapters/A1-ReceivingEmails.md)**
    - Triggers are BPMN **start events** with `entryPointId`, so a flow can have several.
