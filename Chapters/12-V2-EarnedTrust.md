@@ -283,7 +283,9 @@ What to expect in Action Center, and what to press:
 | :--- | :--- | :--- |
 | `T06`, `T07` | one correction is one precedent; rule 5 keeps a mixed-topic email under 75 | **Approve** if the agent now proposes the department you corrected to in phase 1; **Modify** to the same department again if not. Either way the row agrees with the phase 1 verdict, and rule 3 can apply in phase 3. |
 | `T08`, `T09` | Required, capped at 50 by rule 1 and blocked by the gate regardless | **Approve** |
-| `T01` to `T05` | should not arrive at all | if one does, read its reasoning: the agent did not find the precedent, or found it and scored under 91 |
+| `T01` to `T05` | should not arrive at all | if one does, read its reasoning: the agent did not find the precedent, or found it and still scored under 91 (see below). **Approve**: the row it writes is one more confirming precedent. |
+
+> ⚠️ **A routine ticket can still arrive, and it is not the flow's fault.** In the verified run, T05 came back with confidence 85 and a reasoning that said: *"a reviewed precedent (TicketId T05) exists for a similar request ... Confidence rule 2 applies."* Rule 2 means 95 to 100. The model named the right rule and wrote the wrong number, the gate did what it was told, and a human looked at an email that did not need it. That is the safe direction to fail in, and it is why the scoreboard is a count, not a promise: expect 4 of 9, accept 5, and read the reasoning of every extra one. Chapter 14 tightens the prompt so the number is derived from the rule instead of chosen next to it.
 
 ---
 
