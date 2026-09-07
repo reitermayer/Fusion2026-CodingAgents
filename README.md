@@ -274,6 +274,26 @@ Based on hands-on developer experience with the UiPath CLI (`uip`) and Coding Ag
    - `uip solution resources refresh` does not clean this up either: it reported `Synced 0 resources` and left the orphaned artifact in place. Only `uip solution projects remove` prunes it. The situation is easy to hit during normal cleanup, because `uip solution projects remove` refuses to unregister the last project in a solution ("Cannot remove the only project in the solution"), which pushes users toward deleting the folder by hand.
    - **Improvement:** `uip maestro flow init` should either silently reuse the orphaned artifact or report it at INFO level as "reusing existing solution resource", instead of an ERROR that reads like a failed scaffold. Additionally, `uip solution resources refresh` should prune package artifacts whose project is absent from both disk and the manifest.
 
+6. **Coding Agents Cannot Approve Pending Tasks in Action Center:**
+   - **Current Behavior:** Every human-in-the-loop chapter (07, 10, 11) pauses a debug run on a Quick Form task, and the coding agent has no way to action it. `uip or` has no `tasks` command, `uip maestro flow instance element` only offers `cancel` and `retry`, and there is no Action Center tool in the registry. The student has to switch to the browser once per task; a nine-email batch is nine context switches, and an unattended test of a HITL flow is impossible from the CLI.
+   - **What works today:** The CLI's token (`uip login refresh`) is accepted by the Orchestrator Tasks API. `GET /odata/Tasks/UiPath.Server.Configuration.OData.GetTasksAcrossFolders` lists the pending Quick Form tasks with the same token, so the gap is a missing command, not a missing permission.
+   - **Improvement:** Add `uip or tasks list / get / complete` (mirroring `GetTasksAcrossFolders`, `GetTaskDataById` and `GenericTasks/CompleteTask`), so an agent can list the pending tasks of a run, read the form data, and submit an outcome with output fields. Even a test-only flag on `uip maestro flow debug` that auto-completes Quick Forms with a given outcome would unblock automated testing of HITL flows.
+
+7. **Context Grounding Indexes Have No Core CLI:**
+   - **Current Behavior:** Folders and buckets are managed by `uip or`, but indexes only by `@uipath/context-grounding-tool`, a wrapper over the Python SDK that needs a Python runtime, the `uipath` package and a `setup` step. For a tutorial audience on their own notebooks that is a second language runtime for one chapter, so Chapter 06 creates and syncs the index in the browser instead.
+   - **Improvement:** Expose index create / sync / status / delete in the Node-based `uip or` tool, next to buckets.
+
+8. **The Canvas Data Fabric Node Writes Nothing When Built From the CLI:**
+   - **Current Behavior:** `core.datafabric.create` (the palette's "Create entity record") depends on an entity binding only the canvas can create. Added from the CLI it validates, runs to `Completed`, and writes no row, with empty `inputs` and `outputs` in the debug payload. The Integration Service connector node `uipath.connector.uipath-uipath-dataservice.create-entity-record` writes correctly, so Chapter 10 uses that.
+   - **Improvement:** Either let `uip maestro flow node configure` create the entity binding for `core.datafabric.*` nodes, or make `flow validate` fail on a Data Fabric node whose entity binding is absent.
+
+9. **`uip maestro flow hitl add` Leaves the Form Unfinished:**
+   - **Current Behavior (tool 1.200):** The scaffolded Quick Form has no `schemaId` (the run faults at task creation with `[200000] Activity failed to execute`), every field is `"type": "text"` with its id as the label (the reviewer sees `EMAILBODY`), a field bound to a number cannot be submitted (*Invalid input: expected string, received number*, the buttons stop working), and the assignee is a plain email without the `displayName` a `user` assignee needs. The node id is derived from the label, which the documentation does not say.
+   - **Improvement:** Generate the `schemaId`, accept `type` and `label` per field in `--schema`, stringify or reject numeric bindings, and resolve `--assignee` against the directory.
+
+10. **Small `uip df` Papercuts:**
+   - `Version` is a reserved field name but the error only appears at create time; `INTEGER` fields are accepted and then cannot be rendered in the UI (use `DECIMAL` with precision 0); `records delete`, `entities delete` and `choice-sets delete` require `--yes --reason` that `--help` does not list; list commands reject `--output-filter` unless `--limit` is given, and then wrap rows in `Items[*]`; choice values are written and read as `NumberId` integers, not names.
+
 ---
 
 ## ❓ Frequently Asked Questions (Q&A)
