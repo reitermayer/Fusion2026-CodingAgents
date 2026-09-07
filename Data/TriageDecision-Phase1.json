@@ -1,0 +1,110 @@
+[
+  {
+    "TicketId": "T01",
+    "Phase": 1,
+    "EmailBody": "Hello, our auditor has asked for copies of all invoices from the last quarter. I only have the email receipts and cannot find the PDF versions anywhere. Could you tell me where I can download them for our account? Thanks, Anna",
+    "ProposedDepartment": "Billing Operations",
+    "Department": "Billing Operations",
+    "Outcome": 1,
+    "Confidence": 85,
+    "HumanReviewRequired": false,
+    "Reasoning": "The Handles text for Billing Operations includes 'invoices,' which directly matches Anna's request for help locating PDF versions of invoices. Only this department fits the request, so the confidence is 85.",
+    "Feedback": ""
+  },
+  {
+    "TicketId": "T02",
+    "Phase": 1,
+    "EmailBody": "Since Tuesday every attempt to export our campaign report to CSV stops after a few seconds with the message 'Export failed (EXP-4102)'. Exporting to PDF still works. I have attached two screenshots and the report id is RPT-88213. Can someone look into this?",
+    "ProposedDepartment": "Technical Support",
+    "Department": "Technical Support",
+    "Outcome": 1,
+    "Confidence": 85,
+    "HumanReviewRequired": false,
+    "Reasoning": "The Handles text for Technical Support explicitly mentions 'failed exports' and 'error messages,' which directly match the issue described in the email. This clear alignment with the Handles text results in a confidence score of 85.",
+    "Feedback": ""
+  },
+  {
+    "TicketId": "T03",
+    "Phase": 1,
+    "EmailBody": "One of our project managers, Mark Ellis, left the company on Friday. Please deactivate his user account and remove his access to all shared workspaces. We would like his seat moved to Priya Raman, who starts on Monday and will need a standard user role.",
+    "ProposedDepartment": "Account & Access Management",
+    "Department": "Account & Access Management",
+    "Outcome": 1,
+    "Confidence": 75,
+    "HumanReviewRequired": false,
+    "Reasoning": "The request matches the 'Account & Access Management' department's Handles text, which includes user provisioning and deactivation, role permissions, and seat count changes. Confidence is 75 because only one department's Handles text covers the request.",
+    "Feedback": ""
+  },
+  {
+    "TicketId": "T04",
+    "Phase": 1,
+    "EmailBody": "We are expanding the platform to two more sites and need a quote for 40 additional licences on our current plan. Is there a volume price break at that quantity, and can the new licences be aligned to our existing contract end date? A formal quote on company letterhead would be appreciated.",
+    "ProposedDepartment": "Sales",
+    "Department": "Sales",
+    "Outcome": 1,
+    "Confidence": 85,
+    "HumanReviewRequired": false,
+    "Reasoning": "The request matches the Sales department's Handles text, which includes 'new licenses, tier upgrades, pricing quotes, product demos and contract renewals.' This is a clear fit, and no other department's Handles text overlaps. Confidence is set to 85 as per the rule for a single matching department.",
+    "Feedback": ""
+  },
+  {
+    "TicketId": "T05",
+    "Phase": 1,
+    "EmailBody": "Could you confirm the date on which our annual plan renews this year? We are reviewing all software subscriptions ahead of the new budget. Please also switch off auto-renewal on our account so that nothing is charged before our finance team has approved the renewal.",
+    "ProposedDepartment": "Billing Operations",
+    "Department": "Billing Operations",
+    "Outcome": 1,
+    "Confidence": 85,
+    "HumanReviewRequired": false,
+    "Reasoning": "The request matches the Handles text for Billing Operations, which includes 'plan renewals and billing cycle questions.' This is the only department that fits, so the confidence is 85.",
+    "Feedback": ""
+  },
+  {
+    "TicketId": "T06",
+    "Phase": 1,
+    "EmailBody": "Since your release notes went out yesterday evening, none of our users can sign in through SSO. The login page redirects to our identity provider, the user authenticates, and then the app shows a blank page. Your status page reports no outage. We suspect the new release changed the SAML handling, because nothing changed on our side. Fifty people are locked out.",
+    "ProposedDepartment": "IT Service Desk",
+    "Department": "Technical Support",
+    "Outcome": 2,
+    "Confidence": 85,
+    "HumanReviewRequired": false,
+    "Reasoning": "The Handles text for IT Service Desk explicitly mentions 'SSO and SAML authentication failures,' which directly matches the issue described in the email. This match falls under the confidence rule for exactly one department fitting the request, resulting in a confidence score of 85.",
+    "Feedback": "The sign-in broke with the release, so this is a product defect to fix, not an infrastructure outage to route around."
+  },
+  {
+    "TicketId": "T07",
+    "Phase": 1,
+    "EmailBody": "We received the renewal quote for next year and it is about 30 percent higher than what we paid last year, with no explanation. At that price we would have to consider moving to a lower tier or evaluating other vendors. We have been a customer for four years and would like someone to walk us through the options before we decide.",
+    "ProposedDepartment": "Sales",
+    "Department": "Customer Success",
+    "Outcome": 2,
+    "Confidence": 75,
+    "HumanReviewRequired": false,
+    "Reasoning": "The email matches the Handles text for the Sales department, which includes pricing quotes and contract renewals. The confidence is 75 because only one department's Handles text covers the request.",
+    "Feedback": "A four-year customer weighing whether to stay is retention work first and a pricing quote second."
+  },
+  {
+    "TicketId": "T08",
+    "Phase": 1,
+    "EmailBody": "This is a formal request under Article 17 of the GDPR. Please erase all personal data you hold about me and the three users of our former account, and confirm in writing within 30 days that this has been done. If we do not receive confirmation by then we will refer the matter to the supervisory authority.",
+    "ProposedDepartment": "Legal & Compliance",
+    "Department": "Legal & Compliance",
+    "Outcome": 1,
+    "Confidence": 50,
+    "HumanReviewRequired": true,
+    "Reasoning": "The Handles text for Legal & Compliance explicitly mentions GDPR erasure demands, which directly matches the customer's request. This is the only department that fits, and the confidence rule for a single matching department applies.",
+    "Feedback": ""
+  },
+  {
+    "TicketId": "T09",
+    "Phase": 1,
+    "EmailBody": "Several of our staff received an email this morning that claims to come from your support team and asks them to 'verify their account' through a link. The sender address is similar to yours but not identical, and the link goes to a domain we do not recognise. One person clicked it. We are reporting this so you can warn other customers.",
+    "ProposedDepartment": "Trust & Safety",
+    "Department": "Trust & Safety",
+    "Outcome": 1,
+    "Confidence": 50,
+    "HumanReviewRequired": true,
+    "Reasoning": "The email matches the 'Handles' description for the Trust & Safety department, which includes phishing attempts, suspicious links, and impersonation. The confidence is set to 85 as this is the only department that fits the request.",
+    "Feedback": ""
+  }
+]

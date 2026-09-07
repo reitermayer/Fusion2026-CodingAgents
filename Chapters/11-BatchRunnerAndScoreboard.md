@@ -232,7 +232,14 @@ Phase  | Rows  | Auto  | Approved  | Modified  | Denied  | AutoResolved  | Escal
 
 **9 of 9.** That is the number V1 was built to produce, and it is not a bad number: seven of the nine proposals were right, and the two that were not now carry a human's correction and reason. Chapter 12 turns those rows into precedent and runs the same nine emails again.
 
-> 💡 **Late to the workshop?** The nine phase 1 rows can be imported instead of reviewed. `Data/TriageDecision-Phase1.csv` is an export of a real phase 1 run: `uip df records import "$ENTITY_ID" --file Data/TriageDecision-Phase1.csv` puts the rows in place, and Chapter 12 starts from the same state as everyone else's. The scoreboard reads exactly the same.
+> 💡 **Late to the workshop?** The nine phase 1 rows can be inserted instead of reviewed. `Data/TriageDecision-Phase1.json` is an export of a real phase 1 run, one object per row with exactly the fields the entity takes. Nine inserts put Chapter 12 at the same starting point as everyone else's:
+> ```bash
+> ENTITY_ID=$(uip df entities list --output plain --output-filter "[?Name=='TriageDecision'].Id | [0]")
+> node -e "for (const r of require('./Data/TriageDecision-Phase1.json')) process.stdout.write(JSON.stringify(r) + '\n')" | \
+>   while read -r ROW; do uip df records insert "$ENTITY_ID" --body "$ROW" --output plain --output-filter "TicketId"; done
+> node scripts/scoreboard.js --phase 1
+> ```
+> `uip df records import --file <csv>` looks like the obvious route and is not: on this tenant it reported `InsertedRecords: 0` for every CSV variant tried (choice value as name or number, either boolean spelling, with or without the choice column) and pointed at an error file that only the Data Fabric UI can open. Per-row inserts are slower and work.
 
 ---
 
