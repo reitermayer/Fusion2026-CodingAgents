@@ -64,7 +64,7 @@ Three things change against Chapter 07, and one thing goes away:
 > ```text
 > Turn the EmailTriage flow into phase 1 of the three-phase design: every email is reviewed by a human, and every verdict is written to the TriageDecision entity.
 > 1. Add two flow inputs on the Start trigger: ticketId (string) and phase (number).
-> 2. Add two typed outputs to the Triage AI Agent: confidence (number, 0 to 100) and reasoning (string). Extend the system prompt with the confidence rules: 75 to 85 when exactly one department fits, 50 to 74 when two fit or the email mixes topics, below 50 when nothing fits, never above 50 when the chosen department has Human Review = Required, and never above 85 in any case because no human precedent exists yet. The reasoning must name the Handles text that matched and the rule that set the confidence.
+> 2. Add two typed outputs to the Triage AI Agent: confidence (number, 0 to 100) and reasoning (string). Extend the system prompt with numbered confidence rules applied in order: first, at most 50 when the chosen department has Human Review = Required, whatever the match quality; otherwise 75 to 85 when exactly one department fits, 50 to 74 when two fit or the email mixes topics, below 50 when nothing fits; and never above 85 in any case because no human precedent exists yet. The reasoning must name the Handles text that matched and the rule number that set the confidence.
 > 3. Remove the decision node and wire the agent's success handle straight into a new Quick Form titled "Triage Review", replacing the Chapter 07 form. Show the reviewer the email, ticket id, department, urgency, confidence and reasoning as read-only fields. Give them a feedback note and a corrected department as editable fields, and three outcomes: Approve, Modify and Deny.
 > 4. Find the UiPath Data Fabric connection in my tenant. Add three Create Entity Record connector nodes writing to TriageDecision, one per outcome, each wired from the matching outcome handle and into the End node. Approve writes the agent's department with Outcome 1; Modify writes the reviewer's corrected department as Department, the agent's as ProposedDepartment, the feedback, and Outcome 2; Deny writes the agent's department, the feedback, and Outcome 3. All three write TicketId, Phase, EmailBody, Confidence, HumanReviewRequired and Reasoning.
 > 5. Keep the reviewOutcome and reviewerNote flow outputs, reviewerNote now carrying the feedback field.
@@ -118,12 +118,12 @@ In TutorialSolution/EmailTriage, add two typed outputs to the Triage AI Agent an
 - confidence (number): how sure the agent is that category is the right department, from 0 to 100.
 - reasoning (string): two to four sentences naming the Handles text from the retrieved directory that matched, and which confidence rule applied.
 
-Extend the system prompt with these confidence rules, stated as rules rather than as a judgement:
-- 75 to 85 when exactly one department's Handles text covers the request.
-- 50 to 74 when two departments fit about equally, or the email mixes several topics.
-- Below 50 when no department fits.
-- Never above 50 when the chosen department has Human Review = Required.
-- Never above 85 in any case: there is no human precedent yet to justify more.
+Extend the system prompt with these confidence rules, stated as numbered rules applied in order rather than as a judgement:
+1. If the chosen department has Human Review = Required, confidence is at most 50. This rule wins over every rule below, however well the Handles text matches.
+2. Otherwise 75 to 85 when exactly one department's Handles text covers the request.
+3. Otherwise 50 to 74 when two departments fit about equally, or the email mixes several topics.
+4. Below 50 when no department fits.
+5. Never above 85 in any case: there is no human precedent yet to justify more.
 
 Keep the existing four outputs and their meaning unchanged. Then refresh and validate the inline agent and validate the flow.
 ```
@@ -152,6 +152,8 @@ The three places that must agree, as in Chapter 05: `outputSchema.properties` in
   { "id": "reasoning", "type": "string" }
 ]
 ```
+
+> ⚠️ **Put the Required rule first, and say it wins.** Verified with gpt-4o: as a bullet among equals ("never above 50 when Required") the rule is ignored, and a GDPR letter routed to Legal & Compliance came back at 85 with a reasoning that cited only the matching Handles text. Numbered and placed first, with "this rule wins over every rule below", the same email drops to 50 or less. Language models apply the rule they read first; put the floor there.
 
 > 💡 **Why the cap at 85 is written into the V1 prompt.** It looks pointless now: nothing reads the number in V1. It matters in Chapter 12, when the gate opens at 90. A V1 row with confidence 97 would let the V2 agent cite "97" as if it had been earned. Capping V1 at 85 keeps every V1 row honest: it says "one department fit, nobody had checked yet".
 
