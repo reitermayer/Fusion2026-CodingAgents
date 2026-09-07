@@ -234,7 +234,20 @@ cd ..
 node scripts/scoreboard.js --phase 3
 ```
 
-What proves the chapter: T01's element list contains `sendReply1` and `createEntityRecord5` and no form; `sendReply1.outputs` carries a Gmail message id; the row's `ReplyText` tells Anna where the Billing page is. T03's `canAutoResolve` is `false` and its reasoning says why: the FAQ has nothing on deactivation, and the email asks for an action.
+The verified T01 run, trimmed:
+
+```json
+"elementExecutions": [ "start", "agent_triage", "decision2", "sendReply1", "createEntityRecord5", "end1" ],
+"agent_triage.outputs": {
+  "category": "Billing Operations", "confidence": 95, "requiresEscalation": false, "canAutoResolve": true,
+  "replyText": "Hello Anna, you can download all your invoices as PDFs from the customer portal. Simply log in, go to Billing in the left menu, then Invoices. You'll find all invoices listed there, and you can download them individually or as a single archive for the year. Let us know if you need further assistance!"
+},
+"sendReply1.inputs.body": { "To": "you@yourcompany.com", "Subject": "Re: Invoices for the last quarter", "Body": "To: anna.keller@northwind-consulting.example\n\nHello Anna, ..." },
+"sendReply1.outputs.response": { "id": "1a079fc05a249e21", "labelIds": ["UNREAD", "SENT", "INBOX"] },
+"createEntityRecord5.inputs.body": { "TicketId": "T01", "Phase": 3, "Outcome": 4, "ReplyText": "Hello Anna, ...", "Confidence": 95 }
+```
+
+What proves the chapter: T01's element list contains `sendReply1` and `createEntityRecord5` and no form; `sendReply1.outputs` carries a Gmail message id with the `SENT` label; the row's `ReplyText` tells Anna where the Billing page is, in the words of the FAQ. T03's `canAutoResolve` is `false` and its reasoning says why: the FAQ has nothing on deactivation, and the email asks for an action.
 
 ---
 

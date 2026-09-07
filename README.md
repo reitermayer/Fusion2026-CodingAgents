@@ -80,6 +80,7 @@ Follow the step-by-step numbered sections. For each step:
 ```text
 Tutorial/
 ├── README.md                               <-- Master syllabus & learning paradigm guide
+├── WORKSHOP.md                             <-- Running the triage lab in two 45-minute blocks: timings, recordings, fast paths
 ├── STATUS.md                               <-- Coverage status against the Fusion Triage Lab plan
 ├── .gitignore                               <-- Excludes ./TutorialSolution/ and build outputs
 ├── AGENTS.md / CLAUDE.md                   <-- AI Coding Agent rules and formatting standards
