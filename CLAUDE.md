@@ -17,7 +17,7 @@ Every practical student step in `Chapters/*.md` MUST provide two distinct blocks
 ---
 
 ## 2. The 3-Mode Chapter Blueprint (No Static Labs)
-We do NOT maintain static `Labs/` directories or file copy commands (`cp -r`). Every practical chapter (`03` through `08`) must open with the **3-Mode Starting Point Blueprint**:
+We do NOT maintain static `Labs/` directories or file copy commands (`cp -r`). Every practical chapter (every chapter that builds or changes something, from `03` on, but not the design chapter `08`) must open with the **3-Mode Starting Point Blueprint**:
 - **Mode 1: 🔄 Reset Solution:** The agent prompt (and CLI command) to clean up previous projects in `TutorialSolution`.
 - **Mode 2: ⚡ 1-Shot Fast-Track:** A single comprehensive prompt to let the agent autonomously execute the whole chapter in one turn.
 - **Mode 3: 📖 Step-by-Step Guided Walkthrough:** The step-by-step conceptual walkthrough for students learning incrementally.

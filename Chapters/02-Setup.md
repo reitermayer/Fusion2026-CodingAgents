@@ -309,7 +309,7 @@ Every prompt in this tutorial spends tokens on a paid model. If you are running 
 
 1. **Debugging dominates.** A chapter that works first time costs a fraction of one where a binding is wrong and the agent iterates. The single most expensive habit is re-running a flow without reading the previous payload.
 2. **Mode 2 is cheaper than Mode 3.** The 1-Shot Fast-Track is one long turn; the step-by-step walkthrough is a dozen turns that each re-send the accumulated conversation. Mode 3 is better for learning and worse for your bill.
-3. **Flow files are large.** `EmailTriage.flow` passes 1,700 lines by Chapter 08, because each node type caches its full registry manifest in `definitions[]`. An agent that re-reads the whole file every turn burns tokens fast. Prefer targeted edits over full-file reads.
+3. **Flow files are large.** `EmailTriage.flow` passes 1,700 lines by Chapter 13, because each node type caches its full registry manifest in `definitions[]`. An agent that re-reads the whole file every turn burns tokens fast. Prefer targeted edits over full-file reads.
 4. **`--output-filter` is a cost control, not just a convenience.** `uip or folders list --limit 200` returns pages of JSON; the same call with a filter returns three fields. Both answer your question; one costs fifty times more.
 5. **Model choice.** A frontier model on a small chapter can cost more than a cheaper model on a large one. Nothing in this tutorial requires the largest available model.
 

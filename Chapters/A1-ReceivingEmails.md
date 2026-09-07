@@ -1,4 +1,4 @@
-# Chapter 09: Receiving Emails
+# Appendix A1: Receiving Emails
 
 Your flow now does the whole job: it reads a customer email, grounds itself in the real department directory, classifies, stops for a human when the case is sensitive, and sends the result on. Everything except start by itself.
 
@@ -23,11 +23,11 @@ Two entry points, one flow. That is deliberate, and Section 4 is about the one t
 
 > 💡 **Choose Your Starting Point:**
 >
-> **Mode 1: 🔄 Reset to the Chapter 08 End State**
+> **Mode 1: 🔄 Reset to the Chapter 13 End State**
 >
 > 💬 *Prompt your AI Coding Agent:*
 > ```text
-> Confirm we are at the Chapter 08 end state before starting Chapter 09. TutorialSolution/EmailTriage must validate and must contain the manual trigger, the Triage AI Agent with its OrganizationIndex context, the decision node, the Quick Form task and the Gmail Send Email node. If an email-received trigger node from an earlier run of this chapter is present, remove it and restore the agent's input binding to the manual trigger only.
+> Confirm we are at the Chapter 13 end state before starting Appendix A1. TutorialSolution/EmailTriage must validate and must contain the manual trigger, the Triage AI Agent with its OrganizationIndex context, the decision node, the Quick Form task and the Gmail Send Email node. If an email-received trigger node from an earlier run of this chapter is present, remove it and restore the agent's input binding to the manual trigger only.
 > ```
 > 💻 *Underlying CLI Commands:*
 > ```bash
@@ -40,7 +40,7 @@ Two entry points, one flow. That is deliberate, and Section 4 is about the one t
 > ---
 >
 > **Mode 2: ⚡ 1-Shot Autonomous Fast-Track**
-> 💬 *Paste this master prompt into your coding assistant to execute the entire Chapter 09 in one turn:*
+> 💬 *Paste this master prompt into your coding assistant to execute the entire Appendix A1 in one turn:*
 > ```text
 > Give the EmailTriage flow a real front door so it starts by itself when a customer emails us:
 > 1. Find the Gmail "Email Received" trigger node type in the flow registry and confirm it is enabled on my tenant.
@@ -98,7 +98,7 @@ Find the Gmail "Email Received" trigger in the flow registry, confirm it is avai
 cd ./TutorialSolution
 
 # 1. Find it. Trigger types are uipath.connector.trigger.*, distinct from
-#    the uipath.connector.* activities used in Chapter 08.
+#    the uipath.connector.* activities used in Chapter 13.
 uip maestro flow registry search "gmail" --output json \
   --output-filter "[*].{NodeType:NodeType,DisplayName:DisplayName,Avail:AvailableOnTenant}"
 
@@ -113,7 +113,7 @@ uip maestro flow registry get \
 > Error retrieving node
 > Trigger nodes require --connection-id for IS enrichment. Provide it with --connection-id <id>.
 > ```
-> Activities do not need it; triggers do, because Integration Service has to enrich the manifest with what your specific connection can actually watch. Reuse the connection GUID you found in Chapter 08.
+> Activities do not need it; triggers do, because Integration Service has to enrich the manifest with what your specific connection can actually watch. Reuse the connection GUID you found in Chapter 13.
 
 The enriched manifest answers the two questions that matter:
 
@@ -134,7 +134,7 @@ It also lists 24 output fields per email. The ones you will use:
 
 ## 3. Adding and Configuring the Trigger
 
-Triggers are **CLI-owned**, exactly like the connector activity in Chapter 08: `node add`, then `node configure --detail`. The `detail` shape differs though - triggers take `eventMode` and `eventParameters` where activities took `method`, `endpoint` and `bodyParameters`.
+Triggers are **CLI-owned**, exactly like the connector activity in Chapter 13: `node add`, then `node configure --detail`. The `detail` shape differs though - triggers take `eventMode` and `eventParameters` where activities took `method`, `endpoint` and `bodyParameters`.
 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
@@ -158,7 +158,7 @@ uip maestro flow node configure EmailTriage/EmailTriage.flow emailReceived1 --de
 }' --output json
 ```
 
-A successful configure reports four bindings rather than Chapter 08's two - the connection, the folder, and the trigger's own event registration:
+A successful configure reports four bindings rather than Chapter 13's two - the connection, the folder, and the trigger's own event registration:
 
 ```json
 { "NodeId": "emailReceived1", "BindingsCreated": 4, "DetailPopulated": true }
@@ -275,7 +275,7 @@ The matching `inputSchema` entry:
 
 ## 6. Testing: What You Can and Cannot Prove Locally
 
-Here is the honest constraint of this chapter. **A connector trigger does not fire during `uip maestro flow debug`.** Debug starts a run directly; it does not stand up a polling subscription against your mailbox. The trigger only becomes live once the flow is deployed as a process, which is Chapter 10.
+Here is the honest constraint of this chapter. **A connector trigger does not fire during `uip maestro flow debug`.** Debug starts a run directly; it does not stand up a polling subscription against your mailbox. The trigger only becomes live once the flow is deployed as a process, which is Appendix A2.
 
 So this chapter has two kinds of test.
 
@@ -316,7 +316,7 @@ A healthy result, with the trigger present but not fired:
 
 ### 6.2 The end-to-end test after deployment
 
-Once Chapter 10 deploys the flow, the trigger goes live and the real test is simply to **send an email to the watched inbox and wait**. Polling means minutes, not seconds.
+Once Appendix A2 deploys the flow, the trigger goes live and the real test is simply to **send an email to the watched inbox and wait**. Polling means minutes, not seconds.
 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
@@ -334,7 +334,7 @@ uip maestro flow instance element-executions <instanceId> -f <folderKey> --outpu
 
 An instance whose `Source` is not `Studio Web Debug`, that you did not start, is the proof. Its `elements` should contain `emailReceived1`, and the agent's input should carry your test message rather than an empty string.
 
-> 💡 **Watch what you point it at.** `INBOX` means every message, including newsletters, notifications and the triage summaries Chapter 08 sends to that same address - which will happily trigger the flow again on its own output. For anything beyond a demo, watch a dedicated label such as `support`, and set up a Gmail filter that routes real customer mail into it. The `filterFields` in the trigger manifest (`To[*].Email`, `CC[*].Email`, `HasAttachments`) let you narrow further at the trigger itself.
+> 💡 **Watch what you point it at.** `INBOX` means every message, including newsletters, notifications and the triage summaries Chapter 13 sends to that same address - which will happily trigger the flow again on its own output. For anything beyond a demo, watch a dedicated label such as `support`, and set up a Gmail filter that routes real customer mail into it. The `filterFields` in the trigger manifest (`To[*].Email`, `CC[*].Email`, `HasAttachments`) let you narrow further at the trigger itself.
 
 ---
 
@@ -347,11 +347,11 @@ An instance whose `Source` is not `Studio Web Debug`, that you did not start, is
 - [x] Hit `400300 Cannot read property 'Body' of null` and understood why two entry points break unguarded bindings.
 - [x] Applied optional chaining to **every** trigger-sourced binding, not only the new one.
 - [x] Wired a second agent input through all three required parts: binding, `inputSchema` key, and `{{input.…}}` token.
-- [x] Proved the manual path still works with the trigger present, and understood why the trigger itself cannot be tested until Chapter 10.
+- [x] Proved the manual path still works with the trigger present, and understood why the trigger itself cannot be tested until Appendix A2.
 
 ---
 
 ## 🔗 Navigation Links
-- ⬅️ [Back to Chapter 08: Sending Emails](./08-SendingEmails.md)
+- ⬅️ [Back to Chapter 13: Sending Emails](./13-SendingEmails.md)
 - 🏠 [Return to Main README](../README.md)
-- ➡️ [Proceed to Chapter 10: Deployment](./10-Deployment.md)
+- ➡️ [Proceed to Appendix A2: Deployment](./A2-Deployment.md)

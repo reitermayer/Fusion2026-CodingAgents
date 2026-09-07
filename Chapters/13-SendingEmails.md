@@ -1,4 +1,4 @@
-# Chapter 08: Sending Emails
+# Chapter 13: Sending Emails
 
 Your flow now reads an email, retrieves the real department directory, classifies against it, and pauses for a human when the case is sensitive. Then it stops and returns a JSON object to whoever called it.
 
@@ -22,11 +22,11 @@ Note where the email node sits: **after** the merge, not on one branch. Both pat
 
 > 💡 **Choose Your Starting Point:**
 >
-> **Mode 1: 🔄 Reset to the Chapter 07 End State**
+> **Mode 1: 🔄 Reset to the Chapter 12 End State**
 >
 > 💬 *Prompt your AI Coding Agent:*
 > ```text
-> Confirm we are at the Chapter 07 end state before starting Chapter 08. TutorialSolution/EmailTriage must validate and must contain the Triage AI Agent, the OrganizationIndex context node, a decision node branching on requiresEscalation, and a Quick Form task on the true branch. If a Gmail send-email node from an earlier run of this chapter is present, remove it and re-wire both branches straight to the End node.
+> Confirm we are at the Chapter 12 end state before starting Chapter 13. TutorialSolution/EmailTriage must validate and must contain the Triage AI Agent with the OrganizationIndex context node and the Query Entity Records tool, the confidence gate, the Quick Form task on its review branch, and the TriageDecision write nodes. If a Gmail send-email node from an earlier run of this chapter is present, remove it and re-wire both branches straight to the End node.
 > ```
 > 💻 *Underlying CLI Commands:*
 > ```bash
@@ -39,7 +39,7 @@ Note where the email node sits: **after** the merge, not on one branch. Both pat
 > ---
 >
 > **Mode 2: ⚡ 1-Shot Autonomous Fast-Track**
-> 💬 *Paste this master prompt into your coding assistant to execute the entire Chapter 08 in one turn:*
+> 💬 *Paste this master prompt into your coding assistant to execute the entire Chapter 13 in one turn:*
 > ```text
 > Make the EmailTriage flow act on its own triage result by sending a notification email:
 > 1. Find the Gmail connection available in my tenant and tell me which folder it lives in.
@@ -300,6 +300,6 @@ The flow is now autonomous end to end: it reads, retrieves, classifies, escalate
 ---
 
 ## 🔗 Navigation Links
-- ⬅️ [Back to Chapter 07: Human in the Loop](./07-HumanInTheLoop.md)
+- ⬅️ [Back to Chapter 12: V2 - The Precedent Tool and the Decision Gate](./12-V2-EarnedTrust.md)
 - 🏠 [Return to Main README](../README.md)
-- ➡️ [Proceed to Chapter 09: Receiving Emails](./09-ReceivingEmails.md)
+- ➡️ [Proceed to Chapter 14: V3 - The FAQ, the Reply Branch and the Planted Miss](./14-V3-AutoResolve.md)

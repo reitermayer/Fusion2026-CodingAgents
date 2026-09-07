@@ -1,4 +1,4 @@
-# Chapter 10: Deployment
+# Appendix A2: Deployment
 
 When building automations using **UiPath Solutions**, you publish and deploy entire systems (flows, inline agents, and the cloud resources they depend on) together as one unified bundle - not process by process. 
 
@@ -15,9 +15,9 @@ In this chapter, you will learn where and how your **`TutorialSolution`** is rep
 > ---
 >
 > **Mode 2: ⚡ 1-Shot Autonomous Fast-Track**
-> 💬 *Paste this master prompt into your coding assistant to execute the entire Chapter 10 in one turn:*
+> 💬 *Paste this master prompt into your coding assistant to execute the entire Appendix A2 in one turn:*
 > ```text
-> Perform the complete Chapter 10 deployment:
+> Perform the complete Appendix A2 deployment:
 > 1. Pack TutorialSolution into a deployable solution zip package version 1.0.0.
 > 2. Publish dist/TutorialSolution.1.0.0.zip to the tenant solution feed and list the available packages.
 > 3. Deploy the TutorialSolution package version 1.0.0 as a new deployment under the 'Shared' parent folder, and track the deployment until it finishes.
@@ -134,7 +134,7 @@ uip solution deploy status <pipeline-deployment-id>
 uip or processes list --folder-path "Shared/TutorialSolutionProd"
 ```
 
-> 💡 **This is the moment the Chapter 09 trigger goes live.** A deployed process brings its connector triggers with it: from now on an email arriving in the watched inbox starts a run on its own. Send one and watch `uip maestro flow instance list` for an instance you did not start - the end-to-end test Section 6.2 of Chapter 09 promised.
+> 💡 **This is the moment the Appendix A1 trigger goes live.** A deployed process brings its connector triggers with it: from now on an email arriving in the watched inbox starts a run on its own. Send one and watch `uip maestro flow instance list` for an instance you did not start - the end-to-end test Section 6.2 of Appendix A1 promised.
 
 ---
 
@@ -148,6 +148,5 @@ uip or processes list --folder-path "Shared/TutorialSolutionProd"
 ---
 
 ## 🔗 Navigation Links
-- ⬅️ [Back to Chapter 09: Receiving Emails](./09-ReceivingEmails.md)
+- ⬅️ [Back to Appendix A1: Receiving Emails](./A1-ReceivingEmails.md)
 - 🏠 [Return to Main README](../README.md)
-- ➡️ [Proceed to Chapter 11: Data Fabric - Recording Every Triage Decision](./11-DataFabric.md)

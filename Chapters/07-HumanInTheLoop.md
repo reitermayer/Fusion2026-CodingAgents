@@ -392,4 +392,4 @@ ReviewerNote       = "yes"
 ## 🔗 Navigation Links
 - ⬅️ [Back to Chapter 06: Storage Buckets & Context Grounding Indexes](./06-StorageBucketAndIndex.md)
 - 🏠 [Return to Main README](../README.md)
-- ➡️ [Proceed to Chapter 08: Sending Emails](./08-SendingEmails.md)
+- ➡️ [Proceed to Chapter 08: The Three-Phase Triage Design](./08-Triage3PhaseDesign.md)

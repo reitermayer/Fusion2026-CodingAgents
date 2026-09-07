@@ -1,6 +1,6 @@
-# Chapter 12: The Three-Phase Triage Design
+# Chapter 08: The Three-Phase Triage Design
 
-Chapter 11 gave the process a table to remember its decisions in. This chapter explains what to do with that memory. It is a design chapter: there is nothing to build here, and no prompt to paste. Read it once before Chapter 13, and come back to it whenever a later chapter's choice seems arbitrary. Every one of them is decided here.
+Chapter 07 left you with a triage flow that retrieves the department directory, proposes a department, and sends the sensitive cases to a human. This chapter explains where that flow goes next. It is a design chapter: there is nothing to build here, and no prompt to paste. Read it once before Chapter 09, and come back to it whenever a later chapter's choice seems arbitrary. Every one of them is decided here.
 
 The idea in one sentence: **an agentic process gets better when human decisions flow back into it, and the amount of autonomy it is allowed should grow only as far as those decisions justify.** You will build the same triage flow three times. Each version is trusted a little more than the last, and each time the trust is backed by rows in `TriageDecision`, not by a threshold somebody liked.
 
@@ -19,7 +19,7 @@ flowchart LR
 A common misreading of "the agent learns from feedback" is that the reviewer's clicks retrain the language model. They do not, and nothing in this tutorial changes a model weight. What changes is the **context** the model reasons over on each run:
 
 - **Static facts** stay in the Context Grounding index from Chapter 06: which departments exist, what each handles, which ones demand human review.
-- **Experience** accumulates in the `TriageDecision` entity from Chapter 11: which emails a human confirmed, which ones a human corrected, and why.
+- **Experience** accumulates in the `TriageDecision` entity you create in Chapter 09: which emails a human confirmed, which ones a human corrected, and why.
 - **Policy** lives in the flow graph: a decision node decides when the agent may act alone, and the rule for that is a visible expression, not a feeling inside a prompt.
 
 The model is the same in all three versions. It gets better because it is shown more, and it is allowed to do more because the table proves it has earned it.
@@ -27,14 +27,14 @@ The model is the same in all three versions. It gets better because it is shown 
 | Kind of memory | Where it lives | Changes when | Read by the agent as |
 | :--- | :--- | :--- | :--- |
 | Facts about the organization | `OrganizationIndex` (Chapter 06) | Operations edits the spreadsheet | Context resource |
-| Human decisions about emails | `TriageDecision` (Chapter 11) | Every review in Action Center | Tool call (Chapter 15) |
+| Human decisions about emails | `TriageDecision` (Chapter 09) | Every review in Action Center | Tool call (Chapter 12) |
 | The autonomy policy | The flow's decision node | You edit the flow between versions | Not read: enforced |
 
 ---
 
 ## 2. Two Fields That Carry the Design
 
-Before the phases, two fields from Chapter 11 need to be in front of you, because the whole design is the interplay between them.
+Before the phases, two fields of the `TriageDecision` entity (built in Chapter 09) need to be in front of you, because the whole design is the interplay between them.
 
 - **`Confidence`** is the agent's own number: how sure it is that the proposed department is right. The agent produces it on every run in every version.
 - **`Outcome`** is the verdict on that proposal, written by whichever branch of the flow finishes the run: `Approved`, `Modified` or `Denied` by a human, `Auto` or `AutoResolved` by the gate.
@@ -48,10 +48,13 @@ A confidence number an LLM makes up on its own is not calibrated: ask for "confi
 | Exactly one department fits **and** a human precedent exists for it | 95 to 100 |
 | Exactly one department fits, no precedent yet | 75 to 85 |
 | Two departments fit, or the email mixes topics, or precedents disagree | 50 to 74 |
+| The email mixes topics, but two consistent human precedents exist for this same case | 95 to 100 |
 | Nothing fits | below 50 |
 | The chosen department has `Human Review = Required` | never above 50 |
 
 Read the second row again. Without a human precedent the number never exceeds 85, and the gate you will build opens at 90. That single rule is what makes one flow behave as V1 when the table is empty and as V2 once it is not.
+
+The last row is the step-by-step part of "earned trust". One correction is not enough to let a mixed-topic email through: the reviewer sees it again in V2, and only when the second verdict agrees with the first does the case auto-route in V3. Trust is extended one phase at a time, and each step is backed by a row.
 
 ---
 
@@ -73,7 +76,7 @@ Two things make V1 feel purposeful instead of artificial:
 1. **The agent being right is the good outcome.** The scoreboard for V1 should read "9 reviews, 7 approved as proposed, 2 corrected". A high approval rate is the evidence that justifies V2. If the agent were wrong half the time, V2 could not relax anything.
 2. **The two corrections are where the reviewer actually works.** Their `Feedback` text is the payload the loop learns from. A batch of only clean emails gives you nine rubber stamps and nothing to mine, so the batch is composed deliberately (Section 6).
 
-**What you build:** Chapter 13 extends the Chapter 07 flow with a `Feedback` field on the Quick Form and a Data Fabric write on every outcome, including Deny. Chapter 14 builds the batch runner that feeds the nine emails through it.
+**What you build:** Chapter 10 extends the Chapter 07 flow with a `Feedback` field on the Quick Form and a Data Fabric write on every outcome, including Deny. Chapter 11 builds the batch runner that feeds the nine emails through it and the scoreboard that counts the result.
 
 ---
 
@@ -89,9 +92,9 @@ V2 changes two things. The agent gets a second source: the `TriageDecision` enti
 
 That second condition is the compliance floor from Chapter 07, and it belongs in the decision expression where everyone can read it, not only inside the prompt. Legal & Compliance and Trust & Safety never auto-route, in any version. It is why the escalation count in V3 is not zero, and it is the same lesson Chapter 07 taught with a spreadsheet column: the gate lives in the graph, not in the agent.
 
-Nothing else changes. Same flow, same tickets, same reviewer. Routine emails that were approved in V1 now go straight through; the ambiguous ones and the Required ones still reach the form. Expected: 4 of 9.
+Nothing else changes. Same flow, same tickets, same reviewer. Routine emails that were approved in V1 now go straight through; the ambiguous ones, corrected once, still reach the form for a second opinion; the Required ones always do. Expected: 4 of 9.
 
-**What you build:** Chapter 15 attaches the `Query Entity Records` tool to the agent, rewrites the prompt with the precedent and confidence rules, and adds the decision node. The chapter ends by proving from the execution trace, not from the output, that the tool was actually called.
+**What you build:** Chapter 12 attaches the `Query Entity Records` tool to the agent, rewrites the prompt with the precedent and confidence rules, and adds the decision node. The chapter ends by proving from the execution trace, not from the output, that the tool was actually called.
 
 ---
 
@@ -108,11 +111,11 @@ V3 is the only version that adds a branch. For some emails the agent no longer *
 
 1. **Knowledge to answer from.** The index today holds only the department directory; it can route but it cannot answer. V3 adds a short FAQ document to the `OrganizationData` bucket and re-ingests the index.
 2. **Two new agent outputs:** `canAutoResolve` (boolean) and `replyText` (string). The prompt rule: `true` only when the FAQ contains a direct answer to the *whole* request; `false` the moment the email also asks for an action - a refund, a reset, a deactivation.
-3. **A reply node** on the new branch: the Gmail send node from Chapter 08, carrying `replyText`.
+3. **A reply node** on the new branch: the Gmail send node from Chapter 13, carrying `replyText`.
 
-Expected: 2 to 3 of 9. The two Required emails are the floor and never go below it. The third is a planted miss: an email that looks like an FAQ question but also asks for something to be done. The agent answers it, and it should not have. That miss is the closing lesson of the whole tutorial, and you leave it in: **the review loop is never switched off.** Autonomy is extended in steps, each step is checked, and the check is never retired.
+Expected: 2 of 9, plus one wrong answer. The two Required emails are the floor and never go below it. The ambiguous ones now carry two agreeing human verdicts and auto-route. The extra row is a planted miss: an email that looks like an FAQ question but also asks for something to be done. The agent answers it, and it should not have. That miss is the closing lesson of the whole tutorial, and you leave it in: **the review loop is never switched off.** Autonomy is extended in steps, each step is checked, and the check is never retired.
 
-**What you build:** Chapter 16.
+**What you build:** Chapter 14.
 
 ---
 
@@ -122,11 +125,11 @@ The escalation curve is not a property of the flow alone. It is a property of th
 
 | Count | Kind | Example | V1 | V2 | V3 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| 5 | Routine, unambiguous | "Could you send me a copy of last month's invoice?" | review | auto | auto, or resolved from the FAQ |
-| 2 | Ambiguous, spans two departments | "We were charged twice, and our lawyer says this breaches the contract." | review, corrected | review | review |
+| 5 | Routine, unambiguous | "Where can I download the invoices for the last quarter?" | review | auto | auto, or resolved from the FAQ |
+| 2 | Ambiguous, spans two departments | "Sign-in through SSO has failed for the whole team since your latest release." | review, corrected | review, confirmed | auto |
 | 2 | `Human Review = Required` | A solicitor's letter. A phishing report. | review | review | review |
 
-Reading the columns: **V1 9, V2 4, V3 2 plus the planted miss.** The two ambiguous emails are where the reviewer's `Feedback` comes from in V1; the two Required ones are the floor in every column.
+Reading the columns: **V1 9, V2 4, V3 2 plus the planted miss.** The two ambiguous emails are where the reviewer's `Feedback` comes from in V1; the two Required ones are the floor in every column. The nine emails live in `Data/TriageBatch.csv` and are introduced in Chapter 11.
 
 The same nine emails, with the same `TicketId` values, run against every version. Never change the batch between versions: if the emails change, the curve measures the emails, not the flow.
 
@@ -142,7 +145,7 @@ Everything above reduces to one query. For each version, count rows in `TriageDe
 escalations(version) = Approved + Modified + Denied
 ```
 
-`Auto` and `AutoResolved` are the rows no human touched. The result of Part 2 is this count for V1, V2 and V3, side by side, together with the planted miss and the two Required rows that never moved. Chapter 17 builds it from `uip df records` and a filter; a Coded App version is an optional extra.
+`Auto` and `AutoResolved` are the rows no human touched. The result of Parts 4 to 6 is this count for V1, V2 and V3, side by side, together with the planted miss and the two Required rows that never moved. Chapter 11 builds it from `uip df records` and a filter, and every later phase ends by running it again.
 
 ---
 
@@ -150,11 +153,12 @@ escalations(version) = Approved + Modified + Denied
 
 | Chapter | Builds | Proves |
 | :--- | :--- | :--- |
-| 13 | V1: `Feedback` field, write on every outcome | Nine rows land in `TriageDecision`, every `Outcome` set |
-| 14 | The batch runner: a loop over nine emails invoking the flow | All nine tasks appear in Action Center; the reviewer works them once |
-| 15 | V2: Data Fabric tool, precedent prompt, decision node | Trace shows the tool call; escalations drop to 4 |
-| 16 | V3: FAQ in the index, `canAutoResolve`, reply branch | Escalations drop to 2, plus the planted miss |
-| 17 | The scoreboard | One query, three numbers |
+| 09 | The `TriageDecision` entity and its choice set | A row can be written and read back from the CLI |
+| 10 | V1: `Feedback` field, write on every outcome | Nine rows land in `TriageDecision`, every `Outcome` set |
+| 11 | The batch runner and the scoreboard | All nine tasks appear in Action Center; the reviewer works them once; the board reads 9 |
+| 12 | V2: Data Fabric tool, precedent prompt, decision node | Trace shows the tool call; the board reads 4 |
+| 13 | The Gmail send node | The flow can send mail, which V3 needs |
+| 14 | V3: FAQ in the index, `canAutoResolve`, reply branch | The board reads 2, plus the planted miss |
 
 ---
 
@@ -170,5 +174,6 @@ escalations(version) = Approved + Modified + Denied
 ---
 
 ## 🔗 Navigation Links
-- ⬅️ [Back to Chapter 11: Data Fabric - Recording Every Triage Decision](./11-DataFabric.md)
+- ⬅️ [Back to Chapter 07: Human in the Loop](./07-HumanInTheLoop.md)
 - 🏠 [Return to Main README](../README.md)
+- ➡️ [Proceed to Chapter 09: Data Fabric - Recording Every Triage Decision](./09-DataFabric.md)

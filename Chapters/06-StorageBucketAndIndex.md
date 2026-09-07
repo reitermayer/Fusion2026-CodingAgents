@@ -79,7 +79,7 @@ flowchart LR
 > Ground the EmailTriage agent in our real organization data:
 > 1. In Orchestrator, create a root folder named TutorialSolution that owns its own package feed.
 > 2. Inside that folder, create a storage bucket named OrganizationData.
-> 3. Upload Departments.xlsx from the tutorial project root into that bucket.
+> 3. Upload Data/Departments.xlsx from the tutorial repository into that bucket.
 > 4. Inside the same folder, create a context grounding index named OrganizationIndex backed by the OrganizationData bucket.
 > 5. Trigger ingestion on the index and poll until it reports a successful ingestion status. Do not continue while it is still running.
 > 6. Prove the index works by searching it for "Which department handles billing disputes?" and show me the snippet it returns.
@@ -235,7 +235,7 @@ The `buckets list` table gives you the `Key` column, a GUID like `6e3b8d15-2a74-
 
 ## 5. Uploading Departments.xlsx to the Bucket
 
-`Departments.xlsx` sits at the **root of the tutorial repository** (next to `README.md`), not inside `TutorialSolution/`. It is the subscription software company's real support routing table: eleven departments, each with a short description of what it handles.
+`Departments.xlsx` sits in the **`Data/` folder of the tutorial repository** (next to `README.md`), not inside `TutorialSolution/`. It is the subscription software company's real support routing table: eleven departments, each with a short description of what it handles.
 
 | Department Name | Handles | Human Review |
 | :--- | :--- | :--- |
@@ -272,7 +272,7 @@ Four separate teams collapse into the single string `Billing & Refunds` today. W
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
 ```text
-Upload Departments.xlsx from the tutorial project root into the OrganizationData bucket in the TutorialSolution folder, then list the bucket contents to confirm the file arrived with the right size and content type.
+Upload Data/Departments.xlsx from the tutorial repository into the OrganizationData bucket in the TutorialSolution folder, then list the bucket contents to confirm the file arrived with the right size and content type.
 ```
 
 ### 💻 Underlying CLI Commands (What the Agent Executes)
@@ -287,7 +287,7 @@ BUCKET_KEY=$(uip or buckets list --folder-path "TutorialSolution" --limit 200 \
 # 2. Upload the spreadsheet to the root of the bucket
 uip or bucket-files upload "$BUCKET_KEY" "Departments.xlsx" \
   --folder-path "TutorialSolution" \
-  --file ./Departments.xlsx
+  --file ./Data/Departments.xlsx
 
 # 3. Verify the file is really there
 uip or bucket-files list "$BUCKET_KEY" --folder-path "TutorialSolution" --output table
@@ -652,7 +652,7 @@ I updated Departments.xlsx. Re-upload it to the OrganizationData bucket, re-sync
 
 ```bash
 uip or bucket-files upload "$BUCKET_KEY" "Departments.xlsx" \
-  --folder-path "TutorialSolution" --file ./Departments.xlsx
+  --folder-path "TutorialSolution" --file ./Data/Departments.xlsx
 
 uip context-grounding ingest --index-name "OrganizationIndex" --folder-path "TutorialSolution"
 
@@ -669,7 +669,7 @@ No flow edit, no redeploy, no re-test of the agent. That is the whole point of g
 - [x] Installed the `@uipath/context-grounding-tool` CLI tool.
 - [x] Created a **root** Orchestrator folder (`TutorialSolution`) owning its own package feed (`--feed-type FolderHierarchy`).
 - [x] Created the `OrganizationData` storage bucket inside that folder and confirmed it is folder-scoped.
-- [x] Uploaded `Departments.xlsx` from the repository root and verified its size and content type in the bucket.
+- [x] Uploaded `Departments.xlsx` from the repository's `Data/` folder and verified its size and content type in the bucket.
 - [x] Created the `OrganizationIndex` over the bucket, and learned that **creating an index does not ingest anything**.
 - [x] Triggered ingestion, polled `last_ingestion_status` to a terminal state, and proved the index answers a real query.
 - [x] Attached the index to the inline agent through all three required pieces: the agent resource, the flow context node on the `context` handle, and the system prompt.

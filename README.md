@@ -87,27 +87,39 @@ Tutorial/
 │   ├── verify-dual-path.js                 <-- Automated linter for Dual-Path prompts
 │   └── pre-commit                          <-- Git pre-commit hook
 ├── Chapters/                                <-- Step-by-step tutorial modules
-│   ├── 01-CodingAgents.md                  <-- Coding Agent fundamentals & why uip is agent-friendly
-│   ├── 02-Setup.md                         <-- Setup, CLI install, 3 form factors & telemetry
-│   ├── 03-SolutionsAndProjects.md          <-- Solutions vs. legacy single projects & creating TutorialSolution
-│   ├── 04-BuildingFirstFlow.md              <-- Adding EmailTriage flow with an Autonomous Agent
-│   ├── 05-VariablesAndSchemas.md            <-- Multi-typed variables, complex JSON, namespacing & Update Variable
-│   ├── 06-StorageBucketAndIndex.md          <-- Orchestrator folders, storage buckets & Context Grounding indexes
-│   ├── 07-HumanInTheLoop.md                 <-- Decision gateways, Quick Form tasks & human approval checkpoints
-│   ├── 08-SendingEmails.md                  <-- Integration Service connections & the Gmail Send Email connector
-│   ├── 09-ReceivingEmails.md                <-- Gmail connector trigger, entry points & optional-chained bindings
-│   ├── 10-Deployment.md                     <-- Packaging, Cloud Solutions Management & Orchestrator deployment
-│   ├── 11-DataFabric.md                     <-- The TriageDecision entity: recording every decision in Data Fabric
-│   └── 12-Triage3PhaseDesign.md             <-- Part 2 design: V1 cold start, V2 earned trust, V3 auto-resolve
+│   ├── 01-CodingAgents.md                  <-- Part 1: Coding Agent fundamentals & why uip is agent-friendly
+│   ├── 02-Setup.md                         <-- Part 1: Setup, CLI install, 3 form factors & telemetry
+│   ├── 03-SolutionsAndProjects.md          <-- Part 1: Solutions vs. legacy single projects & creating TutorialSolution
+│   ├── 04-BuildingFirstFlow.md              <-- Part 1: Adding EmailTriage flow with an Autonomous Agent
+│   ├── 05-VariablesAndSchemas.md            <-- Part 1: Multi-typed variables, complex JSON, namespacing & Update Variable
+│   ├── 06-StorageBucketAndIndex.md          <-- Part 2: Orchestrator folders, storage buckets & Context Grounding indexes
+│   ├── 07-HumanInTheLoop.md                 <-- Part 2: Decision gateways, Quick Form tasks & human approval checkpoints
+│   ├── 08-Triage3PhaseDesign.md             <-- Part 3: V1 cold start, V2 earned trust, V3 auto-resolve
+│   ├── 09-DataFabric.md                     <-- Part 3: The TriageDecision entity: recording every decision in Data Fabric
+│   ├── 10-V1-WriteBack.md                   <-- Part 4: V1 - every review becomes a row
+│   ├── 11-BatchRunnerAndScoreboard.md       <-- Part 4: The nine-email batch and the escalation scoreboard
+│   ├── 12-V2-EarnedTrust.md                 <-- Part 5: V2 - the precedent tool and the decision gate
+│   ├── 13-SendingEmails.md                  <-- Part 6: Integration Service connections & the Gmail Send Email connector
+│   ├── 14-V3-AutoResolve.md                 <-- Part 6: V3 - the FAQ, the reply branch and the planted miss
+│   ├── A1-ReceivingEmails.md                <-- Appendix: Gmail connector trigger, entry points & optional-chained bindings
+│   └── A2-Deployment.md                     <-- Appendix: Packaging, Cloud Solutions Management & Orchestrator deployment
+├── Data/
+│   ├── Departments.xlsx                     <-- The department directory indexed in Chapter 06
+│   ├── TriageBatch.csv                      <-- The nine test emails every phase runs (Chapter 11)
+│   └── SupportFAQ.md                        <-- The knowledge base V3 answers from (Chapter 14)
 └── TutorialSolution/                        <-- Active student solution (gitignored)
     ├── TutorialSolution.uipx                <-- Parent Solution manifest
-    ├── EmailTriage/                         <-- Chapters 04 to 10 Email Triage flow
+    ├── EmailTriage/                         <-- Chapters 04 to 14 Email Triage flow
     └── resources/solution_folder/           <-- Declarative cloud resources
 ```
 
 ---
 
 ## 📚 Tutorial Chapters
+
+The tutorial has six parts. Parts 1 and 2 build the tooling and the baseline triage flow. Parts 3 to 6 turn that flow into a process that earns autonomy in three phases, measured by one scoreboard. The appendices cover production concerns that the phases do not need.
+
+### Part 1: Foundations
 
 1. **[Chapter 01: Coding Agents & UiPath CLI Architecture](./Chapters/01-CodingAgents.md)**
    - What are Coding Agents and how they differ from simple autocomplete/chat.
@@ -147,6 +159,8 @@ Tutorial/
    - Step Outputs (immutable) vs Flow Variables (mutable via "Update Variable").
    - Live cloud debug testing and inspecting structured agent JSON payloads.
 
+### Part 2: The Baseline Triage Agent
+
 6. **[Chapter 06: Storage Buckets & Context Grounding Indexes](./Chapters/06-StorageBucketAndIndex.md)**
    - Why hard-coding organizational knowledge into a system prompt does not survive a reorganization.
    - Installing the `@uipath/context-grounding-tool` CLI tool.
@@ -163,7 +177,41 @@ Tutorial/
    - The two output wiring styles (`completed` + `status` vs per-outcome handles) and the cached-definition trick behind the second.
    - Returning the reviewer's verdict as flow outputs, read by field `id` rather than by the `variable` alias.
 
-8. **[Chapter 08: Sending Emails](./Chapters/08-SendingEmails.md)**
+### Part 3: The Three-Phase Design
+
+8. **[Chapter 08: The Three-Phase Triage Design](./Chapters/08-Triage3PhaseDesign.md)**
+   - Nothing is trained: facts live in the index, experience in the entity, policy in the graph.
+   - V1 reviews everything to produce evidence, V2 auto-routes where a human precedent exists, V3 answers FAQ emails itself.
+   - Rule-based confidence instead of a self-reported percentage, the compliance floor that never auto-routes, and the planted miss.
+   - A fixed batch of nine emails composed backwards from the escalation curve, and the one-query scoreboard.
+
+9. **[Chapter 09: Data Fabric - Recording Every Triage Decision](./Chapters/09-DataFabric.md)**
+   - Why the learning loop needs a queryable entity rather than a log, and why it is named `TriageDecision` rather than "approvals".
+   - The eleven attributes and the two that carry the design: `Confidence` (the agent's opinion) vs. `Outcome` (the verdict).
+   - Creating the `TriageOutcome` choice set and the entity with `uip df`, verifying the schema with a JMESPath filter, and a write-read-delete round trip.
+
+### Part 4: V1 - Cold Start
+
+10. **[Chapter 10: V1 - Every Review Becomes a Row](./Chapters/10-V1-WriteBack.md)**
+   - Adding `confidence` and `reasoning` to the agent, and a `Feedback` field plus a third outcome to the Quick Form.
+   - Writing a `TriageDecision` row on every outcome, including Deny, with the Data Fabric connector node.
+   - Proving the write from the entity, not from the run status.
+
+11. **[Chapter 11: The Batch Runner and the Scoreboard](./Chapters/11-BatchRunnerAndScoreboard.md)**
+   - The nine emails in `Data/TriageBatch.csv` and why they are composed backwards from the curve.
+   - Running the batch from the command line with a phase number, reviewing nine tasks in Action Center.
+   - The scoreboard query: escalations per phase, and the first number: 9.
+
+### Part 5: V2 - Earned Trust
+
+12. **[Chapter 12: V2 - The Precedent Tool and the Decision Gate](./Chapters/12-V2-EarnedTrust.md)**
+   - Attaching `Query Entity Records` to the agent as a tool and proving the call from the execution trace.
+   - The precedent prompt and the rule-based confidence rubric.
+   - The gate: confidence above 90 and no Human Review floor. Rerun the batch: 4.
+
+### Part 6: V3 - Auto-Resolve
+
+13. **[Chapter 13: Sending Emails](./Chapters/13-SendingEmails.md)**
    - Why an Integration Service connection beats a credential in a flow variable.
    - Discovering the Gmail connection (`uip is connections list --all-folders`) and its connector key.
    - Connector nodes are **CLI-owned**: `uip maestro flow node add` then `node configure`, never hand-authored JSON.
@@ -171,7 +219,14 @@ Tutorial/
    - Placing the send after the branch merge so one template serves both paths.
    - Verifying the send by the returned Gmail message id and `SENT` label, not by the run status.
 
-9. **[Chapter 09: Receiving Emails](./Chapters/09-ReceivingEmails.md)**
+14. **[Chapter 14: V3 - The FAQ, the Reply Branch and the Planted Miss](./Chapters/14-V3-AutoResolve.md)**
+   - Adding `Data/SupportFAQ.md` to the bucket and re-ingesting the index.
+   - Two new agent outputs, `canAutoResolve` and `replyText`, and the reply branch that sends them.
+   - Rerun the batch: 2, plus the one the agent should not have answered.
+
+### Appendix
+
+- **[Appendix A1: Receiving Emails](./Chapters/A1-ReceivingEmails.md)**
    - Triggers are BPMN **start events** with `entryPointId`, so a flow can have several.
    - Keeping the manual trigger for testing while adding a Gmail trigger for production.
    - `registry get` on a trigger **requires `--connection-id`**; activities do not.
@@ -179,22 +234,11 @@ Tutorial/
    - Why two entry points break unguarded bindings (`400300 Cannot read property of null`) and how optional chaining fixes it.
    - Why a connector trigger cannot fire during `flow debug`, and what to test instead.
 
-10. **[Chapter 10: Deployment](./Chapters/10-Deployment.md)**
+- **[Appendix A2: Deployment](./Chapters/A2-Deployment.md)**
    - Solutions Management (Tenant Catalog) vs. Orchestrator execution engine.
    - Packaging the complete multi-project `TutorialSolution` into a `.zip` bundle (`uip solution pack`).
    - Publishing to the tenant solution feed (`uip solution publish`).
-   - Deploying and provisioning processes in Orchestrator folders (`uip solution deploy run`), where the Chapter 09 trigger goes live.
-
-11. **[Chapter 11: Data Fabric - Recording Every Triage Decision](./Chapters/11-DataFabric.md)**
-   - Why the learning loop needs a queryable entity rather than a log, and why it is named `TriageDecision` rather than "approvals".
-   - The eleven attributes and the two that carry the design: `Confidence` (the agent's opinion) vs. `Outcome` (the verdict).
-   - Creating the `TriageOutcome` choice set and the entity with `uip df`, verifying the schema with a JMESPath filter, and a write-read-delete round trip.
-
-12. **[Chapter 12: The Three-Phase Triage Design](./Chapters/12-Triage3PhaseDesign.md)**
-   - Nothing is trained: facts live in the index, experience in the entity, policy in the graph.
-   - V1 reviews everything to produce evidence, V2 auto-routes where a human precedent exists, V3 answers FAQ emails itself.
-   - Rule-based confidence instead of a self-reported percentage, the compliance floor that never auto-routes, and the planted miss.
-   - A fixed batch of nine emails composed backwards from the escalation curve, and the one-query scoreboard.
+   - Deploying and provisioning processes in Orchestrator folders (`uip solution deploy run`), where the Appendix A1 trigger goes live.
 
 ---
 

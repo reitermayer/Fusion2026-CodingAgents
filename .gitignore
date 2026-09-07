@@ -12,3 +12,8 @@ dist_*/
 .DS_Store
 *.log
 node_modules/
+
+# Private working files (Studio Web exports, answer-key spreadsheet): never publish
+MySolution/
+Workshop/
+Departments_with_triage_examples.xlsx

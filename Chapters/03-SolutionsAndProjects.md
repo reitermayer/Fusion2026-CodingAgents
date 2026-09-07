@@ -17,7 +17,7 @@ flowchart TD
             P2["📁 <b>EmailTriage</b> (Email Triage Flow, Agent, Grounding & Gmail)"]
         end
 
-        subgraph Ch10 ["Chapter 10: Packaging & Deployment"]
+        subgraph Appendix A2 ["Appendix A2: Packaging & Deployment"]
             P4["📦 <b>Packed .uipx solution</b> published to Orchestrator"]
         end
 
@@ -26,7 +26,7 @@ flowchart TD
         end
     end
 
-    SolutionRoot --> Ch03 & Ch0409 & Ch10 & Res
+    SolutionRoot --> Ch03 & Ch0409 & Appendix A2 & Res
 ```
 
 > 💡 **Choose Your Starting Point:**

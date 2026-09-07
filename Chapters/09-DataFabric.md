@@ -1,8 +1,8 @@
-# Chapter 11: Data Fabric - Recording Every Triage Decision
+# Chapter 09: Data Fabric - Recording Every Triage Decision
 
 Chapters 03 to 10 built a triage flow that classifies an email, asks a human when the department demands it, and returns the reviewer's verdict as flow outputs. Then the run ends, and the verdict is gone. The next email starts from zero. A reviewer who corrects the same mistake ten times has taught the process nothing.
 
-In this chapter you give the process a memory. Every decision the flow makes - by the agent alone or by a human - is written to a **Data Fabric entity** named `TriageDecision`. Part 2 of this tutorial (Chapters 12 onward) is built on that table: the agent reads earlier decisions back as precedent, a scoreboard counts how often a human had to step in, and the count goes down from one version of the flow to the next.
+In this chapter you give the process a memory. Every decision the flow makes - by the agent alone or by a human - is written to a **Data Fabric entity** named `TriageDecision`. Parts 4 to 6 of this tutorial (Chapters 10 to 14) are built on that table: the agent reads earlier decisions back as precedent, a scoreboard counts how often a human had to step in, and the count goes down from one version of the flow to the next.
 
 ```mermaid
 flowchart LR
@@ -30,7 +30,7 @@ flowchart LR
 >
 > 💬 *Prompt your AI Coding Agent:*
 > ```text
-> Prepare a clean baseline for Chapter 11. If a Data Fabric entity named TriageDecision exists, delete it, and if a choice set named TriageOutcome exists, delete it too. Delete the entity before the choice set, because the entity's Outcome field references the choice set. Skip anything that does not exist rather than failing, and finish by listing entities and choice sets so I can see that neither remains. Do not touch any other entity, and do not touch the EmailTriage flow.
+> Prepare a clean baseline for Chapter 09. If a Data Fabric entity named TriageDecision exists, delete it, and if a choice set named TriageOutcome exists, delete it too. Delete the entity before the choice set, because the entity's Outcome field references the choice set. Skip anything that does not exist rather than failing, and finish by listing entities and choice sets so I can see that neither remains. Do not touch any other entity, and do not touch the EmailTriage flow.
 > ```
 > 💻 *Underlying CLI / Shell Commands:*
 > ```bash
@@ -41,22 +41,22 @@ flowchart LR
 > # 2. The entity first - it references the choice set
 > ENTITY_ID=$(uip df entities list --output plain \
 >   --output-filter "[?Name=='TriageDecision'].Id | [0]")
-> uip df entities delete "$ENTITY_ID" --yes --reason "Chapter 11 reset: clean baseline"
+> uip df entities delete "$ENTITY_ID" --yes --reason "Chapter 09 reset: clean baseline"
 >
 > # 3. Then the choice set
 > CHOICE_SET_ID=$(uip df choice-sets list --output plain \
 >   --output-filter "[?Name=='TriageOutcome'].Id | [0]")
-> uip df choice-sets delete "$CHOICE_SET_ID" --yes --reason "Chapter 11 reset: clean baseline"
+> uip df choice-sets delete "$CHOICE_SET_ID" --yes --reason "Chapter 09 reset: clean baseline"
 > ```
 >
-> *Both deletes refuse to run without `--yes` and a `--reason`: they are irreversible, the reason is recorded, and `entities delete` takes the records with it. In this chapter the entity is empty, so nothing is lost. From Chapter 13 on, it holds the evidence for the whole learning loop: reset the entity only when you mean to restart the loop.*
+> *Both deletes refuse to run without `--yes` and a `--reason`: they are irreversible, the reason is recorded, and `entities delete` takes the records with it. In this chapter the entity is empty, so nothing is lost. From Chapter 10 on, it holds the evidence for the whole learning loop: reset the entity only when you mean to restart the loop.*
 >
 > > 💡 **Tip:** Neither `--yes` nor `--reason` is listed by `uip df entities delete --help` or `uip df choice-sets delete --help`; the command only asks for them when you run it without. That is why the block above carries both. And a reset changes every id: the choice set and the entity you create next get **new** ids, so the `<CHOICE_SET_ID>` in Section 5 must come from *this* run of Section 4, never from an earlier one.
 >
 > ---
 >
 > **Mode 2: ⚡ 1-Shot Autonomous Fast-Track**
-> 💬 *Paste this master prompt into your coding assistant to execute the entire Chapter 11 in one turn:*
+> 💬 *Paste this master prompt into your coding assistant to execute the entire Chapter 09 in one turn:*
 > ```text
 > Give the EmailTriage process a memory of its decisions in Data Fabric:
 > 1. Create a tenant-level choice set named TriageOutcome with exactly five values: Auto, Approved, Modified, Denied, AutoResolved.
@@ -76,7 +76,7 @@ flowchart LR
 
 The Quick Form in Chapter 07 already tells you what the reviewer decided. The job log tells you too. So why write it somewhere else?
 
-Because in Part 2 the decision is **read back by the agent** on the next run. A log is written to be read by people, after the fact. A Data Fabric entity is written to be queried by a process, at runtime, with a filter: "show me every earlier email that a human routed to Legal & Compliance". Chapter 12 explains what the agent does with that answer. This chapter makes sure the answer exists.
+Because from Chapter 12 on the decision is **read back by the agent** on the next run. A log is written to be read by people, after the fact. A Data Fabric entity is written to be queried by a process, at runtime, with a filter: "show me every earlier email that a human routed to Legal & Compliance". Chapter 08 explains what the agent does with that answer. This chapter makes sure the answer exists.
 
 | Store | Who reads it | Filterable by department, phase, outcome? | Survives the run? |
 | :--- | :--- | :--- | :--- |
@@ -92,10 +92,10 @@ Data Fabric is UiPath's managed record store: entities with typed fields, choice
 
 The obvious name for this table is something like "approvals": the reviewer approves the agent's proposal, and you record it. That name would be wrong in two ways, and the reasons are worth a minute because they shape the whole schema.
 
-- **Most rows will not involve a human.** From Chapter 15 on, the agent routes routine emails on its own and still writes a row. Those rows record an *absence* of human approval.
+- **Most rows will not involve a human.** From Chapter 12 on, the agent routes routine emails on its own and still writes a row. Those rows record an *absence* of human approval.
 - **A denial is not an approval.** When the reviewer clicks Deny, that decision must be recorded too - it is the strongest signal the loop can learn from.
 
-What the table actually holds is *every decision the process made about an email, whoever made it*. So the entity is called **`TriageDecision`**, singular, as Data Fabric entities conventionally are. One entity serves all three phases; a `Phase` column says which phase of the design (1, 2 or 3) wrote the row. Do not create `TriageDecisionV1`, `V2`, `V3`: the scoreboard in Chapter 17 is one query grouped by `Phase`, and three tables would turn it into three queries and a spreadsheet.
+What the table actually holds is *every decision the process made about an email, whoever made it*. So the entity is called **`TriageDecision`**, singular, as Data Fabric entities conventionally are. One entity serves all three phases; a `Phase` column says which phase of the design (1, 2 or 3) wrote the row. Do not create `TriageDecisionV1`, `V2`, `V3`: the scoreboard in Chapter 11 is one query grouped by `Phase`, and three tables would turn it into three queries and a spreadsheet.
 
 ---
 
@@ -111,7 +111,7 @@ One is an opinion, the other is what was done with it. Both are written on every
 | Field | Type | Required | Written by | Why it exists |
 | :--- | :--- | :--- | :--- | :--- |
 | `TicketId` | Text (20) | yes | the batch runner | The same test emails are run in every phase. Without a stable key you cannot compare ticket T04 in phase 1 with T04 in phase 2. |
-| `Phase` | Decimal, 0 places | yes | the flow input | Which phase of the design wrote the row: `1`, `2` or `3` (Chapter 12). The scoreboard groups by this. |
+| `Phase` | Decimal, 0 places | yes | the flow input | Which phase of the design wrote the row: `1`, `2` or `3` (Chapter 08). The scoreboard groups by this. |
 | `EmailBody` | Multiline text (10000) | yes | the trigger | The input the decision was made on, kept verbatim so a precedent can be compared with a new email. |
 | `ProposedDepartment` | Text (200) | yes | the agent | What the agent suggested, always, even when a human overrode it. |
 | `Department` | Text (200) | yes | the writing branch | The *final* department. Equals `ProposedDepartment` unless the reviewer chose Modify. |
@@ -120,7 +120,7 @@ One is an opinion, the other is what was done with it. Both are written on every
 | `HumanReviewRequired` | Boolean | no | the agent | The `Human Review` column of the department directory, copied at decision time. Makes the compliance floor from Chapter 07 visible in the data. |
 | `Reasoning` | Multiline text (10000) | no | the agent | Why the agent chose the department, including which precedent it relied on. |
 | `Feedback` | Multiline text (2000) | no | the reviewer | Free text entered on Modify or Deny. This is the field the loop learns from. |
-| `ReplyText` | Multiline text (5000) | no | the agent (Chapter 16) | The answer the agent sent when it resolved the email without routing it. Empty until then. |
+| `ReplyText` | Multiline text (5000) | no | the agent (Chapter 14) | The answer the agent sent when it resolved the email without routing it. Empty until then. |
 
 The `Outcome` values, and what each one means for the learning loop:
 
@@ -130,9 +130,9 @@ The `Outcome` values, and what each one means for the learning loop:
 | `Modified` | human | Corrects the proposal. **The strongest evidence**: a later run must follow the correction. |
 | `Denied` | human | The email should not have been routed at all. Also evidence. |
 | `Auto` | the gate | The agent routed it alone. **Not evidence**: nobody checked. |
-| `AutoResolved` | the gate | The agent answered the email itself (Chapter 16). Not evidence either. |
+| `AutoResolved` | the gate | The agent answered the email itself (Chapter 14). Not evidence either. |
 
-> 💡 **Why `Auto` is not evidence.** If the agent could cite its own unreviewed routings as precedent, it would talk itself into ever higher confidence with no human ever in the loop. The rule that only `Approved` and `Modified` rows count as precedent is what keeps the autonomy *earned*. Chapter 12 builds on exactly this distinction.
+> 💡 **Why `Auto` is not evidence.** If the agent could cite its own unreviewed routings as precedent, it would talk itself into ever higher confidence with no human ever in the loop. The rule that only `Approved` and `Modified` rows count as precedent is what keeps the autonomy *earned*. Chapter 08 builds on exactly this distinction.
 
 Two fields you might expect and will not find: a reviewer name, because the system field `CreatedBy` records the flow's identity rather than the person who actioned the task (add `ReviewedBy` yourself if you need it), and a timestamp, because `CreateTime` is a system field on every entity.
 
@@ -168,7 +168,7 @@ uip df choice-sets list-values <CHOICE_SET_ID> --limit 100 --output table \
   --output-filter "Items[*].{Order:NumberId,Name:Name,Display:DisplayName}"
 ```
 
-> 💡 **Tip:** A choice set is tenant-level unless you pass `--folder-key`. Keep both the choice set and the entity at tenant level for this tutorial: the flow runs in one folder during debug and in another after deployment (Chapter 10), and a folder-scoped entity is only visible in its own folder.
+> 💡 **Tip:** A choice set is tenant-level unless you pass `--folder-key`. Keep both the choice set and the entity at tenant level for this tutorial: the flow runs in one folder during debug and in another after deployment (Appendix A2), and a folder-scoped entity is only visible in its own folder.
 
 ---
 
@@ -224,10 +224,10 @@ EOF
 uip df entities create TriageDecision --file triage-decision.entity.json --output json
 ```
 
-> ⚠️ **Field names are permanent.** Data Fabric lets you add and remove fields later with `uip df entities update`, but removing a field deletes its data and the command demands `--yes` plus a `--reason`. Renaming is remove-plus-add. Get the names right now: every flow node in Part 2 binds to them by name.
+> ⚠️ **Field names are permanent.** Data Fabric lets you add and remove fields later with `uip df entities update`, but removing a field deletes its data and the command demands `--yes` plus a `--reason`. Renaming is remove-plus-add. Get the names right now: every flow node in Chapters 10 to 14 binds to them by name.
 
 > 💡 **Two things the CLI will refuse, and why the definition above looks the way it does.** Both are verified behavior, not style:
-> - **`Version` is a reserved name.** So are `Id`, `CreatedBy`, `CreateTime`, `UpdatedBy`, `UpdateTime` and `RecordOwner`, case-insensitively: the platform owns them as system fields. The create call fails with `Field name 'Version' is reserved`. The column is called `Phase` instead, which also says what it means: which of the three phases of Chapter 12 wrote the row.
+> - **`Version` is a reserved name.** So are `Id`, `CreatedBy`, `CreateTime`, `UpdatedBy`, `UpdateTime` and `RecordOwner`, case-insensitively: the platform owns them as system fields. The create call fails with `Field name 'Version' is reserved`. The column is called `Phase` instead, which also says what it means: which of the three phases of Chapter 08 wrote the row.
 > - **`INTEGER` is accepted by the server but broken in the UI.** The CLI rejects it with a clear message: the Data Fabric UI cannot render, filter or edit an `INTEGER` column (the same applies to `BIG_INTEGER`, `FLOAT`, `DOUBLE`, `UUID` and `DATETIME`). A whole number is a `DECIMAL` with `decimalPrecision: 0`.
 
 ---
@@ -258,12 +258,12 @@ You should see your eleven fields plus six system fields (`Id`, `CreateTime`, `C
 
 ## 7. A Round Trip From the CLI
 
-Before any flow writes to the entity, prove that a record can be written and read back from the command line. This is also the pattern the scoreboard in Chapter 17 uses to query decisions, so it is worth seeing once in isolation.
+Before any flow writes to the entity, prove that a record can be written and read back from the command line. This is also the pattern the scoreboard in Chapter 11 uses to query decisions, so it is worth seeing once in isolation.
 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
 ```text
-Insert one test record into TriageDecision: TicketId T00, Phase 0, EmailBody "Test record from Chapter 11", ProposedDepartment and Department both "Billing Operations", Outcome Approved, Confidence 80, HumanReviewRequired false. List the records to prove it is there and show me the Outcome value as stored. Then delete that record by id and list again to prove the entity is empty.
+Insert one test record into TriageDecision: TicketId T00, Phase 0, EmailBody "Test record from Chapter 09", ProposedDepartment and Department both "Billing Operations", Outcome Approved, Confidence 80, HumanReviewRequired false. List the records to prove it is there and show me the Outcome value as stored. Then delete that record by id and list again to prove the entity is empty.
 ```
 
 ### 💻 Underlying CLI Commands (What the Agent Executes)
@@ -278,7 +278,7 @@ ENTITY_ID=$(uip df entities list --output plain \
 RECORD_ID=$(uip df records insert "$ENTITY_ID" --body '{
   "TicketId": "T00",
   "Phase": 0,
-  "EmailBody": "Test record from Chapter 11",
+  "EmailBody": "Test record from Chapter 09",
   "ProposedDepartment": "Billing Operations",
   "Department": "Billing Operations",
   "Outcome": 1,
@@ -292,17 +292,17 @@ uip df records list "$ENTITY_ID" --limit 100 --output table \
   --output-filter "Items[*].{Ticket:TicketId,Phase:Phase,Dept:Department,Outcome:Outcome,Conf:Confidence}"
 
 # 3. Clean up with the captured id, then prove the entity is empty: this must print 0
-uip df records delete "$ENTITY_ID" "$RECORD_ID" --yes --reason "Chapter 11 round-trip test record"
+uip df records delete "$ENTITY_ID" "$RECORD_ID" --yes --reason "Chapter 09 round-trip test record"
 uip df records list "$ENTITY_ID" --limit 100 --output plain --output-filter "length(Items)"
 ```
 
-The last command must print `0`. If it prints `1`, the delete did not run: repeat step 3 before moving on, because Chapter 13 starts from an empty entity and a stray test row would be the first "precedent" the agent ever sees.
+The last command must print `0`. If it prints `1`, the delete did not run: repeat step 3 before moving on, because Chapter 10 starts from an empty entity and a stray test row would be the first "precedent" the agent ever sees.
 
-> 💡 **Phase `0` is reserved for tests.** Real rows carry phase `1`, `2` or `3`. The scoreboard in Chapter 17 counts only those, so a test row that slips through can never change a result - but do not rely on that: delete it.
+> 💡 **Phase `0` is reserved for tests.** Real rows carry phase `1`, `2` or `3`. The scoreboard in Chapter 11 counts only those, so a test row that slips through can never change a result - but do not rely on that: delete it.
 
-> ⚠️ **A choice value is a number on the wire.** `Outcome` is written as the value's `NumberId` from Section 4 (`Auto` = 0, `Approved` = 1, `Modified` = 2, `Denied` = 3, `AutoResolved` = 4) and comes back the same way: the record above lists `"Outcome": 1`, not `"Approved"`. Writing the name fails with `Single choiceset value Approved is not integer`. Every flow node in Chapter 13 that writes `Outcome`, and the scoreboard in Chapter 17 that reads it, works with these numbers. Verified behavior.
+> ⚠️ **A choice value is a number on the wire.** `Outcome` is written as the value's `NumberId` from Section 4 (`Auto` = 0, `Approved` = 1, `Modified` = 2, `Denied` = 3, `AutoResolved` = 4) and comes back the same way: the record above lists `"Outcome": 1`, not `"Approved"`. Writing the name fails with `Single choiceset value Approved is not integer`. Every flow node in Chapter 10 that writes `Outcome`, and the scoreboard in Chapter 11 that reads it, works with these numbers. Verified behavior.
 
-> 💡 **Tip:** `records list` returns a page of up to 100 rows and a cursor. The scoreboard never needs more than that for a tutorial batch, but a production loop would filter with `records query` rather than paging through everything - the agent tool in Chapter 15 does exactly that.
+> 💡 **Tip:** `records list` returns a page of up to 100 rows and a cursor. The scoreboard never needs more than that for a tutorial batch, but a production loop would filter with `records query` rather than paging through everything - the agent tool in Chapter 12 does exactly that.
 
 ---
 
@@ -317,6 +317,6 @@ The last command must print `0`. If it prints `1`, the delete did not run: repea
 ---
 
 ## 🔗 Navigation Links
-- ⬅️ [Back to Chapter 10: Deployment](./10-Deployment.md)
+- ⬅️ [Back to Chapter 08: The Three-Phase Triage Design](./08-Triage3PhaseDesign.md)
 - 🏠 [Return to Main README](../README.md)
-- ➡️ [Proceed to Chapter 12: The Three-Phase Triage Design](./12-Triage3PhaseDesign.md)
+- ➡️ [Proceed to Chapter 10: V1 - Every Review Becomes a Row](./10-V1-WriteBack.md)
