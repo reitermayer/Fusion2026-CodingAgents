@@ -1,0 +1,27 @@
+SUPPORT FAQ
+
+Short answers to the questions our support desk receives most often. Each answer is complete on its own; if a request also asks for something to be done on the account, that part still needs a person.
+
+Q: Where can I download my invoices?
+
+All invoices are available as PDF in the customer portal. Sign in, open Billing in the left menu, then Invoices. Every invoice issued for the account is listed there and can be downloaded individually or as a single archive per year. Invoices remain available for seven years.
+
+Q: When does my subscription renew?
+
+The renewal date is shown in the customer portal under Billing, then Plan. It is the "Next renewal" date at the top of the page. Annual plans renew on the anniversary of the original order date, and the renewal invoice is issued 30 days before that date.
+
+Q: How do I update the payment card on my account?
+
+Go to Billing, then Payment method, and choose Replace card. The new card is used for the next invoice. The previous card is removed once the change is saved.
+
+Q: I forgot my password. How do I reset it?
+
+Use the Forgot password link on the sign-in page. A reset link is sent to the email address of the account and is valid for one hour. If the email does not arrive, check the spam folder before requesting a new link.
+
+Q: Is there a service outage right now?
+
+Current platform status and any ongoing incidents are published on the status page linked from the sign-in screen. You can subscribe to the page to receive email updates during an incident.
+
+Q: Where can I find the release notes?
+
+Release notes for every version are published under Help, then What's new, in the customer portal. Each entry lists the changes and any action customers need to take.

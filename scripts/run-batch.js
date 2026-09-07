@@ -92,7 +92,7 @@ function runOne(t) {
 }
 
 function uipJson(argv) {
-  const out = execFileSync('uip', argv, { encoding: 'utf8', shell: process.platform === 'win32', stdio: ['ignore', 'pipe', 'ignore'] });
+  const out = execFileSync('uip', argv, { encoding: 'utf8', shell: process.platform === 'win32', stdio: ['ignore', 'pipe', 'ignore'], timeout: 60000 });
   const lines = out.split(/\r?\n/);
   const start = lines.findIndex(l => l.trim() === '{');
   return JSON.parse(lines.slice(start).join('\n'));
@@ -130,7 +130,8 @@ async function startStaggered(t, known) {
     const ids = instanceIds();
     if (ids === null) { console.log(`  ${t.TicketId}: could not read the instance list, continuing after a fixed wait`); await sleep(50000); return promise; }
     const fresh = [...ids].filter(id => !known.has(id));
-    if (fresh.length) { fresh.forEach(id => known.add(id)); console.log(`  ${t.TicketId}: instance ${fresh[0]} started`); return promise; }
+    if (fresh.length) { fresh.forEach(id => known.add(id)); console.log(`  ${t.TicketId}: instance ${fresh[0]} started (${Math.round((Date.now() + 180000 - deadline) / 1000)} s)`); return promise; }
+    process.stdout.write('.');
   }
   console.log(`  ${t.TicketId}: no new instance after 3 minutes (the upload probably failed), starting the next one anyway`);
   return promise;

@@ -106,7 +106,7 @@ Tutorial/
 ├── Data/
 │   ├── Departments.xlsx                     <-- The department directory indexed in Chapter 06
 │   ├── TriageBatch.csv                      <-- The nine test emails every phase runs (Chapter 11)
-│   └── SupportFAQ.md                        <-- The knowledge base V3 answers from (Chapter 14)
+│   └── SupportFAQ.txt                        <-- The knowledge base V3 answers from (Chapter 14)
 └── TutorialSolution/                        <-- Active student solution (gitignored)
     ├── TutorialSolution.uipx                <-- Parent Solution manifest
     ├── EmailTriage/                         <-- Chapters 04 to 14 Email Triage flow
@@ -220,7 +220,7 @@ The tutorial has six parts. Parts 1 and 2 build the tooling and the baseline tri
    - Verifying the send by the returned Gmail message id and `SENT` label, not by the run status.
 
 14. **[Chapter 14: V3 - The FAQ, the Reply Branch and the Planted Miss](./Chapters/14-V3-AutoResolve.md)**
-   - Adding `Data/SupportFAQ.md` to the bucket and re-ingesting the index.
+   - Adding `Data/SupportFAQ.txt` to the bucket and re-ingesting the index.
    - Two new agent outputs, `canAutoResolve` and `replyText`, and the reply branch that sends them.
    - Rerun the batch: 2, plus the one the agent should not have answered.
 
