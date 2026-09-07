@@ -1,6 +1,6 @@
 # Coding Agents with UiPath CLI Tutorial
 
-This repository provides a hands-on tutorial on using **Coding Agents** integrated with the **UiPath CLI (`uip`)**. See [STATUS.md](./STATUS.md) for where the tutorial stands against the Fusion Triage Lab plan.
+This repository provides a hands-on tutorial on using **Coding Agents** integrated with the **UiPath CLI (`uip`)**.
 
 ### 🤖 What is a Coding Agent?
 A **Coding Agent** is an autonomous, tool-augmented AI pair programmer capable of reasoning over complex codebases, planning multi-step implementations, executing terminal commands, inspecting file systems, and building or debugging software directly within the developer's workspace.
@@ -81,7 +81,6 @@ Follow the step-by-step numbered sections. For each step:
 Tutorial/
 ├── README.md                               <-- Master syllabus & learning paradigm guide
 ├── WORKSHOP.md                             <-- Running the triage lab in two 45-minute blocks: timings, recordings, fast paths
-├── STATUS.md                               <-- Coverage status against the Fusion Triage Lab plan
 ├── .gitignore                               <-- Excludes ./TutorialSolution/ and build outputs
 ├── AGENTS.md / CLAUDE.md                   <-- AI Coding Agent rules and formatting standards
 ├── scripts/
