@@ -136,7 +136,9 @@ Personal workspace folder: <your workspace key>
 All 9 run(s) started after 550 s. Review the tasks in Action Center; the summary prints when the last run completes.
 ```
 
-Each upload takes about a minute, so the ninth **Triage Review** task appears in your Action Center inbox roughly nine minutes after the start. You can begin reviewing as soon as the first one shows up. The command keeps waiting until the last task is actioned.
+Each upload takes about a minute on a quiet tenant and up to ten on a busy one, so the tasks arrive one by one. Review each **Triage Review** task as soon as it shows up (see the 35-minute warning above). The command keeps waiting until the last task is actioned.
+
+> ⚠️ **A paused debug run lives about 35 minutes.** Verified on five runs: a run still waiting on its Triage Review task 35 minutes after it started was cancelled by the platform (the form element shows `Terminated`, the run `Cancelled`), the task stayed in the inbox as an orphan, and actioning it afterwards wrote nothing. So the review is not something to do after the batch: **review each task as soon as it appears**, while the later uploads are still running. Nine tasks reviewed on arrival take a few minutes; nine tasks left for later are nine cancelled runs. A cancelled ticket is simply re-run: `node scripts/run-batch.js --phase 1 --tickets T06,T08`.
 
 > ⚠️ **`flow debug` stops waiting after ten minutes unless told otherwise.** The command polls the run for 600 seconds by default, then returns `Debug polling timed out after 600s` as a failure while the run itself keeps waiting on its task. A reviewer who takes a coffee break turns every open ticket into a red line in the summary. The runner therefore passes `--timeout 43200`; do the same whenever you start a run that pauses on a form.
 

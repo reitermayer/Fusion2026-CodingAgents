@@ -257,7 +257,7 @@ What proves the chapter: T01's element list contains `sendReply1` and `createEnt
 node scripts/run-batch.js --phase 3
 ```
 
-What to expect, and what to press:
+What to expect, and what to press: Review each task as soon as it appears; a run left waiting about 35 minutes is cancelled (Chapter 11).
 
 | Tickets | Expected path | What to press |
 | :--- | :--- | :--- |

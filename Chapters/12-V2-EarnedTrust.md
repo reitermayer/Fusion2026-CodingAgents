@@ -281,7 +281,7 @@ Run node scripts/run-batch.js --phase 2 from the repository root and tell me whe
 node scripts/run-batch.js --phase 2
 ```
 
-What to expect in Action Center, and what to press:
+What to expect in Action Center, and what to press: Review each task as soon as it appears; a run left waiting about 35 minutes is cancelled (Chapter 11).
 
 | Tickets | Why they still arrive | What to press |
 | :--- | :--- | :--- |

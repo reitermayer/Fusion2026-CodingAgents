@@ -295,6 +295,10 @@ Based on hands-on developer experience with the UiPath CLI (`uip`) and Coding Ag
 10. **Small `uip df` Papercuts:**
    - `Version` is a reserved field name but the error only appears at create time; `INTEGER` fields are accepted and then cannot be rendered in the UI (use `DECIMAL` with precision 0); `records delete`, `entities delete` and `choice-sets delete` require `--yes --reason` that `--help` does not list; list commands reject `--output-filter` unless `--limit` is given, and then wrap rows in `Items[*]`; choice values are written and read as `NumberId` integers, not names.
 
+11. **A Debug Run Waiting on a Human Task Is Cancelled After About 35 Minutes:**
+   - **Current Behavior:** Verified on five `uip maestro flow debug` runs paused on a Quick Form: 35 minutes after the run started, the platform cancelled it (form element `Terminated`, run `Cancelled`), left the task pending in Action Center as an orphan, and actioning the task afterwards did nothing. Combined with suggestion 6 (no way to complete a task from the CLI) this means a HITL flow can only be tested from the CLI with a person standing by. The CLI's own `--timeout` does not change the platform's limit.
+   - **Improvement:** Document the debug-instance lifetime, make it configurable, or at least have `flow debug` report it (the run's `finalStatus: Cancelled` arrives with no reason). Better: let a debug run outlive the polling session when a human task is open.
+
 ---
 
 ## ❓ Frequently Asked Questions (Q&A)

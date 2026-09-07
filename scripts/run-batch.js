@@ -146,6 +146,7 @@ function summarize(r) {
     const d = JSON.parse(lines.slice(start).join('\n'));
     const D = d.Data || d;
     status = D.finalStatus || d.Result || status;
+    if (status === 'Cancelled') error = 'run cancelled by the platform (task not actioned within ~35 min?)';
     const g = (D.variables && D.variables.globals) || {};
     category = g.category ?? '';
     confidence = g.confidence ?? '';
@@ -159,6 +160,7 @@ function summarize(r) {
 
 (async () => {
   console.log(`Phase ${phase}: starting ${tickets.length} run(s) of ${project}, one upload at a time. Each run waits on its Triage Review task until it is actioned in Action Center.`);
+  console.log('Keep Action Center open: a run whose task is not actioned within about 35 minutes of its start is cancelled by the platform.');
   const t0 = Date.now();
   if (!folderKey) folderKey = detectFolderKey();
   console.log(folderKey ? `Personal workspace folder: ${folderKey}` : 'Personal workspace folder not found (pass --folder-key); falling back to fixed waits between uploads.');
@@ -166,6 +168,7 @@ function summarize(r) {
   const promises = [];
   for (const t of tickets) promises.push(await startStaggered(t, known));
   console.log(`All ${tickets.length} run(s) started after ${Math.round((Date.now() - t0) / 1000)} s. Review the tasks in Action Center; the summary prints when the last run completes.`);
+  console.log('WARNING: a debug run that is still waiting on its task about 35 minutes after it started is cancelled by the platform and writes no row. Review each task as soon as it appears.');
   const results = await Promise.all(promises);
   const rows = results.map(summarize);
   const w = (s, n) => String(s ?? '').padEnd(n).slice(0, n);
