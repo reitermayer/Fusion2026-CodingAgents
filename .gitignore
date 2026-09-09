@@ -16,3 +16,11 @@ node_modules/
 # Private working files (Studio Web exports, answer-key spreadsheet): never publish
 MySolution/
 Workshop/
+
+# Presentation deck and its generator: local-only, kept in local backup.
+# The .pptx files are ~45 MB and do not belong in git history. The tutorial
+# itself is Node-only, so the Python generator stays out of the repo too.
+Presentation/
+scripts/generate_presentation.py
+scripts/fix_fonts.py
+scripts/test_render_first3.py
