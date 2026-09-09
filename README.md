@@ -36,12 +36,20 @@ This tutorial has been tested and verified across three primary AI coding agent 
 
 ## 🚀 Prerequisites
 
+> ⚠️ **Node.js (v18 or higher) is the only language runtime this tutorial needs.** It is required twice over: the UiPath CLI *is* an npm package, and Chapters 11, 12 and 14 run the batch runner and scoreboard with `node scripts/...`. Install it first, before anything else. Chapter 02 walks through it for macOS and Windows 11.
+
+- **Node.js (v18+) and npm**: The mandatory base runtime.
+  - **macOS:** `brew install node`
+  - **Windows 11 (PowerShell):** `winget install --id OpenJS.NodeJS.LTS -e`
+  - Verify with `node -v` and `npm -v`.
+  - Needed for **(a)** the UiPath CLI itself and **(b)** `node scripts/run-batch.js` and `node scripts/scoreboard.js` in Chapters 11 to 14. Those two scripts use only the Node standard library, so there is no `npm install` to run in this repository.
 - **UiPath CLI (`uip`)**: Installed globally via `npm install -g @uipath/cli` or executable via `npx @uipath/cli`.
-- **Node.js**: Node.js (v18+) and npm.
 - **Git & GitHub CLI (`gh`)**:
   - **macOS:** `brew install git gh`
   - **Windows 11 (PowerShell):** `winget install --id Git.Git -e; winget install --id GitHub.cli -e`
 - **UiPath Automation Cloud Account**: Access to UiPath Cloud Orchestrator and Solution Management.
+
+> 💡 **No Python required.** Every chapter runs on Node and the `uip` CLI alone. Python appears only as an optional shortcut in Chapter 06 (the context-grounding tool wraps the UiPath Python SDK); the chapter deliberately uses the browser instead, so you never need a second language runtime.
 
 ---
 
