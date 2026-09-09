@@ -7,6 +7,9 @@
  * 1. Dual-Path Rule: Every shell code block containing executable `uip ` commands 
  *    must be preceded by a "Prompt Your AI Coding Agent" (💬 Prompt) section.
  * 2. Formatting Rule: No em dashes (—) allowed (use standard hyphens `-` instead).
+ * 3. Checkpoint Rule: Every practical chapter (03 to 14, except the design chapter 08)
+ *    must end with a "📌 Checkpoint" step that tags `ch<NN>-done` in the nested
+ *    TutorialSolution repository, and its Mode 2 prompt must include that step.
  */
 
 const fs = require('fs');
@@ -89,6 +92,34 @@ files.forEach(file => {
       }
     }
   });
+
+  // Check Rule 3: practical chapters end with a checkpoint step and fast-track it in Mode 2
+  const chapterNo = file.slice(0, 2);
+  const isPractical = /^\d\d$/.test(chapterNo) && +chapterNo >= 3 && +chapterNo <= 14 && chapterNo !== '08';
+  if (isPractical) {
+    const tag = `ch${chapterNo}-done`;
+    const checkpointHeader = lines.findIndex(l => /^## \d+\. 📌 Checkpoint/.test(l));
+    const summaryHeader = lines.findIndex(l => /^## \d+\. Summary/.test(l));
+    if (checkpointHeader === -1) {
+      console.error(`❌ [${file}] Missing "## N. 📌 Checkpoint" step (every practical chapter must end with one).`);
+      totalErrors++;
+    } else if (summaryHeader !== -1 && checkpointHeader > summaryHeader) {
+      console.error(`❌ [${file}:${checkpointHeader + 1}] The 📌 Checkpoint step must come before the Summary Checklist.`);
+      totalErrors++;
+    }
+    const tagUses = content.split(`git -C TutorialSolution tag -f ${tag}`).length - 1;
+    if (tagUses === 0) {
+      console.error(`❌ [${file}] The checkpoint must move the tag with \`git -C TutorialSolution tag -f ${tag}\`.`);
+      totalErrors++;
+    }
+    const mode2Start = lines.findIndex(l => l.startsWith('> **Mode 2:'));
+    const mode3Start = lines.findIndex(l => l.startsWith('> **Mode 3:'));
+    const mode2Text = mode2Start !== -1 ? lines.slice(mode2Start, mode3Start === -1 ? undefined : mode3Start).join('\n') : '';
+    if (!mode2Text.includes(tag)) {
+      console.error(`❌ [${file}] The Mode 2 fast-track prompt must end with the checkpoint (tag ${tag}), or the next chapter's reset has nothing to reset to.`);
+      totalErrors++;
+    }
+  }
 
   if (totalErrors === 0) {
     console.log(`✅ ${file}: Passed all dual-path & formatting checks.`);

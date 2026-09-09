@@ -1,6 +1,6 @@
 # Chapter 04: Building Your First Maestro Flow
 
-In this chapter, you will build your first end-to-end agentic workflow by adding a new project - **`EmailTriage`** - to your existing **`TutorialSolution`**. 
+In this chapter, you will build your first end-to-end agentic workflow by adding a new project - **`EmailTriage`** - to your existing **`TutorialSolution`**.
 
 You will learn why scaffolding flows with an **AI Coding Agent** (Claude Code or Google Antigravity) is dramatically faster than manual visual canvas design, how to discover and assign cloud LLM models, and how to debug and inspect live agent decisions directly from your terminal.
 
@@ -24,21 +24,21 @@ flowchart LR
 
 > 💡 **Choose Your Starting Point:**
 >
-> **Mode 1: 🔄 Reset Solution (Clean Slate)**
+> **Mode 1: 🔄 Reset to the Chapter 03 Checkpoint**
 > 💬 *Prompt your AI Coding Agent:*
 > ```text
-> Delete the EmailTriage project folder inside TutorialSolution so we can start Chapter 04 fresh. Keep the solution itself, and do not attempt to unregister the project from the solution manifest.
+> Reset TutorialSolution to its ch03-done checkpoint so we can start Chapter 04 fresh: hard-reset the solution's own git repository to that tag and remove untracked files. If the tag does not exist, stop and tell me.
 > ```
 > 💻 *Underlying CLI / Shell Command:*
 > ```bash
-> cd ./TutorialSolution
-> rm -rf ./EmailTriage
+> git -C TutorialSolution reset -q --hard ch03-done
+> git -C TutorialSolution clean -qfd
+> git -C TutorialSolution log --oneline -1   # must print "Chapter 03 done"
 > ```
 >
-> 💡 **Why you delete the folder but do not unregister the project:**
-> `EmailTriage` is the only project in `TutorialSolution`, and `uip solution projects remove` deliberately refuses to remove the last one (*"Cannot remove the only project in the solution"*). You do not need it: re-running `uip maestro flow init EmailTriage` reuses the existing manifest entry and reports `"SolutionRegistration": { "Status": "AlreadyRegistered" }` together with `"ProjectArtifacts": { "Created": true }`.
+> 💡 **Why a checkpoint rather than `uip solution projects remove`:**
+> `EmailTriage` is the only project in `TutorialSolution`, and `uip solution projects remove` deliberately refuses to remove the last one (*"Cannot remove the only project in the solution"*). The checkpoint sidesteps the question: at `ch03-done` the manifest registers no project at all, so Section 3 adds `EmailTriage` fresh. If you ever delete the project folder by hand instead, re-running `uip maestro flow init EmailTriage` reuses the existing manifest entry and reports `"SolutionRegistration": { "Status": "AlreadyRegistered" }` together with `"ProjectArtifacts": { "Created": true }`.
 >
-
 > ---
 >
 > **Mode 2: ⚡ 1-Shot Autonomous Fast-Track**
@@ -53,12 +53,13 @@ flowchart LR
 > 6. Format the canvas layout and validate the flow with 'uip maestro flow validate'.
 > 7. Run a cloud debug test with input emailBody: "Hi, I was charged twice for my subscription this morning ($120 x 2). I need an immediate refund for the duplicate charge or I will cancel my account!".
 > 8. Report the actual data from the debug run: confirm the agent really received the email text, produced a non-null triage analysis, and that the flow returned it as triageResult.
+> 9. Finish with the checkpoint: commit everything in TutorialSolution to its own git repository with the message "Chapter 04 done" and move the tag ch04-done to that commit.
 > ```
 >
 > ---
 >
 > **Mode 3: 📖 Step-by-Step Guided Walkthrough (Recommended for Learning)**
-> Proceed through Sections 1 through 10 below, pasting each prompt step-by-step.
+> Proceed through Sections 1 through 11 below, pasting each prompt step-by-step.
 
 ---
 
@@ -335,7 +336,25 @@ When the debug session completes, the CLI returns the execution report. **A gree
 
 ---
 
-## 10. Summary Checklist & Practice
+## 10. 📌 Checkpoint: Chapter 04 Done
+
+The three-node flow validates, and the debug run proved the agent received the email text. Record it in the solution's own repository (set up at the end of Chapter 03), so that any later reset can bring the files back to exactly this point.
+
+### 💬 Prompt Your AI Coding Agent (Recommended)
+```text
+Commit everything in TutorialSolution to its own git repository with the message "Chapter 04 done" and move the tag ch04-done to that commit.
+```
+
+### 💻 Underlying CLI Commands (What the Agent Executes)
+```bash
+git -C TutorialSolution add -A
+git -C TutorialSolution commit -qm "Chapter 04 done"
+git -C TutorialSolution tag -f ch04-done
+```
+
+---
+
+## 11. Summary Checklist & Practice
 
 - [x] Initialized the `EmailTriage` project inside `TutorialSolution`.
 - [x] Discovered available LLM models using `uip agent model list`.

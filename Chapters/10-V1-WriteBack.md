@@ -30,31 +30,26 @@ Three things change against Chapter 07, and one thing goes away:
 
 > 💡 **Choose Your Starting Point:**
 >
-> **Mode 1: 🔄 Reset to the Chapter 07 End State**
+> **Mode 1: 🔄 Reset to the Chapter 09 Checkpoint**
 >
 > 💬 *Prompt your AI Coding Agent:*
 > ```text
-> Prepare a clean baseline for Chapter 10. First confirm the Chapter 07 end state: TutorialSolution/EmailTriage must validate, its Triage AI Agent must be wired to the OrganizationIndex context node, and the OrganizationIndex in the TutorialSolution folder must report a successful ingestion. Then confirm the Chapter 09 entity: TriageDecision must exist and hold no rows with Phase 1; delete any that are there. If the flow already contains Create Entity Record nodes from an earlier run of this chapter, remove them and their edges.
+> Prepare a clean baseline for Chapter 10. Reset TutorialSolution to its ch09-done checkpoint: hard-reset the solution's own git repository to that tag and remove untracked files, then confirm EmailTriage validates and the OrganizationIndex in the TutorialSolution folder still reports a successful ingestion. Then confirm the Chapter 09 entity: TriageDecision must exist and hold no rows with Phase 1; delete any that are there. If the tag does not exist, stop and tell me.
 > ```
 > 💻 *Underlying CLI Commands:*
 > ```bash
-> cd ./TutorialSolution
->
-> # 1. The Chapter 07 flow must still compile and the index must still be ingested
-> uip maestro flow validate EmailTriage/EmailTriage.flow
+> # 1. Files: back to the Chapter 09 checkpoint (the Chapter 07 flow)
+> git -C TutorialSolution reset -q --hard ch09-done
+> git -C TutorialSolution clean -qfd
+> uip maestro flow validate TutorialSolution/EmailTriage/EmailTriage.flow
 > uip maestro flow registry pull --force && uip maestro flow registry search "OrganizationIndex" --output json   # the index must be listed; check its Sync status in Orchestrator
 >
-> # 2. The entity exists - and Phase 1 rows from an earlier run are deleted one by one
+> # 2. Cloud: the entity exists - and Phase 1 rows from an earlier run are deleted one by one
 > ENTITY_ID=$(uip df entities list --output plain --output-filter "[?Name=='TriageDecision'].Id | [0]")
 > for ID in $(uip df records list "$ENTITY_ID" --limit 100 --output plain --output-filter "Items[?Phase==\`1\`].Id"); do
 >   uip df records delete "$ENTITY_ID" "$ID" --yes --reason "Chapter 10 reset: Phase 1 rows"
 > done
 > uip df records list "$ENTITY_ID" --limit 100 --output plain --output-filter "length(Items[?Phase==\`1\`])"   # must print 0
->
-> # 3. Remove write nodes left over from an earlier attempt, if any
-> uip maestro flow node remove EmailTriage/EmailTriage.flow createEntityRecord1
-> uip maestro flow node remove EmailTriage/EmailTriage.flow createEntityRecord2
-> uip maestro flow node remove EmailTriage/EmailTriage.flow createEntityRecord3
 > ```
 >
 > ---
@@ -70,12 +65,13 @@ Three things change against Chapter 07, and one thing goes away:
 > 5. Keep the reviewOutcome and reviewerNote flow outputs, reviewerNote now carrying the feedback field.
 > 6. Format and validate the flow, refresh and validate the inline agent.
 > 7. Run a cloud debug with ticketId T01, phase 1, and the body of ticket T01 from Data/TriageBatch.csv. Tell me when the task is waiting in Action Center. After I approve it, prove the write from the entity: list the TriageDecision rows with Phase 1 and show the row for T01 with its Department, Outcome and Confidence.
+> 8. Finish with the checkpoint: commit everything in TutorialSolution to its own git repository with the message "Chapter 10 done" and move the tag ch10-done to that commit.
 > ```
 >
 > ---
 >
 > **Mode 3: 📖 Step-by-Step Guided Walkthrough (Recommended for Learning)**
-> Proceed through Sections 1 through 7 below, pasting each prompt step-by-step.
+> Proceed through Sections 1 through 8 below, pasting each prompt step-by-step.
 
 ---
 
@@ -386,7 +382,25 @@ uip df records list "$ENTITY_ID" --limit 100 --output plain --output-filter "len
 
 ---
 
-## 7. Summary Checklist
+## 7. 📌 Checkpoint: Chapter 10 Done
+
+The V1 flow validates, and one reviewed email produced one row that you read back from the entity. Record it in the solution's own repository (set up at the end of Chapter 03), so that any later reset can bring the files back to exactly this point.
+
+### 💬 Prompt Your AI Coding Agent (Recommended)
+```text
+Commit everything in TutorialSolution to its own git repository with the message "Chapter 10 done" and move the tag ch10-done to that commit.
+```
+
+### 💻 Underlying CLI Commands (What the Agent Executes)
+```bash
+git -C TutorialSolution add -A
+git -C TutorialSolution commit -qm "Chapter 10 done"
+git -C TutorialSolution tag -f ch10-done
+```
+
+---
+
+## 8. Summary Checklist
 
 - [x] Added `ticketId` and `phase` as flow inputs, bound to the trigger node.
 - [x] Gave the agent `confidence` and `reasoning`, with the number prescribed by rules and capped at 85 while no precedent exists.

@@ -14,19 +14,21 @@ flowchart LR
 
 > 💡 **Choose Your Starting Point:**
 >
-> **Mode 1: 🔄 Reset to the Chapter 10 End State**
+> **Mode 1: 🔄 Reset to the Chapter 10 Checkpoint**
 >
 > 💬 *Prompt your AI Coding Agent:*
 > ```text
-> Prepare a clean baseline for Chapter 11. Confirm TutorialSolution/EmailTriage validates and contains the Triage Review form and the three Create Entity Record nodes from Chapter 10. Then delete every TriageDecision row whose Phase is 1 and confirm none remain, so the batch starts from an empty phase.
+> Prepare a clean baseline for Chapter 11. Reset TutorialSolution to its ch10-done checkpoint: hard-reset the solution's own git repository to that tag and remove untracked files, then confirm EmailTriage validates and contains the Triage Review form and the three Create Entity Record nodes. Then delete every TriageDecision row whose Phase is 1 and confirm none remain, so the batch starts from an empty phase. If the tag does not exist, stop and tell me.
 > ```
 > 💻 *Underlying CLI Commands:*
 > ```bash
-> cd ./TutorialSolution
-> uip maestro flow validate EmailTriage/EmailTriage.flow
-> uip maestro flow node list EmailTriage/EmailTriage.flow --output json --output-filter "[*].Id"
-> cd ..
+> # 1. Files: back to the Chapter 10 checkpoint (this also removes a half-finished .batch-runs/phase1)
+> git -C TutorialSolution reset -q --hard ch10-done
+> git -C TutorialSolution clean -qfd
+> uip maestro flow validate TutorialSolution/EmailTriage/EmailTriage.flow
+> uip maestro flow node list TutorialSolution/EmailTriage/EmailTriage.flow --output json --output-filter "[*].Id"
 >
+> # 2. Cloud: no Phase 1 rows
 > ENTITY_ID=$(uip df entities list --output plain --output-filter "[?Name=='TriageDecision'].Id | [0]")
 > for ID in $(uip df records list "$ENTITY_ID" --limit 100 --output plain --output-filter "Items[?Phase==\`1\`].Id"); do
 >   uip df records delete "$ENTITY_ID" "$ID" --yes --reason "Chapter 11 reset: Phase 1 rows"
@@ -44,12 +46,13 @@ flowchart LR
 > 2. Run node scripts/run-batch.js --phase 1 from the repository root. It starts nine cloud debug runs of TutorialSolution/EmailTriage, one upload at a time, and each run pauses on a Triage Review task. Tell me when the nine tasks are waiting in Action Center and stop until I say the review is done.
 > 3. When the runner returns, show me its summary table and check that all nine runs completed and that every category came from the department directory.
 > 4. Run node scripts/scoreboard.js --phase 1 and report the escalation count. It must read 9 of 9: in phase 1 every email is reviewed.
+> 5. Finish with the checkpoint: commit everything in TutorialSolution to its own git repository with the message "Chapter 11 done" and move the tag ch11-done to that commit.
 > ```
 >
 > ---
 >
 > **Mode 3: 📖 Step-by-Step Guided Walkthrough (Recommended for Learning)**
-> Proceed through Sections 1 through 6 below, pasting each prompt step-by-step.
+> Proceed through Sections 1 through 7 below, pasting each prompt step-by-step.
 
 ---
 
@@ -251,7 +254,25 @@ Phase  | Rows  | Auto  | Approved  | Modified  | Denied  | AutoResolved  | Escal
 
 ---
 
-## 7. Summary Checklist
+## 7. 📌 Checkpoint: Chapter 11 Done
+
+The scoreboard reads 9 of 9. The nine Phase 1 rows are in the entity and the runner's logs are in `.batch-runs/phase1`; the checkpoint keeps the logs, the tenant keeps the rows. Record it in the solution's own repository (set up at the end of Chapter 03), so that any later reset can bring the files back to exactly this point. This is the state **Part 5** starts from.
+
+### 💬 Prompt Your AI Coding Agent (Recommended)
+```text
+Commit everything in TutorialSolution to its own git repository with the message "Chapter 11 done" and move the tag ch11-done to that commit.
+```
+
+### 💻 Underlying CLI Commands (What the Agent Executes)
+```bash
+git -C TutorialSolution add -A
+git -C TutorialSolution commit -qm "Chapter 11 done"
+git -C TutorialSolution tag -f ch11-done
+```
+
+---
+
+## 8. Summary Checklist
 
 - [x] Understood the batch file: five columns, `Kind` for the reviewer only, fixed across all phases.
 - [x] Ran nine cloud debug runs with `scripts/run-batch.js`, started one at a time, and saw nine tasks in Action Center.

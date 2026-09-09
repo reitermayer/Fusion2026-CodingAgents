@@ -31,21 +31,23 @@ flowchart LR
 
 > 💡 **Choose Your Starting Point:**
 >
-> **Mode 1: 🔄 Reset the Orchestrator Artifacts (Clean Baseline)**
+> **Mode 1: 🔄 Reset to the Chapter 05 Checkpoint and Tear Down the Orchestrator Artifacts**
 >
-> This chapter's reset is different from every previous chapter: it tears down **cloud artifacts**, not local files. Your `EmailTriage` flow is the Chapter 05 end state and must survive untouched. What gets removed is the index, the bucket and the folder, in that order, because each one is nested inside the next.
+> This chapter's reset has two halves. The files are one command, as in every chapter: back to the `ch05-done` checkpoint. The rest is **cloud artifacts**, which no checkpoint covers: the index, the bucket and the folder are removed in that order, because each one is nested inside the next.
 >
 > 💬 *Prompt your AI Coding Agent:*
 > ```text
-> Prepare a clean baseline for Chapter 06 without touching my flow.
+> Prepare a clean baseline for Chapter 06.
 >
-> First confirm the Chapter 05 flow is intact: TutorialSolution/EmailTriage must still validate and its Triage AI Agent must still return the four typed outputs category, urgencyScore, requiresEscalation and actionItems, forwarded by the End node. Do not edit, reformat or rebuild the flow.
+> First reset TutorialSolution to its ch05-done checkpoint: hard-reset the solution's own git repository to that tag and remove untracked files, then confirm EmailTriage validates and its Triage AI Agent returns the four typed outputs category, urgencyScore, requiresEscalation and actionItems. If the tag does not exist, stop and tell me.
 >
 > Then tear down any Orchestrator artifacts left over from an earlier run of this chapter, innermost first. I will delete the OrganizationIndex context grounding index myself in the browser; confirm from the flow registry that it is gone. Then delete the OrganizationData storage bucket including its files, and the TutorialSolution Orchestrator folder. Skip anything that does not exist rather than failing. Finish by showing me that none of the three remain.
 > ```
 > 💻 *Underlying CLI / Shell Commands:*
 > ```bash
-> # 1. The Chapter 05 flow must still compile - this is a read-only check
+> # 1. Files: back to the Chapter 05 checkpoint, then a read-only check
+> git -C TutorialSolution reset -q --hard ch05-done
+> git -C TutorialSolution clean -qfd
 > uip maestro flow validate TutorialSolution/EmailTriage/EmailTriage.flow
 >
 > # 2. See what is currently provisioned before removing anything
@@ -69,7 +71,7 @@ flowchart LR
 >
 > *The deletion order is not a style choice. `folders delete` refuses to remove a folder that still contains entities, and `buckets delete` refuses to remove a bucket that still holds files unless you pass `--force`. Deleting outside-in fails at the first step. Once the folder is gone, `uip or buckets list --folder-path "TutorialSolution"` answers with an error rather than an empty list: that is the expected final state.*
 >
-> > 💡 **Tip:** The Orchestrator folder named `TutorialSolution` and the on-disk solution directory named `TutorialSolution/` are two unrelated things that happen to share a name. Deleting the cloud folder does not touch your local project, and this reset never runs a single command against the flow.
+> > 💡 **Tip:** The Orchestrator folder named `TutorialSolution` and the on-disk solution directory named `TutorialSolution/` are two unrelated things that happen to share a name. Deleting the cloud folder does not touch your local project, and the checkpoint reset does not touch the cloud.
 >
 >
 > ---
@@ -86,12 +88,13 @@ flowchart LR
 > 6. Attach OrganizationIndex to the Triage AI Agent in EmailTriage as a semantic context resource, and wire it to the agent node's context handle in the flow.
 > 7. Rewrite the agent's system prompt so it classifies emails into the departments it retrieves from the index instead of the five hard-coded categories. Cap the number of retrieval calls at 2 and tell it to decide with the evidence it has after that.
 > 8. Run a cloud debug of the flow with a billing dispute email, and report the actual returned category, urgencyScore, requiresEscalation and actionItems values from the payload.
+> 9. Finish with the checkpoint: commit everything in TutorialSolution to its own git repository with the message "Chapter 06 done" and move the tag ch06-done to that commit.
 > ```
 >
 > ---
 >
 > **Mode 3: 📖 Step-by-Step Guided Walkthrough (Recommended for Learning)**
-> Proceed through Sections 1 through 10 below, pasting each prompt step-by-step.
+> Proceed through Sections 1 through 11 below, pasting each prompt step-by-step.
 
 ---
 
@@ -545,7 +548,27 @@ No flow edit, no redeploy, no re-test of the agent. That is the whole point of g
 
 ---
 
-## 11. Summary Checklist
+## 11. 📌 Checkpoint: Chapter 06 Done
+
+The grounded flow validates, and the debug run returned a department name that exists only in the spreadsheet. Record it in the solution's own repository (set up at the end of Chapter 03), so that any later reset can bring the files back to exactly this point.
+
+### 💬 Prompt Your AI Coding Agent (Recommended)
+```text
+Commit everything in TutorialSolution to its own git repository with the message "Chapter 06 done" and move the tag ch06-done to that commit.
+```
+
+### 💻 Underlying CLI Commands (What the Agent Executes)
+```bash
+git -C TutorialSolution add -A
+git -C TutorialSolution commit -qm "Chapter 06 done"
+git -C TutorialSolution tag -f ch06-done
+```
+
+> 💡 **Tip:** The checkpoint now contains your tenant's ids: the index id in the agent's resources and the folder key in `resources/`. That is why it is yours alone, and why jumping forward means rebuilding rather than copying.
+
+---
+
+## 12. Summary Checklist
 
 - [x] Understood why hard-coding organizational knowledge into a prompt does not survive contact with a real company.
 - [x] Learned that indexes have no core CLI, and split the work: Orchestrator objects from the CLI, the index in the browser.

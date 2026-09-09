@@ -26,21 +26,20 @@ flowchart LR
 
 > 💡 **Choose Your Starting Point:**
 >
-> **Mode 1: 🔄 Reset to the Chapter 13 End State**
+> **Mode 1: 🔄 Reset to the Chapter 13 Checkpoint**
 >
 > 💬 *Prompt your AI Coding Agent:*
 > ```text
-> Prepare a clean baseline for Chapter 14. TutorialSolution/EmailTriage must validate and be at the Chapter 13 shape: the precedent tool, the "Confident and not Required?" gate, the Auto write followed by the notification email node, and the Triage Review form on the false branch. If a second decision node, a reply email node or a fifth Create Entity Record node exist from an earlier attempt, remove them and wire the agent's success handle straight into the "Confident and not Required?" gate again. TriageDecision must hold the Phase 1 and Phase 2 rows and no Phase 3 rows; delete any Phase 3 rows. If SupportFAQ.txt is in the OrganizationData bucket, leave it there.
+> Prepare a clean baseline for Chapter 14. Reset TutorialSolution to its ch13-done checkpoint: hard-reset the solution's own git repository to that tag and remove untracked files, then confirm EmailTriage validates and is at the Chapter 13 shape: the precedent tool, the "Confident and not Required?" gate, the Auto write followed by the notification email node, and the Triage Review form on the false branch. TriageDecision must hold the Phase 1 and Phase 2 rows and no Phase 3 rows; delete any Phase 3 rows. If SupportFAQ.txt is in the OrganizationData bucket, leave it there. If the tag does not exist, stop and tell me.
 > ```
 > 💻 *Underlying CLI Commands:*
 > ```bash
-> cd ./TutorialSolution
-> uip maestro flow node remove EmailTriage/EmailTriage.flow decision2
-> uip maestro flow node remove EmailTriage/EmailTriage.flow sendReply1
-> uip maestro flow node remove EmailTriage/EmailTriage.flow createEntityRecord5
-> uip maestro flow edge add EmailTriage/EmailTriage.flow agent_triage decision1 --source-port success
-> uip maestro flow validate EmailTriage/EmailTriage.flow
-> cd ..
+> # 1. Files: back to the Chapter 13 checkpoint
+> git -C TutorialSolution reset -q --hard ch13-done
+> git -C TutorialSolution clean -qfd
+> uip maestro flow validate TutorialSolution/EmailTriage/EmailTriage.flow
+>
+> # 2. Cloud: no Phase 3 rows
 > ENTITY_ID=$(uip df entities list --output plain --output-filter "[?Name=='TriageDecision'].Id | [0]")
 > for ID in $(uip df records list "$ENTITY_ID" --limit 100 --output plain --output-filter "Items[?Phase==\`3\`].Id"); do
 >   uip df records delete "$ENTITY_ID" "$ID" --yes --reason "Chapter 14 reset: Phase 3 rows"
@@ -61,12 +60,13 @@ flowchart LR
 > 5. Format and validate the flow, refresh and validate the inline agent, and remove the underscore-prefixed sort parameter from the tool resource again.
 > 6. Run a cloud debug with ticket T01 in phase 3 (the invoice download question): it must complete without a task, send me the reply, and write an AutoResolved row. Then run ticket T03 in phase 3 (a deactivation request): it must not auto-resolve. Delete both Phase 3 test rows.
 > 7. Run node scripts/run-batch.js --phase 3, tell me when the tasks are waiting, and after I have reviewed them run node scripts/scoreboard.js. Phase 3 must read 2 of 9. Then show me T05's Phase 3 row: if it is AutoResolved, that is the planted miss; if it is Auto with an empty ReplyText, the agent refused, and I want to see the reasoning.
+> 8. Finish with the checkpoint: commit everything in TutorialSolution to its own git repository with the message "Chapter 14 done" and move the tag ch14-done to that commit.
 > ```
 >
 > ---
 >
 > **Mode 3: 📖 Step-by-Step Guided Walkthrough (Recommended for Learning)**
-> Proceed through Sections 1 through 7 below, pasting each prompt step-by-step.
+> Proceed through Sections 1 through 8 below, pasting each prompt step-by-step.
 
 ---
 
@@ -316,7 +316,25 @@ If you want to see the miss rather than the refusal, send the same email with th
 
 ---
 
-## 8. Summary Checklist
+## 8. 📌 Checkpoint: Chapter 14 Done
+
+The V3 flow validates, one reply went out, one refusal was recorded, and the scoreboard has all three numbers. Record it in the solution's own repository (set up at the end of Chapter 03), so that any later reset can bring the files back to exactly this point.
+
+### 💬 Prompt Your AI Coding Agent (Recommended)
+```text
+Commit everything in TutorialSolution to its own git repository with the message "Chapter 14 done" and move the tag ch14-done to that commit.
+```
+
+### 💻 Underlying CLI Commands (What the Agent Executes)
+```bash
+git -C TutorialSolution add -A
+git -C TutorialSolution commit -qm "Chapter 14 done"
+git -C TutorialSolution tag -f ch14-done
+```
+
+---
+
+## 9. Summary Checklist
 
 - [x] Added a knowledge document to the bucket, re-synced the index, and saw the FAQ come back first for an FAQ question.
 - [x] Gave the agent `canAutoResolve` and `replyText`, with "the whole request" as the rule.

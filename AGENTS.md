@@ -22,6 +22,8 @@ We do NOT maintain static `Labs/` directories or file copy commands (`cp -r`). E
 - **Mode 2: ⚡ 1-Shot Fast-Track:** A single comprehensive prompt to let the agent autonomously execute the whole chapter in one turn.
 - **Mode 3: 📖 Step-by-Step Guided Walkthrough:** The step-by-step conceptual walkthrough for students learning incrementally.
 
+Every practical chapter from `03` on must also **end with a `📌 Checkpoint` step** (dual-path, placed before the Summary Checklist): commit `TutorialSolution/` to its own nested git repository and move the tag `ch<NN>-done` (`git -C TutorialSolution add -A && git -C TutorialSolution commit -qm "Chapter <NN> done" && git -C TutorialSolution tag -f ch<NN>-done`). Chapter `03` initializes that repository. A chapter's Mode 1 resets the files with `git -C TutorialSolution reset -q --hard ch<previous>-done` plus `git -C TutorialSolution clean -qfd`, and states the cloud cleanup (rows to delete, artifacts to tear down) separately, because no tag covers the tenant. Never present a checkpoint tag as a way to jump forward: from `06` on the files carry tenant ids, so a foreign tag validates and fails at runtime.
+
 ---
 
 ## 3. Formatting & Cleanliness Standards

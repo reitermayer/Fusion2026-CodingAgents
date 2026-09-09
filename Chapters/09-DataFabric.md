@@ -63,12 +63,13 @@ flowchart LR
 > 2. Create a tenant-level entity named TriageDecision with these fields: TicketId (text, 20), Phase (whole number 1 to 3), EmailBody (multiline text, 10000), ProposedDepartment (text, 200), Department (text, 200), Outcome (single choice from TriageOutcome), Confidence (decimal), HumanReviewRequired (boolean), Reasoning (multiline text, 10000), Feedback (multiline text, 2000), ReplyText (multiline text, 5000). Mark TicketId, Phase, EmailBody, ProposedDepartment, Department and Outcome as required.
 > 3. Read the entity schema back and show me every field with its type, length and required flag, so I can compare it with the list above.
 > 4. Insert one test record for ticket T00 at phase 0 with Outcome Approved, list the records to prove the write worked, then delete that test record and confirm the entity is empty again.
+> 5. Finish with the checkpoint: record an empty commit in TutorialSolution's own git repository with the message "Chapter 09 done: TriageOutcome and TriageDecision created in the tenant" and move the tag ch09-done to it.
 > ```
 >
 > ---
 >
 > **Mode 3: 📖 Step-by-Step Guided Walkthrough (Recommended for Learning)**
-> Proceed through Sections 1 through 7 below, pasting each prompt step-by-step.
+> Proceed through Sections 1 through 8 below, pasting each prompt step-by-step.
 
 ---
 
@@ -306,7 +307,25 @@ The last command must print `0`. If it prints `1`, the delete did not run: repea
 
 ---
 
-## 8. Summary Checklist
+## 8. 📌 Checkpoint: Chapter 09 Done
+
+Nothing in `TutorialSolution/` changed in this chapter: the choice set and the entity live in the tenant. The checkpoint is still worth recording, as an empty commit in the solution's own repository, so that the tag exists and names the state. This is the state **Part 4** starts from: the Chapter 07 flow plus an empty `TriageDecision` entity.
+
+### 💬 Prompt Your AI Coding Agent (Recommended)
+```text
+Record an empty commit in TutorialSolution's own git repository (nothing on disk changed in this chapter) with the message "Chapter 09 done: TriageOutcome and TriageDecision created in the tenant" and move the tag ch09-done to that commit.
+```
+
+### 💻 Underlying CLI Commands (What the Agent Executes)
+```bash
+git -C TutorialSolution add -A
+git -C TutorialSolution commit -q --allow-empty -m "Chapter 09 done: TriageOutcome and TriageDecision created in the tenant"
+git -C TutorialSolution tag -f ch09-done
+```
+
+---
+
+## 9. Summary Checklist
 
 - [x] Understood why the learning loop needs a **queryable table**, not a log: the agent reads decisions back at runtime.
 - [x] Named the entity `TriageDecision` because most rows record no human and a denial is not an approval; one entity for all phases, with a `Phase` column.

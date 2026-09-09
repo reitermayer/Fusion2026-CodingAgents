@@ -20,19 +20,18 @@ Note where the email node sits: **after the Auto write**, on the branch no human
 
 > 💡 **Choose Your Starting Point:**
 >
-> **Mode 1: 🔄 Reset to the Chapter 12 End State**
+> **Mode 1: 🔄 Reset to the Chapter 12 Checkpoint**
 >
 > 💬 *Prompt your AI Coding Agent:*
 > ```text
-> Confirm we are at the Chapter 12 end state before starting Chapter 13. TutorialSolution/EmailTriage must validate and must contain the Triage AI Agent with the OrganizationIndex context node and the Query Entity Records tool, the "Confident and not Required?" gate, the Triage Review form on its false branch, and the four TriageDecision write nodes. If a Gmail send-email node from an earlier run of this chapter is present, remove it and wire the Auto write node straight back to the End node.
+> Reset TutorialSolution to its ch12-done checkpoint: hard-reset the solution's own git repository to that tag and remove untracked files. Then confirm EmailTriage validates and contains the Triage AI Agent with the OrganizationIndex context node and the Query Entity Records tool, the "Confident and not Required?" gate, the Triage Review form on its false branch, and the four TriageDecision write nodes, with no Gmail node. If the tag does not exist, stop and tell me.
 > ```
 > 💻 *Underlying CLI Commands:*
 > ```bash
-> cd ./TutorialSolution
-> uip maestro flow validate EmailTriage/EmailTriage.flow
-> uip maestro flow node list EmailTriage/EmailTriage.flow --output json
-> uip maestro flow node remove EmailTriage/EmailTriage.flow sendEmail1
-> uip maestro flow edge add EmailTriage/EmailTriage.flow createEntityRecord4 end1
+> git -C TutorialSolution reset -q --hard ch12-done
+> git -C TutorialSolution clean -qfd
+> uip maestro flow validate TutorialSolution/EmailTriage/EmailTriage.flow
+> uip maestro flow node list TutorialSolution/EmailTriage/EmailTriage.flow --output json --output-filter "[*].Id"   # no sendEmail1
 > ```
 >
 > ---
@@ -47,12 +46,13 @@ Note where the email node sits: **after the Auto write**, on the branch no human
 > 4. Wire the Auto write node's output into the email node, and the email node's output into the End node, replacing the Auto write's direct edge to the End node.
 > 5. Format and validate the flow.
 > 6. Run a cloud debug with ticket T01 in phase 0 (the invoice download question, which has a phase 1 precedent) and confirm from the payload that the gate auto-routed, that the email node returned a real message id, and that no error was recorded. Then delete the Phase 0 row.
+> 7. Finish with the checkpoint: commit everything in TutorialSolution to its own git repository with the message "Chapter 13 done" and move the tag ch13-done to that commit.
 > ```
 >
 > ---
 >
 > **Mode 3: 📖 Step-by-Step Guided Walkthrough (Recommended for Learning)**
-> Proceed through Sections 1 through 6 below, pasting each prompt step-by-step.
+> Proceed through Sections 1 through 7 below, pasting each prompt step-by-step.
 
 ---
 
@@ -266,7 +266,25 @@ The flow can now act on its own conclusion. Two extensions reuse exactly what yo
 
 ---
 
-## 7. Summary Checklist
+## 7. 📌 Checkpoint: Chapter 13 Done
+
+The notification node validates, and the test run returned a real Gmail message id. Record it in the solution's own repository (set up at the end of Chapter 03), so that any later reset can bring the files back to exactly this point.
+
+### 💬 Prompt Your AI Coding Agent (Recommended)
+```text
+Commit everything in TutorialSolution to its own git repository with the message "Chapter 13 done" and move the tag ch13-done to that commit.
+```
+
+### 💻 Underlying CLI Commands (What the Agent Executes)
+```bash
+git -C TutorialSolution add -A
+git -C TutorialSolution commit -qm "Chapter 13 done"
+git -C TutorialSolution tag -f ch13-done
+```
+
+---
+
+## 8. Summary Checklist
 
 - [x] Understood why an Integration Service connection beats a credential in a flow variable.
 - [x] Found the Gmail connection with `uip is connections list --all-folders`, and learned that the connector key comes from the registry rather than the brand name.

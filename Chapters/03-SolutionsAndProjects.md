@@ -51,12 +51,13 @@ flowchart TD
 > 2. Inside TutorialSolution, initialize a starter Maestro flow project named Project03.
 > 3. List all registered projects to confirm assignment.
 > 4. Unassign and delete Project03 to demonstrate project lifecycle cleanup, including its leftover solution artifacts, then confirm the solution reports no assigned projects and no leftover files named after the project.
+> 5. Turn TutorialSolution into its own git repository: add a .gitignore that ignores dist/, userProfile/ and .DS_Store, commit everything with the message "Chapter 03 done" and tag the commit ch03-done.
 > ```
 >
 > ---
 >
 > **Mode 3: 📖 Step-by-Step Guided Walkthrough (Recommended for Learning)**
-> Proceed through Sections 1 through 7 below, pasting each prompt step-by-step.
+> Proceed through Sections 1 through 8 below, pasting each prompt step-by-step.
 
 ---
 
@@ -237,7 +238,42 @@ Unassign and delete Project03 from TutorialSolution, remove its directory from d
 
 ---
 
-## 7. Summary Checklist & Practice
+## 7. 📌 Checkpoint: The Solution Gets Its Own Repository
+
+`TutorialSolution/` is listed in the tutorial repository's `.gitignore`: it is your workspace, not part of the tutorial, and nothing records its state. From here on, every chapter ends with a **checkpoint**: a commit and a tag in a small git repository that lives inside the solution folder. A later chapter's reset (Mode 1) then brings the files back to exactly the previous chapter's end state with one command, whatever you tried in between.
+
+Two things a checkpoint does not do. It does not snapshot the tenant: the Orchestrator folder, the index, the entity and the connections live in the cloud, and every reset from Chapter 06 on says separately what to do about them. And a checkpoint is yours alone: from Chapter 06 on the files carry ids from your tenant, so someone else's tag would validate and fail at runtime. The tags let you go **back**; jumping **forward** is a rebuild, and [WORKSHOP.md](../WORKSHOP.md) lists the fast paths for that.
+
+### 💬 Prompt Your AI Coding Agent (Recommended)
+```text
+Turn TutorialSolution into its own git repository: add a .gitignore that ignores dist/, userProfile/ and .DS_Store, commit everything with the message "Chapter 03 done" and tag the commit ch03-done.
+```
+
+### 💻 Underlying CLI Commands (What the Agent Executes)
+
+**🍏 macOS / Linux (Bash / Zsh):**
+```bash
+printf 'dist/\nuserProfile/\n.DS_Store\n' > TutorialSolution/.gitignore
+git -C TutorialSolution init -q
+git -C TutorialSolution add -A
+git -C TutorialSolution commit -qm "Chapter 03 done"
+git -C TutorialSolution tag -f ch03-done
+```
+
+**🪟 Windows 11 (PowerShell):**
+```powershell
+Set-Content -Path .\TutorialSolution\.gitignore -Value "dist/`nuserProfile/`n.DS_Store"
+git -C TutorialSolution init -q
+git -C TutorialSolution add -A
+git -C TutorialSolution commit -qm "Chapter 03 done"
+git -C TutorialSolution tag -f ch03-done
+```
+
+> 💡 **Tip:** `userProfile/` holds the debug overrides the CLI writes for your user, and `dist/` is where Appendix A2 packs the solution; neither belongs in a checkpoint. `.batch-runs/`, which Chapter 11 creates, is kept on purpose: the phase 1 run logs are part of the Part 5 starting point. The nested repository is invisible to the tutorial repository (the whole folder is ignored there) and to `uip solution pack`, which packs only the registered projects and the resource definitions.
+
+---
+
+## 8. Summary Checklist & Practice
 
 - [x] Initialized the multi-project container: `TutorialSolution`.
 - [x] Scaffolded and assigned the starter project: `Project03`.

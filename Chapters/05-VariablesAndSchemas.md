@@ -33,24 +33,18 @@ flowchart LR
 
 > 💡 **Choose Your Starting Point:**
 >
-> **Mode 1: 🔄 Reset Solution (Clean Baseline)**
+> **Mode 1: 🔄 Reset to the Chapter 04 Checkpoint**
 > 💬 *Prompt your AI Coding Agent:*
 > ```text
-> In TutorialSolution/EmailTriage, confirm we have the Chapter 04 baseline: the Triage AI Agent producing the single string output 'analysisResult', forwarded by the End node to the flow output argument 'triageResult'. If it is missing, rebuild it from Chapter 04 first.
+> Reset TutorialSolution to its ch04-done checkpoint: hard-reset the solution's own git repository to that tag and remove untracked files. Then validate EmailTriage and confirm it returns exactly one output argument, triageResult, forwarded from the agent's analysisResult. If the tag does not exist, stop and tell me.
 > ```
 > 💻 *Underlying CLI / Shell Command:*
 > ```bash
-> cd ./TutorialSolution
->
-> # 1. The baseline flow must compile cleanly
-> uip maestro flow validate EmailTriage/EmailTriage.flow
->
-> # 2. The baseline returns exactly one output argument: triageResult (string)
-> uip maestro flow validate EmailTriage/EmailTriage.flow --output json
+> git -C TutorialSolution reset -q --hard ch04-done
+> git -C TutorialSolution clean -qfd
+> uip maestro flow validate TutorialSolution/EmailTriage/EmailTriage.flow --output json   # exactly one output argument: triageResult
 > ```
-> *If Section 2 has already been applied, the flow returns four output arguments instead of one. That is the Chapter 05 end state, not the baseline.*
 >
-
 > ---
 >
 > **Mode 2: ⚡ 1-Shot Autonomous Fast-Track**
@@ -66,12 +60,13 @@ flowchart LR
 > 3. Format the canvas layout and validate the flow with 'uip maestro flow validate'.
 > 4. Run a cloud debug test with input emailBody: "Hi, I was charged twice for my subscription this morning ($120 x 2). I need an immediate refund for the duplicate charge or I will cancel my account!".
 > 5. Report the flow's returned data and confirm the types are real: urgencyScore must come back as a number, requiresEscalation as a boolean, and actionItems as a list of objects. If any of them is null or a quoted string, the output mapping is broken - fix it and re-run.
+> 6. Finish with the checkpoint: commit everything in TutorialSolution to its own git repository with the message "Chapter 05 done" and move the tag ch05-done to that commit.
 > ```
 >
 > ---
 >
 > **Mode 3: 📖 Step-by-Step Guided Walkthrough (Recommended for Learning)**
-> Proceed through Sections 1 through 8 below, pasting each prompt step-by-step.
+> Proceed through Sections 1 through 9 below, pasting each prompt step-by-step.
 
 ---
 
@@ -289,7 +284,25 @@ A `null` or a quoted `"vars...."` string in any row means the End node mapping l
 
 ---
 
-## 8. Summary Checklist & Practice
+## 8. 📌 Checkpoint: Chapter 05 Done
+
+The flow returns four typed outputs, and the debug payload showed a real number, a real boolean and a real array. Record it in the solution's own repository (set up at the end of Chapter 03), so that any later reset can bring the files back to exactly this point. This is the state **Part 2** starts from.
+
+### 💬 Prompt Your AI Coding Agent (Recommended)
+```text
+Commit everything in TutorialSolution to its own git repository with the message "Chapter 05 done" and move the tag ch05-done to that commit.
+```
+
+### 💻 Underlying CLI Commands (What the Agent Executes)
+```bash
+git -C TutorialSolution add -A
+git -C TutorialSolution commit -qm "Chapter 05 done"
+git -C TutorialSolution tag -f ch05-done
+```
+
+---
+
+## 9. Summary Checklist & Practice
 
 - [x] Mastered the 6 core Flow & Agent Data Types (`string`, `number`, `boolean`, `object`, `array`, `array of objects`).
 - [x] Upgraded the Triage AI Agent to output multiple strongly-typed schema properties.

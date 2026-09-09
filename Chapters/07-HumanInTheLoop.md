@@ -19,27 +19,23 @@ flowchart LR
 
 > 💡 **Choose Your Starting Point:**
 >
-> **Mode 1: 🔄 Reset to the Chapter 06 End State**
+> **Mode 1: 🔄 Reset to the Chapter 06 Checkpoint**
 >
-> Nothing to tear down in the cloud this time: the folder, bucket and index from Chapter 06 all stay exactly as they are. This chapter only adds nodes to the flow.
+> Nothing to tear down in the cloud this time: the folder, bucket and index from Chapter 06 all stay exactly as they are. This chapter only adds nodes to the flow, and the checkpoint takes them away again.
 >
 > 💬 *Prompt your AI Coding Agent:*
 > ```text
-> Confirm we are at the Chapter 06 end state before starting Chapter 07. TutorialSolution/EmailTriage must validate, its Triage AI Agent must be wired to the OrganizationIndex context node, and the OrganizationIndex in the TutorialSolution folder must report a successful ingestion. If the flow already contains a decision node or a Quick Form node from an earlier run of this chapter, remove them and re-wire the agent's success handle straight to the End node.
+> Reset TutorialSolution to its ch06-done checkpoint: hard-reset the solution's own git repository to that tag and remove untracked files. Then confirm EmailTriage validates, its Triage AI Agent is wired to the OrganizationIndex context node, and the OrganizationIndex in the TutorialSolution folder still reports a successful ingestion. If the tag does not exist, stop and tell me.
 > ```
 > 💻 *Underlying CLI Commands:*
 > ```bash
-> cd ./TutorialSolution
+> # 1. Files: back to the Chapter 06 checkpoint
+> git -C TutorialSolution reset -q --hard ch06-done
+> git -C TutorialSolution clean -qfd
+> uip maestro flow validate TutorialSolution/EmailTriage/EmailTriage.flow
 >
-> # 1. The Chapter 06 flow must still compile
-> uip maestro flow validate EmailTriage/EmailTriage.flow
->
-> # 2. The index must still be ingested
+> # 2. Cloud: the index must still be ingested
 > uip maestro flow registry pull --force && uip maestro flow registry search "OrganizationIndex" --output json   # the index must be listed; check its Sync status in Orchestrator
->
-> # 3. Remove leftovers from an earlier attempt, if any
-> uip maestro flow node remove EmailTriage/EmailTriage.flow sensitiveCaseReview1
-> uip maestro flow node remove EmailTriage/EmailTriage.flow decision1
 > ```
 >
 > ---
@@ -55,12 +51,13 @@ flowchart LR
 > 5. Add two flow outputs, reviewOutcome and reviewerNote, carrying the reviewer's decision back out of the flow.
 > 6. Format and validate the flow, then refresh and validate the inline agent.
 > 7. Run a cloud debug with a GDPR complaint email mentioning a solicitor, and report which branch it took and what the agent returned.
+> 8. Finish with the checkpoint: commit everything in TutorialSolution to its own git repository with the message "Chapter 07 done" and move the tag ch07-done to that commit.
 > ```
 >
 > ---
 >
 > **Mode 3: 📖 Step-by-Step Guided Walkthrough (Recommended for Learning)**
-> Proceed through Sections 1 through 7 below, pasting each prompt step-by-step.
+> Proceed through Sections 1 through 8 below, pasting each prompt step-by-step.
 
 ---
 
@@ -383,7 +380,25 @@ ReviewerNote       = "yes"
 
 ---
 
-## 8. Summary Checklist
+## 8. 📌 Checkpoint: Chapter 07 Done
+
+Both branches ran: one email auto-routed, one paused on the Quick Form and came back with the reviewer's verdict. Record it in the solution's own repository (set up at the end of Chapter 03), so that any later reset can bring the files back to exactly this point. This is the state **Part 3** starts from, and (because Chapter 09 changes nothing on disk) the flow that Part 4 starts from as well.
+
+### 💬 Prompt Your AI Coding Agent (Recommended)
+```text
+Commit everything in TutorialSolution to its own git repository with the message "Chapter 07 done" and move the tag ch07-done to that commit.
+```
+
+### 💻 Underlying CLI Commands (What the Agent Executes)
+```bash
+git -C TutorialSolution add -A
+git -C TutorialSolution commit -qm "Chapter 07 done"
+git -C TutorialSolution tag -f ch07-done
+```
+
+---
+
+## 9. Summary Checklist
 
 - [x] Learned why a compliance gate belongs in the graph rather than on the agent's `escalation` handle, and why an exception is not a HITL mechanism at all.
 - [x] Sharpened `requiresEscalation` instead of adding a field, moving the rule into the `Human Review` spreadsheet column.

@@ -24,22 +24,20 @@ Three additions, nothing removed:
 
 > 💡 **Choose Your Starting Point:**
 >
-> **Mode 1: 🔄 Reset to the Chapter 11 End State**
+> **Mode 1: 🔄 Reset to the Chapter 11 Checkpoint**
 >
 > 💬 *Prompt your AI Coding Agent:*
 > ```text
-> Prepare a clean baseline for Chapter 12. TutorialSolution/EmailTriage must validate and be at the Chapter 10 shape: every email reaches the Triage Review form, and there is no decision node and no Query Entity Records tool node. If a decision node, a Query Entity Records tool node or a fourth Create Entity Record node exists from an earlier attempt, remove them and wire the agent's success handle straight into the Triage Review form again. TriageDecision must hold the nine Phase 1 rows and no Phase 2 rows; delete any Phase 2 rows. Do not touch the Phase 1 rows.
+> Prepare a clean baseline for Chapter 12. Reset TutorialSolution to its ch11-done checkpoint: hard-reset the solution's own git repository to that tag and remove untracked files, then confirm EmailTriage validates and is at the Chapter 10 shape: every email reaches the Triage Review form, and there is no decision node and no Query Entity Records tool node. TriageDecision must hold the nine Phase 1 rows and no Phase 2 rows; delete any Phase 2 rows. Do not touch the Phase 1 rows. If the tag does not exist, stop and tell me.
 > ```
 > 💻 *Underlying CLI Commands:*
 > ```bash
-> cd ./TutorialSolution
-> uip maestro flow node remove EmailTriage/EmailTriage.flow decision1
-> uip maestro flow node remove EmailTriage/EmailTriage.flow queryEntityRecords1
-> uip maestro flow node remove EmailTriage/EmailTriage.flow createEntityRecord4
-> uip maestro flow edge add EmailTriage/EmailTriage.flow agent_triage triageReview1 --source-port success
-> uip maestro flow validate EmailTriage/EmailTriage.flow
-> cd ..
+> # 1. Files: back to the Chapter 11 checkpoint (the V1 flow plus .batch-runs/phase1)
+> git -C TutorialSolution reset -q --hard ch11-done
+> git -C TutorialSolution clean -qfd
+> uip maestro flow validate TutorialSolution/EmailTriage/EmailTriage.flow
 >
+> # 2. Cloud: no Phase 2 rows
 > ENTITY_ID=$(uip df entities list --output plain --output-filter "[?Name=='TriageDecision'].Id | [0]")
 > for ID in $(uip df records list "$ENTITY_ID" --limit 100 --output plain --output-filter "Items[?Phase==\`2\`].Id"); do
 >   uip df records delete "$ENTITY_ID" "$ID" --yes --reason "Chapter 12 reset: Phase 2 rows"
@@ -59,12 +57,13 @@ Three additions, nothing removed:
 > 4. Format and validate the flow, refresh and validate the inline agent.
 > 5. Run a cloud debug with ticketId T01, phase 2 and the T01 body from Data/TriageBatch.csv. It must complete without creating a task, the reasoning must cite ticket T01 as precedent, and TriageDecision must gain a Phase 2 row with Outcome 0. Delete that test row afterwards.
 > 6. Run node scripts/run-batch.js --phase 2, tell me when the tasks are waiting, and after I have reviewed them run node scripts/scoreboard.js. Phase 2 must read 4 of 9.
+> 7. Finish with the checkpoint: commit everything in TutorialSolution to its own git repository with the message "Chapter 12 done" and move the tag ch12-done to that commit.
 > ```
 >
 > ---
 >
 > **Mode 3: 📖 Step-by-Step Guided Walkthrough (Recommended for Learning)**
-> Proceed through Sections 1 through 6 below, pasting each prompt step-by-step.
+> Proceed through Sections 1 through 7 below, pasting each prompt step-by-step.
 
 ---
 
@@ -319,7 +318,25 @@ Phase  | Rows  | Auto  | Approved  | Modified  | Denied  | AutoResolved  | Escal
 
 ---
 
-## 7. Summary Checklist
+## 7. 📌 Checkpoint: Chapter 12 Done
+
+The V2 flow validates, the T01 test completed without a task, and the scoreboard has its second number. Record it in the solution's own repository (set up at the end of Chapter 03), so that any later reset can bring the files back to exactly this point. This is the state **Part 6** starts from.
+
+### 💬 Prompt Your AI Coding Agent (Recommended)
+```text
+Commit everything in TutorialSolution to its own git repository with the message "Chapter 12 done" and move the tag ch12-done to that commit.
+```
+
+### 💻 Underlying CLI Commands (What the Agent Executes)
+```bash
+git -C TutorialSolution add -A
+git -C TutorialSolution commit -qm "Chapter 12 done"
+git -C TutorialSolution tag -f ch12-done
+```
+
+---
+
+## 8. Summary Checklist
 
 - [x] Attached a Data Fabric entity to an inline agent as a **tool** (the `context` handle is for indexes only), minted with `--source`, configured as a connector node, materialised by `uip agent refresh`.
 - [x] Removed the underscore-prefixed sort parameter from the tool resource after the last refresh, and know it comes back on every refresh.
