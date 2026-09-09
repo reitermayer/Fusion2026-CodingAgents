@@ -1,6 +1,6 @@
 # Chapter 04: Building Your First Maestro Flow
 
-In this chapter, you will build your first end-to-end agentic workflow by adding a new project - **`EmailTriage`** - to your existing **`TutorialSolution`**.
+In this chapter, you will build your first end-to-end agentic workflow by adding a new project - **`EmailTriage`** - to your existing **`TutorialSolution`**. This is the baseline of the triage process introduced in Chapter 03: an agent that reads an email and classifies it, with no directory, no human and no memory yet. Chapter 05 types its outputs, Chapters 06 and 07 add the directory and the human, Part 4 adds the memory, and Parts 4 to 6 rebuild the flow three times on top of them.
 
 You will learn why scaffolding flows with an **AI Coding Agent** (Claude Code or Google Antigravity) is dramatically faster than manual visual canvas design, how to discover and assign cloud LLM models, and how to debug and inspect live agent decisions directly from your terminal.
 

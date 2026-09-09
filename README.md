@@ -2,24 +2,23 @@
 
 This repository provides a hands-on tutorial on using **Coding Agents** integrated with the **UiPath CLI (`uip`)**.
 
+### 🎯 What You Will Build
+An **email triage process** for a support inbox. A Maestro flow reads an incoming email, retrieves the department directory from a Context Grounding index, proposes a department, and hands the sensitive cases to a human in Action Center. Every human decision is written back as a row in a Data Fabric entity, and those rows are what lets the process earn more autonomy over time.
+
+You build the same flow three times, and a fixed batch of nine emails plus one scoreboard measures each version:
+
+```mermaid
+flowchart LR
+    V1["<b>V1: Cold start</b><br/>human reviews everything<br/>9 of 9 escalated"]
+    V2["<b>V2: Earned trust</b><br/>agent reads precedents<br/>routine emails auto-route<br/>4 of 9 escalated"]
+    V3["<b>V3: Auto-resolve</b><br/>agent answers FAQ emails itself<br/>2 to 3 of 9 escalated"]
+    V1 -->|"reviews become<br/>precedents"| V2 -->|"knowledge base<br/>gains answers"| V3
+```
+
+No model is trained anywhere in this tutorial. The model stays the same; what grows is the context it is shown and the policy that decides when it may act alone. Chapter 08 explains the design; Parts 4 to 6 build it. And all of it is built by prompting a coding agent that drives the `uip` CLI, which is the second thing this tutorial teaches.
+
 ### 🤖 What is a Coding Agent?
 A **Coding Agent** is an autonomous, tool-augmented AI pair programmer capable of reasoning over complex codebases, planning multi-step implementations, executing terminal commands, inspecting file systems, and building or debugging software directly within the developer's workspace.
-
----
-
-> 💡 **Disabling UiPath CLI Telemetry:**
-> To opt out of anonymous CLI usage telemetry, set the `UIPATH_TELEMETRY_DISABLED` environment variable:
->
-> **🍏 macOS / Linux (Bash / Zsh):**
-> ```bash
-> export UIPATH_TELEMETRY_DISABLED=true
-> ```
-> **🪟 Windows 11 (PowerShell):**
-> ```powershell
-> $env:UIPATH_TELEMETRY_DISABLED = "true"
-> [System.Environment]::SetEnvironmentVariable('UIPATH_TELEMETRY_DISABLED', 'true', 'User')
-> ```
-> For more details, refer to the [UiPath CLI Telemetry Documentation](https://docs.uipath.com/automation-cloud/automation-cloud/latest/user-guide/cli-telemetry).
 
 ---
 
@@ -32,30 +31,30 @@ This tutorial has been tested and verified across three primary AI coding agent 
 3. **UiPath Autopilot in UiPath Studio** (UiPath): In-IDE and in-platform AI assistant specialized in enterprise automation, natural language workflow creation, coded activity generation, and solution development.
 4. **UiPath CLI (`uip`)**: Official command-line interface and Model Context Protocol (MCP) server for modern UiPath solutions, Maestro flows, and cloud Orchestrator deployments.
 
+### 💻 Recommended IDE & Tested Toolchain Versions
+
+You can run this tutorial in a pure terminal or inside **Visual Studio Code (VS Code)**, which provides visual file tree inspection, integrated terminal execution, and side-panel agent chats.
+
+| Tool / Component | Identifier / Extension ID | Tested Version | Role in Tutorial |
+| :--- | :--- | :--- | :--- |
+| **Visual Studio Code** | `code` | `v1.137.0` | Recommended editor & integrated workspace |
+| **Google Antigravity** | `google.google-antigravity` | `v1.2.0` | In-editor multi-agent pair programming |
+| **Claude Code** | `anthropic.claude-code` | `v2.1.263` | In-editor agent chat & terminal CLI (`claude`) |
+| **UiPath Autopilot** | `uipath.autopilot-vscode` | `v1.0.260828024` | Native enterprise automation assistance |
+| **UiPath Maestro Flow** | `uipath.uipath-maestro` | `v1.201.14` | Flow graph language syntax support |
+| **UiPath CLI** | `@uipath/cli` (`uip`) | `v1.200.1` | Deterministic platform orchestration & debug engine |
+
 ---
 
 ## 🚀 Prerequisites
 
-> ⚠️ **Node.js (v18 or higher) is the only language runtime this tutorial needs.** It is required twice over: the UiPath CLI *is* an npm package, and Chapters 11, 12 and 14 run the batch runner and scoreboard with `node scripts/...`. Install it first, before anything else. Chapter 02 walks through it for macOS and Windows 11.
-
-- **Node.js (v18+) and npm**: The mandatory base runtime.
-  - **macOS:** `brew install node`
-  - **Windows 11 (PowerShell):** `winget install --id OpenJS.NodeJS.LTS -e`
-  - Verify with `node -v` and `npm -v`.
-  - Needed for **(a)** the UiPath CLI itself and **(b)** `node scripts/run-batch.js` and `node scripts/scoreboard.js` in Chapters 11 to 14. Those two scripts use only the Node standard library, so there is no `npm install` to run in this repository.
-- **UiPath CLI (`uip`)**: Installed globally via `npm install -g @uipath/cli` or executable via `npx @uipath/cli`.
-- **Git & GitHub CLI (`gh`)**:
-  - **macOS:** `brew install git gh`
-  - **Windows 11 (PowerShell):** `winget install --id Git.Git -e; winget install --id GitHub.cli -e`
-- **UiPath Automation Cloud Account**: Access to UiPath Cloud Orchestrator and Solution Management.
-
-> 💡 **No Python required.** Every chapter runs on Node and the `uip` CLI alone. Python appears only as an optional shortcut in Chapter 06 (the context-grounding tool wraps the UiPath Python SDK); the chapter deliberately uses the browser instead, so you never need a second language runtime.
+You need **Node.js v18+**, the **UiPath CLI** (`uip`), **Git**, and a **UiPath Automation Cloud account**. Node.js is the only language runtime involved; Python is not required. [Chapter 02](Chapters/02-Setup.md) installs each of these for macOS and Windows 11, clones this repository, and authenticates against your tenant.
 
 ---
 
 ## 🎓 The 3-Mode Agentic Learning Paradigm
 
-In this tutorial, you do not need to copy static boilerplate files or manage ZIP archives. Instead, every practical chapter (`03` through `10`) provides **3 flexible ways to engage**:
+In this tutorial, you do not need to copy static boilerplate files or manage ZIP archives. Instead, every practical chapter (`03` through `14`, except the design chapter `08`) provides **3 flexible ways to engage**:
 
 ```mermaid
 flowchart TD
@@ -67,9 +66,9 @@ flowchart TD
 ```
 
 ### 1. 🔄 Mode 1: Reset Solution via Prompt
-If you ever want to start a chapter fresh, simply prompt your coding assistant:
+If you ever want to start a chapter fresh, simply prompt your coding assistant. From Chapter 04 on the reset is one command, because every chapter ends with a **📌 Checkpoint** (see below):
 ```text
-Delete the TutorialSolution folder if it already exists so we can start Chapter 03 completely fresh.
+Reset TutorialSolution to its ch06-done checkpoint: hard-reset the solution's own git repository to that tag and remove untracked files.
 ```
 
 ### 2. ⚡ Mode 2: 1-Shot Autonomous Fast-Track
@@ -80,6 +79,22 @@ Follow the step-by-step numbered sections. For each step:
 1. **Read the concept and architecture diagram.**
 2. **Copy the natural language prompt** from the `💬 Prompt Your AI Coding Agent` block.
 3. **Paste into your coding agent** and observe the underlying `💻 CLI Command` it executes.
+
+### 📌 Checkpoints: Going Back, and Jumping Forward
+
+`TutorialSolution/` is your workspace and is ignored by this repository, so Chapter 03 gives it a small git repository of its own. Every chapter from 03 on ends with a checkpoint step that commits the solution and moves a tag, `ch03-done` through `ch14-done`. A chapter's Mode 1 resets the files to the previous tag with `git reset --hard` plus `git clean`, and says separately what to do about the cloud (rows to delete, artifacts to tear down), because no tag covers the tenant.
+
+The tags are yours alone: from Chapter 06 on the files carry your tenant's ids (folder key, index id, connection ids, assignee), so a tag from another machine validates and fails at runtime. Going **back** is a checkout; jumping **forward** is a rebuild. The parts start here:
+
+| Part | Starts from | Files | Tenant |
+| :--- | :--- | :--- | :--- |
+| Part 2 | `ch05-done` | typed outputs, no ids | nothing yet |
+| Part 3 | `ch07-done` | grounded flow with the Quick Form | folder, bucket, index |
+| Part 4 | `ch09-done` | same files as `ch07-done` | plus the empty `TriageDecision` entity |
+| Part 5 | `ch11-done` | V1 flow plus `.batch-runs/phase1` | plus nine Phase 1 rows |
+| Part 6 | `ch12-done` | V2 flow | plus the Phase 2 rows |
+
+[WORKSHOP.md](./WORKSHOP.md) lists the fast path to each starting point for a student who has to skip ahead.
 
 ---
 
@@ -96,7 +111,7 @@ Tutorial/
 │   └── pre-commit                          <-- Git pre-commit hook
 ├── Chapters/                                <-- Step-by-step tutorial modules
 │   ├── 01-CodingAgents.md                  <-- Part 1: Coding Agent fundamentals & why uip is agent-friendly
-│   ├── 02-Setup.md                         <-- Part 1: Setup, CLI install, 3 form factors & telemetry
+│   ├── 02-Setup.md                         <-- Part 1: Setup, CLI + skills install, login, 3 form factors
 │   ├── 03-SolutionsAndProjects.md          <-- Part 1: Solutions vs. legacy single projects & creating TutorialSolution
 │   ├── 04-BuildingFirstFlow.md              <-- Part 1: Adding EmailTriage flow with an Autonomous Agent
 │   ├── 05-VariablesAndSchemas.md            <-- Part 1: Multi-typed variables, complex JSON, namespacing & Update Variable
@@ -126,7 +141,7 @@ Tutorial/
 
 ## 📚 Tutorial Chapters
 
-The tutorial has six parts. Parts 1 and 2 build the tooling and the baseline triage flow. Parts 3 to 6 turn that flow into a process that earns autonomy in three phases, measured by one scoreboard. The appendices cover production concerns that the phases do not need.
+The tutorial has six parts: Parts 1 and 2 set up the tooling and build the baseline flow, Parts 3 to 6 take it through the three phases described above. The appendices cover production concerns that the phases do not need.
 
 ### Part 1: Foundations
 
@@ -138,10 +153,10 @@ The tutorial has six parts. Parts 1 and 2 build the tooling and the baseline tri
 
 2. **[Chapter 02: Environment Setup & Agent Configuration](./Chapters/02-Setup.md)**
    - Installing Node.js, Git, and GitHub CLI across macOS and Windows 11.
-   - Installing and configuring the UiPath CLI (`uip`).
-   - Disabling telemetry and authenticating against UiPath Cloud.
+   - Installing the UiPath CLI (`uip`) and its agent skills (`uip skills install`), and verifying both.
+   - Authenticating against UiPath Cloud; optionally disabling telemetry.
    - The 3 Interface Form Factors: Terminal CLIs, VS Code Extensions, and Standalone IDEs.
-   - Equipping agents with UiPath skills (`uip skills install`) & MCP server.
+   - The agent briefing files (`AGENTS.md`, `CLAUDE.md`) and why they let you prompt in plain language.
 
 3. **[Chapter 03: UiPath Solutions and Projects (Top-Down)](./Chapters/03-SolutionsAndProjects.md)**
    - The architectural shift: Legacy Single Projects (`project.json`) vs. Modern Solutions (`.uipx`).
@@ -149,6 +164,7 @@ The tutorial has six parts. Parts 1 and 2 build the tooling and the baseline tri
    - The 2 Essential Commands to scaffold solutions and flows.
    - The Assign and Unassign lifecycle mechanism in `TutorialSolution.uipx`.
    - Inspecting and unassigning unused projects (`Project03`).
+   - Giving `TutorialSolution` its own git repository: the `ch<NN>-done` checkpoint tags that every later reset uses.
 
 4. **[Chapter 04: Building Your First Maestro Flow](./Chapters/04-BuildingFirstFlow.md)**
    - Why scaffold flows with an AI agent instead of manual canvas drawing.
@@ -308,15 +324,3 @@ Based on hands-on developer experience with the UiPath CLI (`uip`) and Coding Ag
 11. **A Debug Run Waiting on a Human Task Is Cancelled After About 35 Minutes:**
    - **Current Behavior:** Verified on five `uip maestro flow debug` runs paused on a Quick Form: 35 minutes after the run started, the platform cancelled it (form element `Terminated`, run `Cancelled`), left the task pending in Action Center as an orphan, and actioning the task afterwards did nothing. Combined with suggestion 6 (no way to complete a task from the CLI) this means a HITL flow can only be tested from the CLI with a person standing by. The CLI's own `--timeout` does not change the platform's limit.
    - **Improvement:** Document the debug-instance lifetime, make it configurable, or at least have `flow debug` report it (the run's `finalStatus: Cancelled` arrives with no reason). Better: let a debug run outlive the polling session when a human task is open.
-
----
-
-## ❓ Frequently Asked Questions (Q&A)
-
-### Q: Should logs and CLI outputs from staging / internal tenants be anonymized?
-**A:** **Yes, absolutely.** When creating public tutorials, documentation, or open-source repositories:
-1. **Sanitize Cloud URLs:** Replace internal endpoints (e.g. `staging.uipath.com`) with standard production placeholders:  
-   `https://cloud.uipath.com/{organization}/{tenant}/studio_/designer/...`
-2. **Mask Tenant Identifiers & GUIDs:** Scrub internal organization IDs, folder keys, trace IDs, and job keys to prevent unintentional exposure of internal infrastructure.
-3. **Anonymize User Data & Emails:** Use standard sample domains (e.g. `user@example.com` or `johannes.test@example.com`) rather than real employee or personal mailboxes.
-4. **Protect Credentials:** Never commit `.auth` files, API keys, or PAT tokens. Always ensure `.auth` and `TutorialSolution/` are included in `.gitignore`.

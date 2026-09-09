@@ -24,3 +24,6 @@ Presentation/
 scripts/generate_presentation.py
 scripts/fix_fonts.py
 scripts/test_render_first3.py
+
+# Author-facing notes (publishing hygiene), not student material
+FAQ.md

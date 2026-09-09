@@ -4,6 +4,8 @@ When building automations with modern coding agents, the architecture is organiz
 
 In this chapter, you will learn how to create your central multi-project solution - **`TutorialSolution`**, explore how projects are **assigned and unassigned** in the solution manifest, and understand project lifecycle management.
 
+This solution is the container for everything the tutorial builds: an **email triage process** for a support inbox. From Chapter 04 on, a Maestro flow named `EmailTriage` grows chapter by chapter: first an agent that classifies an email, then a Context Grounding index that holds the department directory, then a human approval task for the sensitive cases, then a Data Fabric entity that records every human decision. Those recorded decisions are what lets the same flow be rebuilt in three versions, each trusted a little more than the last, and measured against a fixed batch of nine emails. Chapter 08 lays out that three-phase design once the baseline exists; for now, the job is the container.
+
 ```mermaid
 flowchart TD
     subgraph SolutionRoot ["📦 TutorialSolution (.uipx)"]
