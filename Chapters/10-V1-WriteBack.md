@@ -42,7 +42,7 @@ Three things change against Chapter 07, and one thing goes away:
 > git -C TutorialSolution reset -q --hard ch09-done
 > git -C TutorialSolution clean -qfd
 > uip maestro flow validate TutorialSolution/EmailTriage/EmailTriage.flow
-> uip maestro flow registry pull --force && uip maestro flow registry search "OrganizationIndex" --output json   # the index must be listed; check its Sync status in Orchestrator
+> uip context-grounding retrieve --index-name OrganizationIndex --folder-path "TutorialSolution" --format json   # expect "last_ingestion_status": "Successful"
 >
 > # 2. Cloud: the entity exists - and Phase 1 rows from an earlier run are deleted one by one
 > ENTITY_ID=$(uip df entities list --output plain --output-filter "[?Name=='TriageDecision'].Id | [0]")

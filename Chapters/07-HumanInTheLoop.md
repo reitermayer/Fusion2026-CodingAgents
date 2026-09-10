@@ -35,7 +35,7 @@ flowchart LR
 > uip maestro flow validate TutorialSolution/EmailTriage/EmailTriage.flow
 >
 > # 2. Cloud: the index must still be ingested
-> uip maestro flow registry pull --force && uip maestro flow registry search "OrganizationIndex" --output json   # the index must be listed; check its Sync status in Orchestrator
+> uip context-grounding retrieve --index-name OrganizationIndex --folder-path "TutorialSolution" --format json   # expect "last_ingestion_status": "Successful"
 > ```
 >
 > ---
