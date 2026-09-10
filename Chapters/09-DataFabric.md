@@ -6,9 +6,11 @@ In this chapter you give the process a memory. Every decision the flow makes - b
 
 ## What You Are Going to Build
 
-Nothing changes in the flow yet. This chapter creates two objects in Data Fabric: the `TriageOutcome` choice set and the `TriageDecision` entity with these eleven fields, as Data Fabric shows them when the chapter is done.
+Nothing changes in the flow yet. This chapter creates two objects in Data Fabric: the `TriageOutcome` choice set and the `TriageDecision` entity. This is the entity with its eleven fields, as Data Fabric shows it when the chapter is done:
 
 <img src="../Images/EmailTriage-Ch09-Entity.png" width="360" alt="The TriageDecision entity in Data Fabric: TicketId, Phase, EmailBody, ProposedDepartment, Department, Outcome, Confidence, HumanReviewRequired, Reasoning, Feedback, ReplyText">
+
+And this is where the entity sits in the bigger picture. Chapter 10 adds the Create Entity Record node that writes one row per email, and from Chapter 12 on the agent reads those rows back as precedent:
 
 ```mermaid
 flowchart LR
