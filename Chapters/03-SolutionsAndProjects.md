@@ -53,7 +53,7 @@ flowchart TD
 > 2. Inside TutorialSolution, initialize a starter Maestro flow project named Project03.
 > 3. List all registered projects to confirm assignment.
 > 4. Delete Project03 by hand: remove its directory, delete both of its artifacts under resources/solution_folder, and remove its entry from TutorialSolution.uipx. Then confirm the solution lists no projects.
-> 5. Turn TutorialSolution into its own git repository: add a .gitignore that ignores dist/, userProfile/ and .DS_Store, commit everything with the message "Chapter 03 done" and tag the commit ch03-done.
+> 5. Turn TutorialSolution into its own git repository: add a .gitignore that ignores dist/, userProfile/ and .DS_Store, commit everything with the message "Chapter 03 done" and tag the commit ch03-done. Then show me the latest commit with its tag.
 > ```
 >
 > ---
@@ -243,7 +243,7 @@ Two things a checkpoint does not do. It does not snapshot the tenant: the Orches
 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 ```text
-Turn TutorialSolution into its own git repository: add a .gitignore that ignores dist/, userProfile/ and .DS_Store, commit everything with the message "Chapter 03 done" and tag the commit ch03-done.
+Turn TutorialSolution into its own git repository: add a .gitignore that ignores dist/, userProfile/ and .DS_Store, commit everything with the message "Chapter 03 done" and tag the commit ch03-done. Then show me the latest commit with its tag.
 ```
 
 ### 💻 Underlying CLI Commands (What the Agent Executes)
@@ -255,6 +255,7 @@ git -C TutorialSolution init -q
 git -C TutorialSolution add -A
 git -C TutorialSolution commit -qm "Chapter 03 done"
 git -C TutorialSolution tag -f ch03-done
+git -C TutorialSolution log --oneline --decorate -1
 ```
 
 **🪟 Windows 11 (PowerShell):**
@@ -264,7 +265,14 @@ git -C TutorialSolution init -q
 git -C TutorialSolution add -A
 git -C TutorialSolution commit -qm "Chapter 03 done"
 git -C TutorialSolution tag -f ch03-done
+git -C TutorialSolution log --oneline --decorate -1
 ```
+
+The last command prints one line, the commit with its tag, and is how you verify any checkpoint from now on:
+```text
+a1b2c3d (HEAD -> main, tag: ch03-done) Chapter 03 done
+```
+The commit hash will differ on your machine. Later on, `git -C TutorialSolution tag -n` lists every checkpoint you have, each with its message.
 
 > 💡 **Tip:** `userProfile/` holds the debug overrides the CLI writes for your user, and `dist/` is where Appendix A2 packs the solution; neither belongs in a checkpoint. `.batch-runs/`, which Chapter 11 creates, is kept on purpose: the phase 1 run logs are part of the Part 5 starting point. The nested repository is invisible to the tutorial repository (the whole folder is ignored there) and to `uip solution pack`, which packs only the registered projects and the resource definitions.
 
@@ -277,6 +285,7 @@ git -C TutorialSolution tag -f ch03-done
 - [x] Understood the **Assign and Unassign** mechanism in `TutorialSolution.uipx`.
 - [x] Inspected assigned projects using `uip solution projects list`.
 - [x] Deleted `Project03` by hand (folder, both artifacts, manifest entry) so the solution is empty for Chapter 04.
+- [x] Gave `TutorialSolution` its own git repository; `git -C TutorialSolution log --oneline --decorate -1` shows `tag: ch03-done` and "Chapter 03 done".
 
 ---
 
