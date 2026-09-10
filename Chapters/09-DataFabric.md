@@ -8,7 +8,7 @@ In this chapter you give the process a memory. Every decision the flow makes - b
 
 Nothing changes in the flow yet. This chapter creates two objects in Data Fabric: the `TriageOutcome` choice set and the `TriageDecision` entity with these eleven fields, as Data Fabric shows them when the chapter is done.
 
-![The TriageDecision entity in Data Fabric: TicketId, Phase, EmailBody, ProposedDepartment, Department, Outcome, Confidence, HumanReviewRequired, Reasoning, Feedback, ReplyText](../Images/EmailTriage-Ch09-Entity.png)
+<img src="../Images/EmailTriage-Ch09-Entity.png" width="360" alt="The TriageDecision entity in Data Fabric: TicketId, Phase, EmailBody, ProposedDepartment, Department, Outcome, Confidence, HumanReviewRequired, Reasoning, Feedback, ReplyText">
 
 ```mermaid
 flowchart LR
