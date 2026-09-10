@@ -1,8 +1,14 @@
 # Chapter 09: Data Fabric - Recording Every Triage Decision
 
-Chapters 03 to 10 built a triage flow that classifies an email, asks a human when the department demands it, and returns the reviewer's verdict as flow outputs. Then the run ends, and the verdict is gone. The next email starts from zero. A reviewer who corrects the same mistake ten times has taught the process nothing.
+Chapters 03 to 07 built a triage flow that classifies an email, asks a human when the department demands it, and returns the reviewer's verdict as flow outputs. Then the run ends, and the verdict is gone. The next email starts from zero. A reviewer who corrects the same mistake ten times has taught the process nothing.
 
 In this chapter you give the process a memory. Every decision the flow makes - by the agent alone or by a human - is written to a **Data Fabric entity** named `TriageDecision`. Parts 4 to 6 of this tutorial (Chapters 10 to 14) are built on that table: the agent reads earlier decisions back as precedent, a scoreboard counts how often a human had to step in, and the count goes down from one version of the flow to the next.
+
+## What You Are Going to Build
+
+Nothing changes in the flow yet. This chapter creates two objects in Data Fabric: the `TriageOutcome` choice set and the `TriageDecision` entity with these eleven fields, as Data Fabric shows them when the chapter is done.
+
+![The TriageDecision entity in Data Fabric: TicketId, Phase, EmailBody, ProposedDepartment, Department, Outcome, Confidence, HumanReviewRequired, Reasoning, Feedback, ReplyText](../Images/EmailTriage-Ch09-Entity.png)
 
 ```mermaid
 flowchart LR
