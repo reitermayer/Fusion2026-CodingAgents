@@ -50,7 +50,7 @@ Only one file changes in this chapter, `EmailTriage/EmailTriage.flow`, plus one 
 > 3. On the true branch, scaffold a Quick Form task with uip maestro flow hitl add: label "Sensitive Case Review", priority High, three read-only string fields (customer email from start.output.emailBody, department from agent_triage.output.category, urgency from agent_triage.output.urgencyScore converted with String()), one output field reviewernote, outcomes Approve and Reject. Give the fields real labels, use type string, keep the schema id the CLI generated, and bind every field with the full =js:$vars. prefix.
 > 4. Assign the task to me: run uip user and set the node's assignee to {type "user", value = my Email, displayName = "FirstName LastName"}.
 > 5. Wire the task's outcome-approve and outcome-reject handles to the End node, and declare both handles next to "completed" in the flow's definitions entry for the Quick Form node so validate stays green.
-> 6. Add two string outputs to the End node: reviewOutcome from {{ $vars.sensitiveCaseReview1.status }} and reviewerNote from {{ $vars.sensitiveCaseReview1.output.reviewernote }}.
+> 6. Add two string outputs to the End node: reviewOutcome from {{ $vars.sensitiveCaseReview1.status }} and reviewerNote from {{ $vars.sensitiveCaseReview1.output.reviewernote }}, and declare both as direction out globals in the flow's variables.globals.
 > 7. Format and validate the flow, refresh and validate the inline agent.
 > 8. Debug the flow with a forgotten discount code email and confirm it completes without a task. Then debug it with a GDPR complaint email mentioning a solicitor: the run pauses on the review task. List the pending, not deleted Action Center tasks titled "Sensitive Case Review" with uip tasks, complete the newest one as a QuickFormTask with the action Approve and the reviewer note "yes", and report category, requiresEscalation, reviewOutcome and reviewerNote from the resumed run's payload.
 > 9. Finish with the checkpoint: commit everything in TutorialSolution to its own git repository with the message "Chapter 07 done" and move the tag ch07-done to that commit.
@@ -230,7 +230,7 @@ A human checkpoint whose verdict evaporates teaches the wrong lesson. Carry it o
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
 ```text
-Add two output arguments to the EmailTriage End node: reviewOutcome, the Approve or Reject outcome the human picked, and reviewerNote, the free-text note they left. Both are strings and both are empty when the case was auto-routed without review. Then format and validate the flow.
+Add two output arguments to the EmailTriage End node: reviewOutcome, the Approve or Reject outcome the human picked (the task node's status), and reviewerNote, the free-text note they left (the reviewernote field of the task node's output). Both are strings and both are empty when the case was auto-routed without review. Declare both as direction out globals in the flow's variables.globals, as the four Chapter 05 outputs are. Then format and validate the flow.
 ```
 
 ### 💻 Underlying CLI Command (What the Agent Executes)
@@ -245,7 +245,15 @@ uip maestro flow validate EmailTriage/EmailTriage.flow --output json
 "reviewerNote":  { "type": "string", "source": "{{ $vars.sensitiveCaseReview1.output.reviewernote }}", "var": "reviewerNote" }
 ```
 
-Both are strings, so both use Handlebars. `status` carries the outcome name; `output` carries the filled fields, keyed by the field `id` (lowercase `reviewernote`).
+```json
+"globals": [
+  ...,
+  { "id": "reviewOutcome", "direction": "out", "type": "string" },
+  { "id": "reviewerNote",  "direction": "out", "type": "string" }
+]
+```
+
+Both are strings, so both use Handlebars. `status` carries the outcome name; `output` carries the filled fields, keyed by the field `id` (lowercase `reviewernote`). Without the two `globals` entries the flow still validates, but `reviewOutcome` never appears in the run's globals.
 
 ---
 
@@ -287,7 +295,7 @@ What each run should show:
 | `requiresEscalation` | **`false`** | **`true`** |
 | `sensitiveCaseReview1` in the elements | no | yes |
 | Run behaviour | completes immediately | pauses, resumes after `tasks complete` |
-| `reviewOutcome` / `reviewerNote` | empty | `Approve` / `yes` |
+| `reviewOutcome` / `reviewerNote` | `"null"` / empty | `Approve` / `yes` |
 
 > 💡 **Or act as the reviewer yourself.** Instead of the `uip tasks` commands, open the task in Action Center (or the email notification), read the three fields, leave a note and press **Approve** or **Reject**. The paused debug command resumes the same way.
 
