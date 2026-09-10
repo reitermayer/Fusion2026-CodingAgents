@@ -155,7 +155,7 @@ On the decision node's true branch in EmailTriage, add a Quick Form human task w
 
 Show the reviewer three read-only fields: the customer email (start.output.emailBody), the department the agent chose (agent_triage.output.category) and the urgency score (agent_triage.output.urgencyScore, converted with String() because form fields are strings). Give them one editable field reviewernote, and two outcomes, Approve and Reject, both of which let the flow continue.
 
-After scaffolding, fix the node's schema: every field gets type string and a real label, every binding uses the full =js:$vars. prefix, and the schema id the CLI generated stays. Wire the decision node's true handle into the task. Wire the task's outcome-approve and outcome-reject handles to the End node, and declare both handles next to "completed" in the flow's definitions entry for the Quick Form node so the flow validates. Format and validate.
+After scaffolding, fix the node's schema: every field gets type string and a real label, every binding uses the full =js:$vars. prefix, both outcomes get action Continue, and the schema id the CLI generated stays. Wire the decision node's true handle into the task. Wire the task's outcome-approve and outcome-reject handles to the End node, and declare both handles next to "completed" in the flow's definitions entry for the Quick Form node so the flow validates. Edit the flow as a complete JSON document rather than patching lines, re-read it and confirm it still parses, then format and validate.
 ```
 
 ### 💻 Underlying CLI Commands (What the Agent Executes)
@@ -209,7 +209,7 @@ Run uip user and take my Email, FirstName and LastName from its Data. In Tutoria
 uip user --output-filter "{Email:Email,FirstName:FirstName,LastName:LastName}"
 ```
 
-The node gets an `assignee` object next to `schema`, with all three keys:
+The node gets an `assignee` object with all three keys, either next to `schema` or replacing the `staticEmail` one inside `recipient` (both verified on 10.09.2026):
 
 ```json
 "assignee": {
