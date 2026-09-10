@@ -400,12 +400,12 @@ The EmailTriage debug run is paused on a Sensitive Case Review task. List the pe
 
 #### 💻 Underlying CLI Commands (What the Agent Executes)
 ```bash
-uip tasks list --output json --output-filter "[?Status=='Pending' && Title=='Sensitive Case Review'].{Id:Id,Status:Status}"
+uip tasks list --output json --output-filter "[?Status=='Pending' && !IsDeleted && Title=='Sensitive Case Review'].{Id:Id,Status:Status}"
 uip tasks get <taskId> --output json --output-filter "{FolderId:FolderId,Type:Type}"
 uip tasks complete <taskId> --type QuickFormTask --folder-id <folderId> \
   --action Approve --data '{"reviewernote":"yes"}' --output json
 ```
-`complete` answers with `"Code": "TaskCompleted"` and echoes the action and data. Within seconds the paused `debug` command in the other terminal prints its payload with `finalStatus: Completed`. Task ids are numeric, and the folder id comes from `tasks get`, not from `tasks list`.
+`complete` answers with `"Code": "TaskCompleted"` and echoes the action and data. Within seconds the paused `debug` command in the other terminal prints its payload with `finalStatus: Completed`. Task ids are numeric, and the folder id comes from `tasks get`, not from `tasks list`. The list also contains tasks that were deleted in Action Center (they keep their old status), so the `!IsDeleted` filter is what tells a live task from a leftover.
 
 Verified globals from a completed run, identical for both routes:
 
