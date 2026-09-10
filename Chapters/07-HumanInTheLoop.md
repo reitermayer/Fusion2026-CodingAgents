@@ -206,7 +206,7 @@ The CLI names the node from its label: `Sensitive Case Review` becomes `sensitiv
 
 1. **Field types and the number.** The scaffolder writes every field as `"type": "text"`; Studio Web writes `"string"`, so use that. Quick Form fields are text fields, and a field bound to a number cannot be submitted: Action Center shows *Invalid input: expected string, received number* under the field and both buttons stop working. Do not change the field type to `number` (the form still validates it as a string); convert the value in the binding instead: `"=js:String($vars.agent_triage.output.urgencyScore)"`.
 2. **Labels.** The scaffolder uses each field's id as its label, so the reviewer sees `EMAILBODY` and `URGENCY`. Give the fields real labels.
-3. **`schemaId`**, see the warning after the JSON.
+3. **The schema id.** CLI `1.201` writes one (`"id": "<uuid>"` inside `schema`) and it must stay; see the warning after the JSON.
 
 The assignee is stored as a plain email and is resolved in Section 5.
 
@@ -214,7 +214,7 @@ The schema inside the finished, verified node:
 
 ```json
 "schema": {
-  "schemaId": "<any generated UUID>",
+  "id": "<the UUID hitl add generated>",
   "fields": [
     { "id": "emailbody",   "label": "Customer email",             "type": "string", "direction": "input",  "binding": "=js:$vars.start.output.emailBody" },
     { "id": "department",  "label": "Department the agent chose",  "type": "string", "direction": "input",  "binding": "=js:$vars.agent_triage.output.category" },
@@ -228,7 +228,7 @@ The schema inside the finished, verified node:
 }
 ```
 
-> ⚠️ **The schema needs an id, and `hitl add` does not write one.** The canvas generates a `schemaId` automatically whenever you edit the form there; a schema without one faults at task creation with the opaque incident `[200000] Activity failed to execute` on the Quick Form node - and the flow still validates as `"Valid"` beforehand. Generate any UUID and put it in `schema.schemaId` right after scaffolding. Verified behavior, not theory.
+> ⚠️ **The schema needs an id.** CLI `1.201.0` and later write it as `schema.id` when you run `hitl add`; older releases did not, and the canvas writes it as `schemaId` when you edit the form there. Either key works at runtime (verified with `id` on 10.09.2026). What does not work is a schema with neither: it validates as `"Valid"` and then faults at task creation with the opaque incident `[200000] Activity failed to execute`. If you ever hand-author a form, generate a UUID for it.
 
 > ⚠️ **Wire the node's outputs in exactly one of two styles - never both.** The canvas draws one output stub per outcome (`outcome-approve`, `outcome-reject`) and the reviewer's button press resumes the flow through the matching handle. The node's manifest, however, declares a single generic `completed` handle, so `uip maestro flow validate` rejects outcome edges as an "undeclared source handle" - even ones the canvas itself drew. Both styles run correctly; pick one:
 >
@@ -369,7 +369,27 @@ The element list is the proof. `variables.elements` is an array of `{ elementId,
 
 ### 7.2 Completing the Task
 
-The legal-complaint run pauses. Open the task in **Action Center**, or from the notification if you enabled it, read the three fields the form shows you, leave a note and pick **Approve** or **Reject**. The flow resumes through the handle for the outcome you pressed, and `reviewOutcome` and `reviewerNote` come back as flow outputs. Verified globals from a completed run:
+The legal-complaint run pauses. There are two ways to act on the task, and both resume the flow through the handle for the outcome you chose, with `reviewOutcome` and `reviewerNote` coming back as flow outputs.
+
+**In Action Center.** Open the task, or the notification if you enabled it, read the three fields the form shows you, leave a note and pick **Approve** or **Reject**. This is what the reviewer does in real life.
+
+**From the CLI.** The `uip tasks` tool (it installs itself on first use) lists and completes tasks, which is what a coding agent or a test script does. Leave the debug command running in one terminal and, in another:
+
+#### 💬 Prompt Your AI Coding Agent (Recommended)
+```text
+The EmailTriage debug run is paused on a Sensitive Case Review task. List the pending Action Center tasks, find the newest one with that title, read its folder id with uip tasks get, and complete it as a QuickFormTask with the action Approve and the reviewer note "yes". Then confirm the debug run resumed and show me reviewOutcome and reviewerNote from its globals.
+```
+
+#### 💻 Underlying CLI Commands (What the Agent Executes)
+```bash
+uip tasks list --output json --output-filter "[?Status=='Pending' && Title=='Sensitive Case Review'].{Id:Id,Status:Status}"
+uip tasks get <taskId> --output json --output-filter "{FolderId:FolderId,Type:Type}"
+uip tasks complete <taskId> --type QuickFormTask --folder-id <folderId> \
+  --action Approve --data '{"reviewernote":"yes"}' --output json
+```
+`complete` answers with `"Code": "TaskCompleted"` and echoes the action and data. Within seconds the paused `debug` command in the other terminal prints its payload with `finalStatus: Completed`. Task ids are numeric, and the folder id comes from `tasks get`, not from `tasks list`.
+
+Verified globals from a completed run, identical for both routes:
 
 ```text
 Category           = "Legal & Compliance"
