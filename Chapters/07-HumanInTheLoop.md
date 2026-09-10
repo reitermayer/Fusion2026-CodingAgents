@@ -245,9 +245,27 @@ The schema inside the finished, verified node:
 
 ## 5. Assigning the Reviewer
 
-A task with no assignee reaches nobody. The recipient is the one value that cannot ship in a tutorial, because it has to be **your** account.
+A task with no assignee reaches nobody. The recipient is the one value that cannot ship in a tutorial, because it has to be **your** account. Two ways to set it; the first keeps the coding agent in charge.
 
-### 🖱️ Do This One Step in the Canvas
+### 💬 Prompt Your AI Coding Agent (Recommended)
+
+```text
+In TutorialSolution/EmailTriage, assign the Sensitive Case Review task to me: set the Quick Form node's assignee to a resolved user with type "user", my email address as the value, and my display name. Keep the recipient channels Email and ActionCenter. Then validate the flow.
+```
+
+### 💻 Underlying Edit (What the Agent Writes)
+
+The node gets an `assignee` object next to `schema`, with all three keys; a `type: "user"` assignee without `displayName` faults at task creation with `Could not get value for key:name from context in input.`:
+```json
+"assignee": {
+  "type": "user",
+  "value": "you@yourcompany.com",
+  "displayName": "Your Name"
+}
+```
+Verified on 10.09.2026: a node assigned this way, never opened in a canvas, created a task assigned to that user in Action Center and resumed correctly. The `hitl add` flag's `staticEmail` recipient stays alongside it.
+
+### 🖱️ Or Do It in the Canvas
 
 Open `EmailTriage.flow` in the Studio Web or VS Code canvas and click the **Sensitive Case Review** node. In the **Parameters** tab:
 
@@ -256,7 +274,7 @@ Open `EmailTriage.flow` in the Studio Web or VS Code canvas and click the **Sens
 3. Wait for the directory to match it, then **click the suggestion**. The box collapses to your display name with a `Clear` link, which is how you know the identity resolved rather than staying as loose text.
 4. Save.
 
-The `hitl add` command's `--assignee` flag already stores a plain-email recipient, so the node is never entirely unassigned. The canvas picker goes one step further: it resolves the address against the tenant directory and stores the resolved identity. This is the shape a resolved assignee has in the `.flow` file - note the `displayName`, which only the directory lookup can supply:
+The canvas picker resolves the address against the tenant directory and stores the same resolved identity as the edit above:
 
 ```json
 "assignee": {

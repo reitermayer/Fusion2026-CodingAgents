@@ -8,8 +8,8 @@
     "Outcome": 0,
     "Confidence": 95,
     "HumanReviewRequired": false,
-    "Reasoning": "The Handles text for Billing Operations includes 'invoices,' which directly matches Anna's request for help locating PDF versions of invoices. Additionally, a reviewed precedent (TicketId T01) exists for a similar request, confirming Billing Operations as the correct department. Confidence rule 2 applies.",
-    "Feedback": ""
+    "Reasoning": "The Billing Operations department handles 'Subscription charges, invoices, payment methods, plan renewals and billing cycle questions,' which directly matches Anna's request for assistance with downloading invoices. Confidence rule 2 applies because only one department fits the request, and a human-confirmed precedent (TicketId T01) exists for a similar request: 'Could you tell me where I can download them for our account?'",
+    "Feedback": null
   },
   {
     "TicketId": "T02",
@@ -18,10 +18,10 @@
     "ProposedDepartment": "Technical Support",
     "Department": "Technical Support",
     "Outcome": 0,
-    "Confidence": 95,
+    "Confidence": 100,
     "HumanReviewRequired": false,
-    "Reasoning": "The Handles text for Technical Support explicitly mentions 'failed exports' and 'error messages,' which directly match the issue described in the email. Additionally, a reviewed precedent (TicketId T02) exists for a similar issue, confirming the choice of Technical Support. This aligns with confidence rule 2, resulting in a confidence score of 95.",
-    "Feedback": ""
+    "Reasoning": "The Technical Support department handles 'Product bugs, error messages, crashes, failed exports and performance complaints,' which directly matches the issue described in the email. A human-confirmed precedent exists for a similar request (TicketId T02: 'Since Tuesday every attempt to export our campaign report to CSV stops after a few seconds with the message 'Export failed (EXP-4102)'). Confidence rule 2 applies because only one department fits the request and the precedent confirms it.",
+    "Feedback": null
   },
   {
     "TicketId": "T03",
@@ -30,10 +30,10 @@
     "ProposedDepartment": "Account & Access Management",
     "Department": "Account & Access Management",
     "Outcome": 0,
-    "Confidence": 95,
+    "Confidence": 100,
     "HumanReviewRequired": false,
-    "Reasoning": "The request matches the 'Account & Access Management' department's Handles text, which includes user provisioning and deactivation, role permissions, and seat count changes. A reviewed precedent (TicketId T03) exists for an identical request, confirming this department. Confidence is 95 as per rule 2.",
-    "Feedback": ""
+    "Reasoning": "The Account & Access Management department handles user provisioning and deactivation, role permissions, and seat count changes, which directly match the request. A human-confirmed precedent exists for a similar request (TicketId T03: 'Please deactivate his user account and remove his access to all shared workspaces. We would like his seat moved to Priya Raman, who starts on Monday and will need a standard user role'). Confidence rule 2 applies because only one department fits the request and the precedent confirms it.",
+    "Feedback": null
   },
   {
     "TicketId": "T04",
@@ -42,10 +42,10 @@
     "ProposedDepartment": "Sales",
     "Department": "Sales",
     "Outcome": 0,
-    "Confidence": 95,
+    "Confidence": 100,
     "HumanReviewRequired": false,
-    "Reasoning": "The Sales department's Handles text explicitly covers 'new licenses, tier upgrades, pricing quotes, product demos and contract renewals,' which matches the customer's request. A reviewed precedent (TicketId T04) confirms this department for a similar request, so confidence is set to 95 as per rule 2.",
-    "Feedback": ""
+    "Reasoning": "The Sales department handles new licenses, pricing quotes, and contract renewals, which directly match the customer's request. A human-confirmed precedent exists for a similar request (TicketId T04: 'We are expanding the platform to two more sites and need a quote for 40 additional licences on our current plan.'). Confidence rule 2 applies because only one department fits the request and the precedent confirms it.",
+    "Feedback": null
   },
   {
     "TicketId": "T05",
@@ -54,10 +54,10 @@
     "ProposedDepartment": "Billing Operations",
     "Department": "Billing Operations",
     "Outcome": 0,
-    "Confidence": 95,
+    "Confidence": 100,
     "HumanReviewRequired": false,
-    "Reasoning": "The Handles text for Billing Operations includes 'plan renewals and billing cycle questions,' which directly matches the customer's request. Additionally, a reviewed precedent (TicketId T05) exists for an identical request, confirming Billing Operations as the correct department. Confidence rule 2 applies, resulting in a confidence score of 95.",
-    "Feedback": ""
+    "Reasoning": "The Billing Operations department handles 'Subscription charges, invoices, payment methods, plan renewals and billing cycle questions,' which directly matches the customer's request to confirm the renewal date and disable auto-renewal. A human-confirmed precedent exists for a similar request (TicketId T05: 'Could you confirm the date on which our annual plan renews this year?'). Confidence rule 2 applies because only one department fits the request and the precedent confirms it.",
+    "Feedback": null
   },
   {
     "TicketId": "T06",
@@ -66,10 +66,10 @@
     "ProposedDepartment": "Technical Support",
     "Department": "Technical Support",
     "Outcome": 1,
-    "Confidence": 85,
+    "Confidence": 74,
     "HumanReviewRequired": false,
-    "Reasoning": "The Handles text for Technical Support includes 'product bugs' and 'error messages,' which directly match the issue described in the email. A reviewed precedent (TicketId T06) exists for a similar issue, confirming that Technical Support is the correct department. Confidence rule 2 applies, resulting in a confidence score of 85.",
-    "Feedback": ""
+    "Reasoning": "The Technical Support department handles 'Product bugs, error messages, crashes, failed exports and performance complaints,' which aligns with the issue described. A precedent (TicketId T06) corrected the routing from IT Service Desk to Technical Support for a similar SSO issue: 'The sign-in broke with the release, so this is a product defect to fix.' Confidence rule 4 applies because the routing is contested, and the corrected department is followed.",
+    "Feedback": null
   },
   {
     "TicketId": "T07",
@@ -77,11 +77,11 @@
     "EmailBody": "We received the renewal quote for next year and it is about 30 percent higher than what we paid last year, with no explanation. At that price we would have to consider moving to a lower tier or evaluating other vendors. We have been a customer for four years and would like someone to walk us through the options before we decide.",
     "ProposedDepartment": "Customer Success",
     "Department": "Customer Success",
-    "Outcome": 0,
-    "Confidence": 95,
+    "Outcome": 1,
+    "Confidence": 74,
     "HumanReviewRequired": false,
-    "Reasoning": "The Handles text for Customer Success includes 'retention outreach for accounts at risk of churn,' which directly matches the customer's concerns about the renewal price and potential vendor evaluation. A reviewed precedent (TicketId T07) exists for a similar request, confirming Customer Success as the correct department. Confidence rule 2 applies, resulting in a confidence score of 95.",
-    "Feedback": ""
+    "Reasoning": "The Customer Success department handles retention outreach for accounts at risk of churn, which matches the customer's concern about the renewal price increase and potential vendor evaluation. A precedent (TicketId T07) corrected the routing from Sales to Customer Success for a similar request: 'A four-year customer weighing whether to stay is retention work first and a pricing quote second.' Confidence rule 4 applies because the routing is contested, and the corrected department is followed.",
+    "Feedback": null
   },
   {
     "TicketId": "T08",
@@ -92,8 +92,8 @@
     "Outcome": 1,
     "Confidence": 50,
     "HumanReviewRequired": true,
-    "Reasoning": "The Handles text for Legal & Compliance explicitly mentions 'GDPR erasure demands,' which directly matches the customer's request. A reviewed precedent (TicketId T08) exists for an identical request, confirming this department. Confidence rule 1 applies because the department requires human review, limiting confidence to 50.",
-    "Feedback": ""
+    "Reasoning": "The Legal & Compliance department handles GDPR erasure demands, as stated in its Handles text: 'Legal threats and lawsuits, solicitor or attorney letters, regulatory and data protection complaints, GDPR erasure demands, subpoenas and contract disputes.' A reviewed precedent (TicketId T08) confirms this department for a similar request: 'This is a formal request under Article 17 of the GDPR. Please erase all personal data you hold about me.' Confidence rule 1 applies because Human Review is required for this department, capping confidence at 50.",
+    "Feedback": null
   },
   {
     "TicketId": "T09",
@@ -104,7 +104,7 @@
     "Outcome": 1,
     "Confidence": 50,
     "HumanReviewRequired": true,
-    "Reasoning": "The Handles text for Trust & Safety includes 'phishing attempts, suspicious links, and impersonation,' which directly matches the email's description of a phishing attack. A reviewed precedent (TicketId T09) exists for an identical request, confirming this department. Confidence rule 1 applies because the department requires human review, limiting confidence to 50.",
-    "Feedback": ""
+    "Reasoning": "The Trust & Safety department handles phishing attempts, suspicious links, and impersonation, which directly matches the email's content. A reviewed precedent (TicketId T09) confirms this department for a similar request: 'Several of our staff received an email this morning that claims to come from your support team and asks them to 'verify their account' through a link.' Confidence rule 1 applies because Human Review is required for this department, capping confidence at 50.",
+    "Feedback": null
   }
 ]
