@@ -54,7 +54,7 @@ You can run this tutorial in a pure terminal or inside **Visual Studio Code (VS 
 
 ## 🚀 Prerequisites
 
-You need **Node.js v18+**, the **UiPath CLI** (`uip`), **Git**, and a **UiPath Automation Cloud account**. Node.js is the only language runtime involved; Python is not required. [Chapter 02](Chapters/02-Setup.md) installs each of these for macOS and Windows 11, clones this repository, and authenticates against your tenant.
+You need **Node.js v18+**, **Python 3.11+** with the `uipath` package (one `uip` tool is a wrapper over the UiPath Python SDK; you never write Python), the **UiPath CLI** (`uip`), **Git**, and a **UiPath Automation Cloud account**. [Chapter 02](Chapters/02-Setup.md) installs each of these for macOS and Windows 11, clones this repository, and authenticates against your tenant.
 
 ---
 
@@ -160,8 +160,8 @@ The tutorial has six parts: Parts 1 and 2 set up the tooling and build the basel
    - How Claude Code, Google Antigravity, and UiPath Autopilot interact with `uip`.
 
 2. **[Chapter 02: Environment Setup & Agent Configuration](./Chapters/02-Setup.md)**
-   - Installing Node.js, Git, and GitHub CLI across macOS and Windows 11.
-   - Installing the UiPath CLI (`uip`) and its agent skills (`uip skills install`), and verifying both.
+   - Installing Node.js, Python 3, Git, and GitHub CLI across macOS and Windows 11.
+   - Installing the UiPath CLI (`uip`), its agent skills (`uip skills install`) and the Python-backed context-grounding tool, and verifying all three.
    - Authenticating against UiPath Cloud; optionally disabling telemetry.
    - The 3 Interface Form Factors: Terminal CLIs, VS Code Extensions, and Standalone IDEs.
    - The agent briefing files (`AGENTS.md`, `CLAUDE.md`) and why they let you prompt in plain language.
@@ -196,7 +196,7 @@ The tutorial has six parts: Parts 1 and 2 set up the tooling and build the basel
 
 6. **[Chapter 06: Storage Buckets & Context Grounding Indexes](./Chapters/06-StorageBucketAndIndex.md)**
    - Why hard-coding organizational knowledge into a system prompt does not survive a reorganization.
-   - Why indexes have no core CLI, and what stays in the browser.
+   - Creating, syncing and checking the index with `uip context-grounding`, the one Python-backed tool.
    - Creating a **root** Orchestrator folder with its own package feed (`--feed-type FolderHierarchy`).
    - Creating the `OrganizationData` storage bucket and uploading `Departments.xlsx` to it.
    - Creating and syncing the `OrganizationIndex` in Orchestrator, and finding its id in the flow registry.

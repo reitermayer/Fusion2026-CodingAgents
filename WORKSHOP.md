@@ -9,7 +9,7 @@ Measured on one machine and one tenant while verifying the chapters. Every numbe
 | Piece | Time | Notes |
 | :--- | :--- | :--- |
 | Chapters 03 to 05 (solution, first flow, typed outputs) | 12 min | two debug runs |
-| Chapter 06 (folder, bucket, index in the browser, sync, attach) | 5 to 8 min | the sync itself is under a minute |
+| Chapter 06 (folder, bucket, index, sync, attach, all from the CLI) | 5 to 8 min | the sync itself is under a minute |
 | Chapter 07 (gateway, Quick Form, two debug runs) | 10 min | one Action Center round trip |
 | Chapter 09 (entity and choice set) | 3 min | all CLI |
 | Chapter 10 (V1 build) | 8 min | plus one review round trip |
@@ -74,14 +74,14 @@ What the tags do not do is let a student skip ahead on someone else's files. Fro
 
 ### The combined fast track
 
-One prompt, pasted into the coding agent from the repository root. It runs Mode 2 of Chapters 03, 04, 05, 06, 07 and 09 in order, stopping only where the browser is needed. It leaves the same checkpoint tags behind as the chapters do, so every later Mode 1 works for this student too.
+One prompt, pasted into the coding agent from the repository root. It runs Mode 2 of Chapters 03, 04, 05, 06, 07 and 09 in order, stopping only where the browser is needed (the Action Center task in Chapter 07, the entity in Chapter 09). It leaves the same checkpoint tags behind as the chapters do, so every later Mode 1 works for this student too.
 
 ```text
 Build the baseline of the Coding Agents tutorial in this repository, in order, without asking me questions unless a step needs the browser:
 1. Chapter 03: create the TutorialSolution solution, then remove the starter project again so the solution is clean. Turn TutorialSolution into its own git repository (ignore dist/, userProfile/ and .DS_Store), commit with the message "Chapter 03 done" and tag the commit ch03-done.
 2. Chapter 04: add the EmailTriage flow with a Start trigger taking emailBody, an inline Autonomous Agent on gpt-4o-2024-11-20 acting as a customer support triage AI, and an End node returning triageResult. Validate and run one debug with a duplicate-charge email; check the agent received the email text.
 3. Chapter 05: give the agent four typed outputs (category, urgencyScore, requiresEscalation, actionItems) and forward them through the End node with typed bindings. Validate and debug once; check the runtime types.
-4. Chapter 06: create the TutorialSolution Orchestrator folder with its own feed, the OrganizationData bucket, upload Data/Departments.xlsx. Then stop and tell me to create and sync the OrganizationIndex in Orchestrator. When I confirm, prove the index is in the flow registry, attach it to the agent as a context resource wired to the context handle, rewrite the prompt to classify into retrieved departments with at most two short retrieval queries (a topic phrase, never the full email), refresh the agent, refresh the solution resources, and debug once; the category must be a name from the spreadsheet.
+4. Chapter 06: create the TutorialSolution Orchestrator folder with its own feed, the OrganizationData bucket, upload Data/Departments.xlsx. Then create the OrganizationIndex on that bucket with uip context-grounding create, trigger its ingestion and poll retrieve until last_ingestion_status is Successful. Prove the index is in the flow registry, attach it to the agent as a context resource wired to the context handle, rewrite the prompt to classify into retrieved departments with at most two short retrieval queries (a topic phrase, never the full email), refresh the agent, refresh the solution resources, and debug once; the category must be a name from the spreadsheet.
 5. Chapter 07: sharpen requiresEscalation to the spreadsheet's Human Review column, add the decision node, scaffold the Sensitive Case Review Quick Form with hitl add, then fix what the scaffolder leaves: every field type "string", the urgency binding wrapped in String(), real labels, a schemaId, and me as the resolved assignee. Declare the two outcome handles in the cached definition, wire both outcomes to the End node, add reviewOutcome and reviewerNote outputs. Validate. Debug the discount-code email (auto-route) and the GDPR email (pauses on the task; tell me to approve it).
 6. Chapter 09: create the TriageOutcome choice set and the TriageDecision entity from triage-decision.entity.json, and run the write-read-delete round trip. Leave the entity empty.
 After each chapter, commit TutorialSolution to its own git repository with the message "Chapter NN done" and move the tag chNN-done to that commit (ch04-done, ch05-done, ch06-done, ch07-done; for Chapter 09 an empty commit tagged ch09-done, since it changes nothing on disk).
@@ -95,6 +95,6 @@ The question comes up every time: can the finished V3 flow be handed out with th
 - A `.flow` file is not portable between tenants. It carries the index id, the connection ids, the folder keys and the assignee, and the inline agent's resources carry them again. Copying a finished project into another tenant produces a flow that validates and fails at runtime on every one of them.
 - Everything in the flow was built from the CLI, and every command is in the chapters. What is portable is the **build**, not the file.
 
-So the honest form of "ready-made" is a rebuild script: a Node script that runs the Chapter 03 to 14 commands against the student's tenant with the student's ids, the same way a coding agent would, in a few minutes, with the browser steps (index sync, task approvals) called out as pauses. The data it needs is already in `Data/`: the department directory, the nine emails, the nine phase 1 rows, the FAQ. It is the natural next deliverable of this repository, and it is a day of work, most of it the tests.
+So the honest form of "ready-made" is a rebuild script: a Node script that runs the Chapter 03 to 14 commands against the student's tenant with the student's ids, the same way a coding agent would, in a few minutes, with the browser steps (task approvals in Action Center) called out as pauses. The data it needs is already in `Data/`: the department directory, the nine emails, the nine phase 1 rows, the FAQ. It is the natural next deliverable of this repository, and it is a day of work, most of it the tests.
 
 Until it exists, the combined fast track above is the ready-made flow. It is the same commands, run by the agent instead of by a script. The checkpoint tags do not change this: they are snapshots of one student's own build, not a distribution format.

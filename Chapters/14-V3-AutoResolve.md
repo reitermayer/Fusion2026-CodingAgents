@@ -53,7 +53,7 @@ flowchart LR
 > 💬 *Paste this master prompt into your coding assistant to execute the entire Chapter 14 in one turn:*
 > ```text
 > Turn the EmailTriage flow into phase 3 of the three-phase design: emails whose whole request is answered by the support FAQ are answered by the agent itself.
-> 1. Upload Data/SupportFAQ.txt into the OrganizationData bucket in the TutorialSolution folder and remind me to Sync the OrganizationIndex in Orchestrator; continue when I confirm the ingestion succeeded.
+> 1. Upload Data/SupportFAQ.txt into the OrganizationData bucket in the TutorialSolution folder, then trigger ingestion of OrganizationIndex with uip context-grounding ingest and poll uip context-grounding retrieve (--format json) until last_ingestion_status is Successful.
 > 2. Add two flow inputs on the Start trigger: fromAddress (string) and subject (string).
 > 3. Add two typed outputs to the Triage AI Agent: canAutoResolve (boolean) and replyText (string). Extend the system prompt: the context now also contains a support FAQ; set canAutoResolve to true only when the FAQ contains a direct answer to the whole request and the email asks for nothing to be done on the account; set it to false the moment the email also asks for an action such as a change, a cancellation, a refund, a reset or a deactivation, or when the chosen department has Human Review = Required; when true, write replyText as a complete, polite answer of at most 120 words using only the FAQ; when false, replyText is an empty string. Keep the department, precedent and confidence rules unchanged.
 > 4. Add a decision node "Answerable from the FAQ?" between the agent and the "Confident and not Required?" gate, with the expression: canAutoResolve is true AND confidence is greater than 90 AND requiresEscalation is false. Its false branch goes to the existing gate. Its true branch goes to a new Gmail Send Email node that sends replyText to me with the subject "Re: " plus the ticket's subject and the customer's address in the first line of the body, then to a new Create Entity Record node that writes the same fields as the Auto write with Outcome 4 and ReplyText, then to the End node.
@@ -77,7 +77,7 @@ The index so far holds one spreadsheet. It can say who handles invoices; it cann
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
 ```text
-Upload Data/SupportFAQ.txt into the OrganizationData bucket in the TutorialSolution folder and list the bucket to confirm both files are there. Then remind me to Sync the OrganizationIndex in Orchestrator, and wait until I confirm the ingestion succeeded.
+Upload Data/SupportFAQ.txt into the OrganizationData bucket in the TutorialSolution folder and list the bucket to confirm both files are there. Then trigger ingestion of OrganizationIndex with uip context-grounding ingest and poll uip context-grounding retrieve with --format json every 15 seconds until last_ingestion_status is Successful; show me the failure reason and stop if it is Failed.
 ```
 
 ### 💻 Underlying CLI Commands (What the Agent Executes)
@@ -88,9 +88,11 @@ BUCKET_KEY=$(uip or buckets list --folder-path "TutorialSolution" --limit 200 \
 uip or bucket-files upload "$BUCKET_KEY" "SupportFAQ.txt" \
   --folder-path "TutorialSolution" --file ./Data/SupportFAQ.txt
 uip or bucket-files list "$BUCKET_KEY" --folder-path "TutorialSolution" --output table
+uip context-grounding ingest --index-name OrganizationIndex --folder-path "TutorialSolution"
+uip context-grounding retrieve --index-name OrganizationIndex --folder-path "TutorialSolution" --format json   # poll until Successful
 ```
 
-Then **Sync** the index on the Indexes page, as in Chapter 06, and wait for the successful status. Two chunks now come back for a renewal question: the FAQ entry first, the department row second. The agent sees both, which is exactly what V3 needs: the answer and the department, in one retrieval.
+The re-sync is the same `ingest` and `retrieve` pair as Chapter 06, Section 7. Two chunks now come back for a renewal question: the FAQ entry first, the department row second. The agent sees both, which is exactly what V3 needs: the answer and the department, in one retrieval.
 
 > 💡 **Re-syncing is a habit, not a step.** The bucket changed, so the index is stale until synced. This is the third time the tutorial says it; production flows put the sync on a schedule.
 

@@ -1,10 +1,10 @@
 # Chapter 02: Environment Setup & Agent Configuration
 
-This chapter sets up your local environment. Sections 1 to 3 are everything a student needs: install Git and Node.js, install the **UiPath CLI (`uip`)** together with its **agent skills** and verify both, and authenticate against **UiPath Automation Cloud**. Section 4 is an optional privacy setting. Sections 5 and 6 explain how the coding agents you will use plug into all of this, and are worth reading once.
+This chapter sets up your local environment. Sections 1 to 3 are everything a student needs: install Git, Node.js and Python 3, install the **UiPath CLI (`uip`)** together with its **agent skills** and the one tool that needs Python, verify them, and authenticate against **UiPath Automation Cloud**. Section 4 is an optional privacy setting. Sections 5 and 6 explain how the coding agents you will use plug into all of this, and are worth reading once.
 
 ```mermaid
 graph TD
-    A["1. Install Tools<br/>(Node.js, Git, gh CLI)"] --> B["2. Install UiPath CLI + Skills<br/>(uip, uip skills install)<br/>and verify"]
+    A["1. Install Tools<br/>(Node.js, Python 3, Git, gh CLI)"] --> B["2. Install UiPath CLI + Skills<br/>+ the context-grounding tool<br/>and verify"]
     B --> C["3. Authenticate<br/>(uip login)"]
     C --> D["4. Optional: Privacy<br/>(Disable Telemetry)"]
     D --> E["5 + 6. How the coding agents<br/>plug in (form factors, briefing files)"]
@@ -14,11 +14,11 @@ graph TD
 
 ## 1. Prerequisites & Tool Installation
 
-The tutorial needs four things: **Node.js** (v18 or higher), the **UiPath CLI** (`uip`, installed in Section 2), **Git** (with the optional GitHub CLI), and a **UiPath Automation Cloud account** with access to Orchestrator and Solution Management (authenticated in Section 4).
+The tutorial needs five things: **Node.js** (v18 or higher), **Python 3** (3.11 or higher, for one CLI tool), the **UiPath CLI** (`uip`, installed in Section 2), **Git** (with the optional GitHub CLI), and a **UiPath Automation Cloud account** with access to Orchestrator and Solution Management (authenticated in Section 3).
 
-> ⚠️ **Node.js is the only language runtime this tutorial needs.** It is required twice over: the UiPath CLI *is* an npm package, and Chapters 11, 12 and 14 run the batch runner and scoreboard with `node scripts/...`. Those two scripts use only the Node standard library, so there is no `npm install` to run in this repository.
+> ⚠️ **Node.js is the main runtime.** It is required twice over: the UiPath CLI *is* an npm package, and Chapters 11, 12 and 14 run the batch runner and scoreboard with `node scripts/...`. Those two scripts use only the Node standard library, so there is no `npm install` to run in this repository.
 
-> 💡 **No Python required.** Every chapter runs on Node and the `uip` CLI alone. Python appears only as an optional shortcut in Chapter 06 (the context-grounding tool wraps the UiPath Python SDK); the chapter deliberately uses the browser instead, so you never need a second language runtime.
+> 💡 **Why Python as well.** One `uip` command group, `uip context-grounding`, is a wrapper over the UiPath Python SDK: the CLI tool shells out to the `uipath` Python package. Chapter 06 uses it to create, sync and, when needed, delete the Context Grounding index, and Chapter 14 uses it to re-sync. Without it those steps would have to be clicked through in the Orchestrator browser UI, which would break the one rule this tutorial keeps everywhere else: the coding agent does the work. You never write Python; you install it once so that `uip` can call it.
 
 ### 1.1 Git and GitHub CLI (`gh`)
 
@@ -74,6 +74,29 @@ node -v
 npm -v
 ```
 
+### 1.3 Python 3 and the UiPath Python SDK
+
+Python 3.11 or higher, plus the `uipath` package installed as a global command-line tool. `uv` is the simplest way to get the package onto the PATH without touching a project environment; `pip` works too.
+
+#### 🍏 macOS
+```bash
+brew install python uv
+python3 --version          # 3.11 or higher
+uv tool install uipath
+uipath --version
+```
+
+#### 🪟 Windows 11 (PowerShell)
+```powershell
+winget install --id Python.Python.3.12 -e
+winget install --id astral-sh.uv -e
+python --version           # 3.11 or higher; reopen the terminal if it is not found
+uv tool install uipath
+uipath --version
+```
+
+> 💡 **Tip:** `uv tool install` puts the `uipath` command in a directory that `uv` adds to your PATH; if `uipath --version` is not found afterwards, run `uv tool update-shell` and reopen the terminal. The alternative without `uv` is `python3 -m pip install uipath` (`py -m pip install uipath` on Windows).
+
 ---
 
 ## 2. Installing the UiPath CLI and Its Agent Skills
@@ -112,9 +135,39 @@ Install the official UiPath agent skills into my agent environment.
 uip skills install
 ```
 
-### 2.3 Verify the Installation
+### 2.3 Install the Context Grounding Tool
 
-Three read-only commands confirm that the CLI runs, show you where its command tools will appear, and check that the skills are in place.
+Most `uip` command groups install themselves the first time you use them (Section 2.4 explains). One does not: `@uipath/context-grounding-tool` is not on the CLI's auto-install list, so it is installed by hand, and its `setup` command checks that it can find the Python package from Section 1.3.
+
+#### 💬 Prompt Your AI Coding Agent (Recommended)
+```text
+Install the UiPath CLI tool @uipath/context-grounding-tool, then run uip context-grounding setup and confirm it reports the uipath Python package as installed.
+```
+
+#### 💻 Underlying CLI Commands (What the Agent Executes)
+```bash
+uip tools install "@uipath/context-grounding-tool"
+uip context-grounding setup
+```
+
+`setup` answers with the Python it found and whether the package is there:
+```json
+{
+  "Result": "Success",
+  "Code": "ContextGroundingSetup",
+  "Data": {
+    "PythonPath": "python3.14",
+    "Package": "uipath",
+    "PackageInstalled": "Yes",
+    "PackageVersion": "2.14.12"
+  }
+}
+```
+`"PackageInstalled": "No"` means Section 1.3 did not complete: the `uipath` package is missing from the Python that `uip` found. Install it for that Python and run `setup` again.
+
+### 2.4 Verify the Installation
+
+Three read-only commands confirm that the CLI runs, show you where its command tools appear, and check that the skills are in place.
 
 #### 💬 Prompt Your AI Coding Agent (Recommended)
 ```text
@@ -133,7 +186,7 @@ uip skills list
 | Command | What a healthy install prints |
 | :--- | :--- |
 | `uip --version` | a bare version string, `1.200.1` or newer |
-| `uip tools list` | `"Result": "Success"` and an empty list on a fresh install (see below for why) |
+| `uip tools list` | `"Result": "Success"` and exactly one entry, the context-grounding tool from Section 2.3 (see below for why only one) |
 | `uip skills list` | `"Count": 25` or thereabouts, with the store at `~/.uipath/.skills` |
 
 **In detail, and what to do if it does not match:**
@@ -146,15 +199,22 @@ Any version from `1.200.0` upwards works for this tutorial. If you see `command 
 
 > 💡 **The CLI keeps itself current.** Once a day, the first `uip` command you run checks for updates and prints something like `Updating UiPath CLI, tools, and skills within version 1.x` followed by `Re-running the requested command on the updated CLI`. That is normal: it updates the CLI, its tools and the skills within the same major version, then runs your command. So the version you see may already be newer than the one printed in this tutorial, and that is fine.
 
-**2. `uip tools list`** shows an empty list on a fresh install, and that is correct:
+**2. `uip tools list`** shows exactly one entry, the tool you installed in Section 2.3, and that is correct:
 ```json
 {
   "Result": "Success",
   "Code": "ToolList",
-  "Data": []
+  "Data": [
+    {
+      "Name": "context-grounding-tool",
+      "Version": "1.201.0",
+      "Description": "Tool for context grounding operations via the UiPath Python SDK",
+      "CommandPrefix": "context-grounding"
+    }
+  ]
 }
 ```
-The CLI you just installed is only a small core. Each command group you type after `uip` (`solution`, `maestro`, `agent`, `or` for Orchestrator, `df` for Data Fabric, and so on) is a separate **tool**. The CLI downloads a tool the first time you use any command of that group, and keeps it from then on. So there is nothing to install by hand and nothing to configure: the tools arrive as the tutorial needs them. Your first one appears in the next section, when the login check calls Orchestrator, and by the end of the tutorial this list holds the seven groups the chapters use: `solution`, `maestro`, `agent`, `or`, `context-grounding`, `df` and `is` (Integration Service).
+The CLI you installed in Section 2.1 is only a small core. Each command group you type after `uip` (`solution`, `maestro`, `agent`, `or` for Orchestrator, `df` for Data Fabric, and so on) is a separate **tool**. The CLI downloads a tool the first time you use any command of that group, and keeps it from then on. So apart from the one tool that is not on the auto-install list, there is nothing to install by hand: the tools arrive as the tutorial needs them. The next one appears in the next section, when the login check calls Orchestrator, and by the end of the tutorial this list holds the seven groups the chapters use: `solution`, `maestro`, `agent`, `or`, `context-grounding`, `df` and `is` (Integration Service).
 
 Look for `"Result": "Success"`. If a later chapter's first command in a new group fails during the download, the usual cause is a network proxy or a blocked npm registry, since the tools come from the same registry as the CLI itself.
 
@@ -361,8 +421,10 @@ Run through this quick checklist to ensure your environment is fully ready:
 
 - [x] `git --version` returns installed Git version.
 - [x] `node -v` returns v18 or higher.
+- [x] `python3 --version` returns 3.11 or higher, and `uipath --version` prints a version.
 - [x] `uip --version` returns `1.200.0` or newer.
-- [x] `uip tools list` returns `"Result": "Success"` (an empty list is correct before the first tenant call).
+- [x] `uip context-grounding setup` reports `"PackageInstalled": "Yes"`.
+- [x] `uip tools list` returns `"Result": "Success"` with `context-grounding-tool` as its one entry (the others arrive on first use).
 - [x] `uip skills list` returns `"Code": "SkillsList"` with a non-zero `Data.Count` and `uipath-maestro-flow` among the names.
 - [x] `uip user` returns your authenticated UiPath Cloud user profile.
 - [x] `uip login status` returns `"Status": "Logged in"` with your organization and tenant.
