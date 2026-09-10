@@ -51,11 +51,12 @@ flowchart LR
 > 💬 *Paste this master prompt into your coding assistant to execute the entire Chapter 05 in one turn:*
 > ```text
 > In TutorialSolution/EmailTriage, upgrade the flow to output multi-typed variables:
-> 1. Configure the Triage AI Agent to return four strongly-typed output variables:
+> 1. Configure the Triage AI Agent to return four strongly-typed output variables instead of the single analysisResult string. The schema lives in agent.json inside EmailTriage/<agent-id>/: replace its whole outputSchema object (remove analysisResult) with
 >    - 'category' (type: string, description: "Classified department category")
 >    - 'urgencyScore' (type: number, description: "Urgency score from 1 to 5")
 >    - 'requiresEscalation' (type: boolean, description: "True if customer is at churn risk")
 >    - 'actionItems' (type: array of objects, description: "List of recommended next steps")
+>    Edit the file as a complete JSON document, re-read it and confirm it parses, update the system prompt to ask for exactly these four fields, then run uip agent refresh on the agent folder with --inline-in-flow.
 > 2. Forward all four agent outputs (category, urgencyScore, requiresEscalation, actionItems) through the End node as the final flow return arguments.
 > 3. Format the canvas layout and validate the flow with 'uip maestro flow validate'.
 > 4. Run a cloud debug test with input emailBody: "Hi, I was charged twice for my subscription this morning ($120 x 2). I need an immediate refund for the duplicate charge or I will cancel my account!".
@@ -95,12 +96,13 @@ Now, prompt your AI pair programmer (Claude Code or Google Antigravity) to upgra
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
 ```text
-In EmailTriage/EmailTriage.flow, upgrade the Triage AI Agent and End node to output four strongly-typed variables:
-1. Configure the Agent's output schema to define:
+Upgrade the Triage AI Agent in EmailTriage so it returns four strongly-typed variables instead of the single analysisResult string:
+1. The agent's output schema lives in agent.json inside EmailTriage/<agent-id>/. Replace its whole outputSchema object (remove analysisResult) with these four properties:
    - 'category' (type: string, description: "Classified department category")
    - 'urgencyScore' (type: number, description: "Urgency score from 1 to 5")
    - 'requiresEscalation' (type: boolean, description: "True if customer is at churn risk")
    - 'actionItems' (type: array of objects, description: "List of recommended next steps")
+   Edit the file as a complete JSON document, then re-read it and confirm it still parses. Update the system prompt so it asks for exactly these four fields, and run uip agent refresh on the agent folder with --inline-in-flow so the flow node's output variables are regenerated.
 2. Forward all four agent outputs (category, urgencyScore, requiresEscalation, actionItems) through the End node as the final flow return arguments.
 3. Format the canvas layout and validate the flow with 'uip maestro flow validate'.
 ```
@@ -112,7 +114,7 @@ In EmailTriage/EmailTriage.flow, upgrade the Triage AI Agent and End node to out
 > Without the word "forward", coding agents might only declare the variables on the agent without completing the return wiring at the End node!
 
 > ⚙️ **What the Coding Agent Does Behind the Scenes:**  
-> 1. **Typed Agent Schema:** Adds the 4 properties to the agent's `outputSchema` in `agent.json` (with `actionItems` declared as an `array` of objects), and mirrors them one-per-entry in the flow node's `agentOutputVariables`.
+> 1. **Typed Agent Schema:** Replaces the agent's `outputSchema` in `agent.json` with the 4 properties (with `actionItems` declared as an `array` of objects), and mirrors them one-per-entry in the flow node's `agentOutputVariables`. The prompt asks for a whole-document edit and a re-read on purpose: an agent that patches the schema line by line can leave the old `analysisResult` entry half-open, and the file then fails to parse at the next validate. That was observed with a smaller model; the re-read catches it before it costs a debug cycle.
 > 2. **Declarative Code Edit:** Maps each output on the End node: string fields via Handlebars (`{{ $vars... }}`), numbers, booleans, and arrays via JavaScript expressions (`=js:$vars...`), and declares all 4 as `direction: "out"` in `variables.globals`.
 > 3. **Verification Tooling:** Executes `uip agent refresh`, `uip agent validate`, and the `uip` CLI commands below to recalculate canvas layout positions and validate schema correctness.
 
