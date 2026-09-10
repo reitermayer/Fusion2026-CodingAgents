@@ -72,7 +72,7 @@ flowchart LR
 > ```text
 > Give the EmailTriage process a memory of its decisions in Data Fabric:
 > 1. Create a tenant-level choice set named TriageOutcome with exactly five values: Auto, Approved, Modified, Denied, AutoResolved.
-> 2. Create a tenant-level entity named TriageDecision from the template triage-decision.entity.json in the repository root, after replacing its <CHOICE_SET_ID> placeholder with the new choice set id. The fields are: TicketId (text, 20), Phase (whole number 1 to 3), EmailBody (multiline text, 10000), ProposedDepartment (text, 200), Department (text, 200), Outcome (single choice from TriageOutcome), Confidence (decimal), HumanReviewRequired (boolean), Reasoning (multiline text, 10000), Feedback (multiline text, 2000), ReplyText (multiline text, 5000). Mark TicketId, Phase, EmailBody, ProposedDepartment, Department and Outcome as required.
+> 2. Create a tenant-level entity named TriageDecision from the template triage-decision.entity.json in the repository root: look up the TriageOutcome choice set id with uip df choice-sets list, write a resolved copy triage-decision.resolved.json with the placeholder replaced (leave the template unchanged), and create the entity from the copy. The fields are: TicketId (text, 20), Phase (whole number 1 to 3), EmailBody (multiline text, 10000), ProposedDepartment (text, 200), Department (text, 200), Outcome (single choice from TriageOutcome), Confidence (decimal), HumanReviewRequired (boolean), Reasoning (multiline text, 10000), Feedback (multiline text, 2000), ReplyText (multiline text, 5000). Mark TicketId, Phase, EmailBody, ProposedDepartment, Department and Outcome as required.
 > 3. Read the entity schema back and show me every field with its type, length and required flag, so I can compare it with the list above.
 > 4. Insert one test record for ticket T00 at phase 0 with Outcome Approved, list the records to prove the write worked, then delete that test record and confirm the entity is empty again.
 > 5. Finish with the checkpoint: record an empty commit in TutorialSolution's own git repository with the message "Chapter 09 done: TriageOutcome and TriageDecision created in the tenant" and move the tag ch09-done to it.
@@ -187,7 +187,7 @@ uip df choice-sets list-values <CHOICE_SET_ID> --limit 100 --output table \
 
 ## 5. Creating the TriageDecision Entity
 
-The entity definition is a JSON document with a `fields` array. The CLI accepts it inline with `--body` or from a file with `--file`; for eleven fields a file is easier to review, so the repository ships it as `triage-decision.entity.json` in the root, with one placeholder for the choice set id from Section 4.
+The entity definition is a JSON document with a `fields` array. The CLI accepts it inline with `--body` or from a file with `--file`; for eleven fields a file is easier to review, so the repository ships it as `triage-decision.entity.json` in the root, with one placeholder for the choice set id that the agent looks up with the CLI.
 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
@@ -206,14 +206,24 @@ Create a tenant-level Data Fabric entity named TriageDecision, display name "Tri
 - Feedback: multiline text, max length 2000
 - ReplyText: multiline text, max length 5000
 
-The repository root already holds triage-decision.entity.json as a template: replace its <CHOICE_SET_ID> placeholder with the id of the TriageOutcome choice set you just created, then create the entity from that file. Report the entity id.
+The repository root holds the definition as a template, triage-decision.entity.json, with a <CHOICE_SET_ID> placeholder. Look up the id of the TriageOutcome choice set with uip df choice-sets list, write a resolved copy named triage-decision.resolved.json next to it (leave the template unchanged), and create the entity from the resolved copy. Report the entity id.
 ```
 
 ### 💻 Underlying CLI Commands (What the Agent Executes)
 
 ```bash
-# 1. The definition file - <CHOICE_SET_ID> comes from Section 4
-cat > triage-decision.entity.json <<'EOF'
+# 1. Resolve the choice set id and fill it into a copy of the template
+CHOICE_SET_ID=$(uip df choice-sets list --output plain \
+  --output-filter "[?Name=='TriageOutcome'].Id | [0]")
+node -e 'const fs=require("fs");fs.writeFileSync("triage-decision.resolved.json",fs.readFileSync("triage-decision.entity.json","utf8").replace("<CHOICE_SET_ID>",process.argv[1]))' "$CHOICE_SET_ID"
+
+# 2. Create the entity from the resolved copy
+uip df entities create TriageDecision --file triage-decision.resolved.json --output json
+```
+
+The template, `triage-decision.entity.json`:
+
+```json
 {
   "displayName": "Triage Decision",
   "description": "One row per email per phase: what the agent proposed, what was decided, and by whom",
@@ -231,11 +241,9 @@ cat > triage-decision.entity.json <<'EOF'
     { "fieldName": "ReplyText",           "type": "MULTILINE_TEXT",    "lengthLimit": 5000 }
   ]
 }
-EOF
-
-# 2. Create the entity from the file
-uip df entities create TriageDecision --file triage-decision.entity.json --output json
 ```
+
+The resolved copy is gitignored: it carries an id that is only valid in your tenant, and the choice set gets a new id on every reset.
 
 > ⚠️ **Field names are permanent.** Data Fabric lets you add and remove fields later with `uip df entities update`, but removing a field deletes its data and the command demands `--yes` plus a `--reason`. Renaming is remove-plus-add. Get the names right now: every flow node in Chapters 10 to 14 binds to them by name.
 
