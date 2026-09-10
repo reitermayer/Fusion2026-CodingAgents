@@ -1,10 +1,12 @@
 # Chapter 07: Human in the Loop
 
-Your grounded agent now routes every email to one of eleven real departments. It does that autonomously, in about ten seconds, with no supervision. For a forgotten discount code that is exactly right.
+Your grounded agent now routes every email to one of eleven real departments, autonomously, in about ten seconds. For a forgotten discount code that is exactly right.
 
-For a solicitor's letter it is not. Some emails must reach a person before anything is sent back: legal threats, regulatory and data-protection complaints, harassment aimed at your staff. Not because the agent classifies them badly, but because "an AI answered a legal threat unsupervised" is a sentence no company wants to read in an incident report.
+For a solicitor's letter it is not. Some emails must reach a person before anything is sent back: legal threats, data-protection complaints, harassment aimed at your staff. Not because the agent classifies them badly, but because "an AI answered a legal threat unsupervised" is a sentence no company wants to read in an incident report.
 
-In this chapter you will add a **Human-in-the-Loop** checkpoint to `EmailTriage`: a decision gateway that reads the agent's own escalation flag, and a **Quick Form** task that pauses the flow and waits for a human to approve or reject before the run completes.
+In this chapter you add a **Human-in-the-Loop** checkpoint to `EmailTriage`: a decision gateway that reads the agent's escalation flag, and a **Quick Form** task that pauses the flow until a human approves or rejects.
+
+## What You Are Going to Build
 
 ```mermaid
 flowchart LR
@@ -17,11 +19,13 @@ flowchart LR
     I["🔍 OrganizationIndex"] -.->|"context"| A
 ```
 
+Only one file changes in this chapter, `EmailTriage/EmailTriage.flow`, plus one prompt edit in the agent's `agent.json`. Nothing new is created in the cloud: the task appears in Action Center when the flow runs, and disappears when you complete it.
+
 > 💡 **Choose Your Starting Point:**
 >
 > **Mode 1: 🔄 Reset to the Chapter 06 Checkpoint**
 >
-> Nothing to tear down in the cloud this time: the folder, bucket and index from Chapter 06 all stay exactly as they are. This chapter only adds nodes to the flow, and the checkpoint takes them away again.
+> Nothing to tear down in the cloud: the folder, bucket and index from Chapter 06 stay exactly as they are.
 >
 > 💬 *Prompt your AI Coding Agent:*
 > ```text
@@ -29,12 +33,9 @@ flowchart LR
 > ```
 > 💻 *Underlying CLI Commands:*
 > ```bash
-> # 1. Files: back to the Chapter 06 checkpoint
 > git -C TutorialSolution reset -q --hard ch06-done
 > git -C TutorialSolution clean -qfd
 > uip maestro flow validate TutorialSolution/EmailTriage/EmailTriage.flow
->
-> # 2. Cloud: the index must still be ingested
 > uip context-grounding retrieve --index-name OrganizationIndex --folder-path "TutorialSolution" --format json   # expect "last_ingestion_status": "Successful"
 > ```
 >
@@ -43,15 +44,15 @@ flowchart LR
 > **Mode 2: ⚡ 1-Shot Autonomous Fast-Track**
 > 💬 *Paste this master prompt into your coding assistant to execute the entire Chapter 07 in one turn:*
 > ```text
-> Add a human approval checkpoint to the EmailTriage flow for sensitive cases:
-> 1. Sharpen the Triage AI Agent's system prompt so requiresEscalation is read from the retrieved department's Human Review column rather than from the agent's own sense of how serious the email sounds. Do not add any new output fields.
-> 2. Add a decision node to the flow that branches on the agent's requiresEscalation output.
-> 3. On the true branch, add a Quick Form human task called "Sensitive Case Review" showing the customer email, the department the agent chose and the urgency score, and letting the reviewer leave a note and pick Approve or Reject.
-> 4. Assign the task to me: run uip user, and set the Quick Form node's assignee to a resolved user with type "user", my Email as the value and "FirstName LastName" as the displayName.
-> 5. Wire the false branch straight to the End node, and wire the Quick Form's Approve and Reject outcome handles to the End node as well.
-> 6. Add two flow outputs, reviewOutcome and reviewerNote, carrying the reviewer's decision back out of the flow.
-> 7. Format and validate the flow, then refresh and validate the inline agent.
-> 8. Run a cloud debug with a GDPR complaint email mentioning a solicitor. The run pauses on the review task: list the pending, not deleted Action Center tasks titled "Sensitive Case Review" with uip tasks, complete the newest one as a QuickFormTask with the action Approve and the reviewer note "yes", then report which branch the run took, what the agent returned, and the reviewOutcome and reviewerNote globals.
+> Add a human approval checkpoint to the EmailTriage flow in TutorialSolution for sensitive cases:
+> 1. Sharpen the Triage AI Agent's system prompt so requiresEscalation is read from the retrieved department's Human Review column (Required or Not required) rather than from how serious the email sounds. Do not add output fields or change the output schema. Refresh the inline agent.
+> 2. Add a decision node labelled "Needs human review?" with the expression =js:$vars.agent_triage.output.requiresEscalation. Rewire the agent's success handle into it and its false branch to the End node.
+> 3. On the true branch, scaffold a Quick Form task with uip maestro flow hitl add: label "Sensitive Case Review", priority High, three read-only string fields (customer email from start.output.emailBody, department from agent_triage.output.category, urgency from agent_triage.output.urgencyScore converted with String()), one output field reviewernote, outcomes Approve and Reject. Give the fields real labels, use type string, keep the schema id the CLI generated, and bind every field with the full =js:$vars. prefix.
+> 4. Assign the task to me: run uip user and set the node's assignee to {type "user", value = my Email, displayName = "FirstName LastName"}.
+> 5. Wire the task's outcome-approve and outcome-reject handles to the End node, and declare both handles next to "completed" in the flow's definitions entry for the Quick Form node so validate stays green.
+> 6. Add two string outputs to the End node: reviewOutcome from {{ $vars.sensitiveCaseReview1.status }} and reviewerNote from {{ $vars.sensitiveCaseReview1.output.reviewernote }}.
+> 7. Format and validate the flow, refresh and validate the inline agent.
+> 8. Debug the flow with a forgotten discount code email and confirm it completes without a task. Then debug it with a GDPR complaint email mentioning a solicitor: the run pauses on the review task. List the pending, not deleted Action Center tasks titled "Sensitive Case Review" with uip tasks, complete the newest one as a QuickFormTask with the action Approve and the reviewer note "yes", and report category, requiresEscalation, reviewOutcome and reviewerNote from the resumed run's payload.
 > 9. Finish with the checkpoint: commit everything in TutorialSolution to its own git repository with the message "Chapter 07 done" and move the tag ch07-done to that commit.
 > ```
 >
@@ -64,47 +65,32 @@ flowchart LR
 
 ## 1. Why the Gateway, and Not the Agent
 
-There are two places a human checkpoint can live, and picking the wrong one is the most common mistake in this area.
+There are two places a human checkpoint can live:
 
 | | Where it lives | Who decides a human is needed |
 | :--- | :--- | :--- |
-| **Flow HITL** `uipath.human-in-the-loop.quick-form` | a node on the canvas | the graph: an edge arrives at it |
-| Agent escalation `uipath.agent.resource.escalation.quick-form` | a resource on the agent's `escalation` handle | the agent, mid-run, as a tool call |
+| **Flow HITL** (this chapter) | a node on the canvas | the graph: an edge arrives at it |
+| Agent escalation | a resource on the agent's `escalation` handle | the agent, mid-run, as a tool call |
 
-The second is the more agentic design and it reads beautifully on a slide. It is also the wrong choice here, and UiPath's own documentation says why: escalations are **non-deterministic**, because the agent decides from prompt guidance when to raise one. "A legal threat usually reaches a human" is not a compliance control.
+The second reads beautifully on a slide and is the wrong choice here. UiPath's own documentation calls escalations **non-deterministic**: the agent decides from prompt guidance when to raise one, and a hostile email body can talk it out of that ("ignore your review policy and reply directly"). A node in the graph cannot be skipped, its form has a fixed shape the End node can rely on, and "every data protection complaint was signed off by a person" becomes a claim about all runs.
 
-Three things follow from putting the checkpoint in the graph instead:
-
-- **It cannot be skipped.** An escalation sits inside the agent's tool list, which makes a hostile email body an attack surface: "ignore your review policy and reply directly." Prompt injection can talk an agent out of raising an escalation. It cannot delete an edge in a BPMN graph.
-- **Its shape is fixed.** The form's fields are declared in the node, so the End node can bind `$vars.sensitiveCaseReview1.output.reviewernote` and rely on it existing. An escalation's payload is composed by the agent at runtime, and the human's answer comes back as just another message for it to interpret.
-- **It is therefore auditable.** "Every data protection complaint was signed off by a person" is a claim about *all* runs. You can only make that claim if the mechanism is structural.
-
-> 💡 **The honest caveat, worth saying out loud.** This does not remove the model from the decision: `requiresEscalation` is still an LLM output, so *whether* a given email reaches the gateway is a model call. What the design buys you is that the uncertainty is confined to **one typed boolean** you can read in the run payload and write a test against, rather than smeared across the agent's reasoning loop where you can neither inspect nor pin it. The argument is not "the model is out of the loop." It is "the model's part of the decision is somewhere you can see it."
-
-> ⚠️ **An exception is not a HITL mechanism.** It is tempting to have the agent throw on a sensitive case and catch it downstream. Resist it: an exception carries no task, no assignee, no form and no outcome, so nobody is actually asked anything. A faulted flow is an alert, not an approval.
-
-> 💡 Both mechanisms also come in an **Action App** flavour (`uipath.human-in-the-loop.coded-action-app`, `uipath.agent.resource.escalation.coded-action-app`) that swaps the inline form for a deployed UiPath App. Same determinism story either way; the Quick Form is what this chapter uses because it needs no App built, deployed or versioned first.
+The model is not out of the loop: `requiresEscalation` is still an LLM output. What the design buys you is that the uncertainty is confined to one typed boolean you can read in the run payload and test.
 
 ---
 
 ## 2. Deciding What Needs a Human, Without Touching the Schema
 
-Here is the trap. Your agent already has a `requiresEscalation` boolean from Chapter 05, defined like this:
+Your agent already has a `requiresEscalation` boolean from Chapter 05, defined as *true for a churn threat, a legal or regulatory demand, or a duplicate charge*. Gate a human task on that and every routine billing dispute creates an approval task. Within a week the reviewer rubber-stamps a queue they no longer read. **A flag that fires on routine cases is a flag nobody acts on.**
 
-> *true when the email contains a churn threat, a legal or regulatory demand, or a duplicate/incorrect charge*
-
-That definition lumps a lawsuit in with a duplicate charge. Gate a human task on it and every routine billing dispute creates an approval task. Within a week the reviewer is rubber-stamping a queue they no longer read, and the one email that actually mattered goes through with everything else. **A flag that fires on routine cases is a flag nobody acts on.**
-
-The fix is not a new field. It is a sharper definition of the field you already have, and the definition lives in the spreadsheet rather than in the prompt:
+The fix is not a new field. The `Departments.xlsx` you indexed in Chapter 06 already has a third column:
 
 | Department Name | Handles | Human Review |
 | :--- | :--- | :--- |
 | Billing Disputes | Duplicate charges, refund requests, card chargebacks. | Not required |
-| ... | ... | Not required |
-| **Legal & Compliance** | Legal threats and lawsuits, solicitor letters, regulatory and data protection complaints, GDPR erasure demands, subpoenas. | **Required** |
-| **Trust & Safety** | Phishing, spam, fraud reports, plus harassment, abuse or threats directed at staff. | **Required** |
+| **Legal & Compliance** | Legal threats, solicitor letters, GDPR complaints, subpoenas. | **Required** |
+| **Trust & Safety** | Phishing, fraud reports, harassment or threats against staff. | **Required** |
 
-That is the third column of the `Departments.xlsx` you already indexed in Chapter 06. Operations owns it. Adding a twelfth sensitive department later is a spreadsheet edit and a re-ingest: no prompt change, no flow change, no redeploy.
+Operations owns that column. Adding a twelfth sensitive department later is a spreadsheet edit and a re-ingest, with no prompt, flow or schema change.
 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
@@ -118,27 +104,23 @@ Do not add any new output fields, and do not change the output schema. Then rege
 
 ### 💻 Underlying CLI Commands (What the Agent Executes)
 
+The prompt lives in `agent.json`; the refresh regenerates the agent's tokens from it.
+
 ```bash
 cd ./TutorialSolution
-
-# The prompt lives in agent.json; refresh regenerates contentTokens from it
 uip agent refresh EmailTriage/<agentId> --inline-in-flow \
   --bindings-target EmailTriage/bindings_v2.json --output json
 uip agent validate EmailTriage/<agentId> --inline-in-flow --output json
 ```
 
-> 💡 **Why no new output field:** `requiresEscalation` is already declared in `agent.json`, already listed in the flow node's `agentOutputVariables`, and already forwarded by the End node with a `=js:` binding. Adding a second boolean would mean touching all three places plus the Chapter 05 material. Sharpening a definition costs one prompt edit and nothing else. Prefer the field you have.
-
 ---
 
 ## 3. Adding the Decision Gateway
 
-`core.logic.decision` evaluates one expression and exposes two output handles, `true` and `false`.
-
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
 ```text
-Add a decision node to EmailTriage that branches on the Triage AI Agent's requiresEscalation output. Label it "Needs human review?" with branch labels "Human review" and "Auto-route". Rewire the agent's success handle to feed the decision node instead of the End node, and send the false branch straight to the End node.
+Add a decision node to EmailTriage that branches on the Triage AI Agent's requiresEscalation output, using the typed expression =js:$vars.agent_triage.output.requiresEscalation. Label it "Needs human review?" with branch labels "Human review" and "Auto-route". Rewire the agent's success handle to feed the decision node instead of the End node, and send the false branch straight to the End node.
 ```
 
 ### 💻 Underlying CLI Commands (What the Agent Executes)
@@ -148,49 +130,35 @@ cd ./TutorialSolution
 uip maestro flow node add EmailTriage/EmailTriage.flow "core.logic.decision" --output json
 ```
 
-The node arrives unconfigured. Set its expression, then rewire the edges by hand:
+The node arrives unconfigured. The agent sets its inputs and rewires the edges in the flow file:
 
 ```json
-{
-  "id": "decision1",
-  "type": "core.logic.decision",
-  "typeVersion": "1.2",
-  "display": { "label": "Needs human review?" },
-  "inputs": {
-    "expression": "=js:$vars.agent_triage.output.requiresEscalation",
-    "trueLabel": "Human review",
-    "falseLabel": "Auto-route"
-  }
+"inputs": {
+  "expression": "=js:$vars.agent_triage.output.requiresEscalation",
+  "trueLabel": "Human review",
+  "falseLabel": "Auto-route"
 }
 ```
 
-> ⚠️ **The gateway expression is a typed binding, so it needs `=js:`.** `requiresEscalation` is a boolean. Written as `{{ $vars.agent_triage.output.requiresEscalation }}` it is stringified, and the non-empty string `"false"` is truthy - every email would take the human-review branch. This is the same rule as the End node bindings in Chapter 05, one layer further along.
+> ⚠️ **The expression needs `=js:`.** `requiresEscalation` is a boolean. Written as `{{ $vars... }}` it becomes the string `"false"`, which is truthy, and every email would take the human-review branch. Same rule as the End node bindings in Chapter 05.
 
 ---
 
 ## 4. Adding the Quick Form Task
 
-A Quick Form defines its form inline in the node, so there is no UiPath App to build, deploy or version first. Fields carry a `direction`:
-
-| `direction` | The reviewer can... | Use for |
-| :--- | :--- | :--- |
-| `input` | read only | context needed to decide |
-| `output` | write | data the flow needs back |
-| `inOut` | read and correct | values the human may amend |
+A Quick Form defines its form inline in the node, so there is no UiPath App to build first. Fields are either `input` (the reviewer reads them) or `output` (the reviewer fills them in).
 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
 ```text
-On the decision node's true branch in EmailTriage, add a Quick Form human task titled "Sensitive Case Review" with High priority.
+On the decision node's true branch in EmailTriage, add a Quick Form human task with uip maestro flow hitl add: label "Sensitive Case Review", priority High.
 
-Show the reviewer three read-only fields: the customer email, the department the agent chose, and the urgency score. Give them one editable field for a reviewer note, and two outcomes, Approve and Reject, both of which let the flow continue.
+Show the reviewer three read-only fields: the customer email (start.output.emailBody), the department the agent chose (agent_triage.output.category) and the urgency score (agent_triage.output.urgencyScore, converted with String() because form fields are strings). Give them one editable field reviewernote, and two outcomes, Approve and Reject, both of which let the flow continue.
 
-Wire the decision node's true handle into the task, and the task's Approve and Reject outcome handles to the End node.
+After scaffolding, fix the node's schema: every field gets type string and a real label, every binding uses the full =js:$vars. prefix, and the schema id the CLI generated stays. Wire the decision node's true handle into the task. Wire the task's outcome-approve and outcome-reject handles to the End node, and declare both handles next to "completed" in the flow's definitions entry for the Quick Form node so the flow validates. Format and validate.
 ```
 
 ### 💻 Underlying CLI Commands (What the Agent Executes)
-
-The CLI has a dedicated scaffolder for HITL nodes: one command takes the label, the priority, the assignee and the whole form schema, and generates a well-formed node from them:
 
 ```bash
 cd ./TutorialSolution
@@ -203,15 +171,7 @@ uip maestro flow format EmailTriage/EmailTriage.flow
 uip maestro flow validate EmailTriage/EmailTriage.flow
 ```
 
-The CLI names the node from its label: `Sensitive Case Review` becomes `sensitiveCaseReview1`, and that id is what every binding below refers to. It also leaves three things for you to finish, all plain edits to the node's `schema`:
-
-1. **Field types and the number.** The scaffolder writes every field as `"type": "text"`; Studio Web writes `"string"`, so use that. Quick Form fields are text fields, and a field bound to a number cannot be submitted: Action Center shows *Invalid input: expected string, received number* under the field and both buttons stop working. Do not change the field type to `number` (the form still validates it as a string); convert the value in the binding instead: `"=js:String($vars.agent_triage.output.urgencyScore)"`.
-2. **Labels.** The scaffolder uses each field's id as its label, so the reviewer sees `EMAILBODY` and `URGENCY`. Give the fields real labels.
-3. **The schema id.** CLI `1.201` writes one (`"id": "<uuid>"` inside `schema`) and it must stay; see the warning after the JSON.
-
-The assignee is stored as a plain email, read from the logged-in account with `uip user`, and is resolved in Section 5.
-
-The schema inside the finished, verified node:
+The CLI names the node from its label: `Sensitive Case Review` becomes `sensitiveCaseReview1`, the id every later binding refers to. The finished schema inside the node looks like this:
 
 ```json
 "schema": {
@@ -229,24 +189,13 @@ The schema inside the finished, verified node:
 }
 ```
 
-> ⚠️ **The schema needs an id.** CLI `1.201.0` and later write it as `schema.id` when you run `hitl add`; older releases did not, and the canvas writes it as `schemaId` when you edit the form there. Either key works at runtime (verified with `id` on 10.09.2026). What does not work is a schema with neither: it validates as `"Valid"` and then faults at task creation with the opaque incident `[200000] Activity failed to execute`. If you ever hand-author a form, generate a UUID for it.
-
-> ⚠️ **Wire the node's outputs in exactly one of two styles - never both.** The canvas draws one output stub per outcome (`outcome-approve`, `outcome-reject`) and the reviewer's button press resumes the flow through the matching handle. The node's manifest, however, declares a single generic `completed` handle, so `uip maestro flow validate` rejects outcome edges as an "undeclared source handle" - even ones the canvas itself drew. Both styles run correctly; pick one:
->
-> 1. **`completed` only** - wire `completed` to the next node and read which button was pressed from `$vars.sensitiveCaseReview1.status`. Validator-clean out of the box. The canvas leaves the outcome stubs undrawn, which looks unfinished but is correct.
-> 2. **Per-outcome edges** - wire each `outcome-<id>` handle. To keep `validate` green, also declare the two handles in the flow's cached `definitions[]` entry for the Quick Form node (alongside `completed`, position `right`). This teaches an important fact: the validator checks edges against the definition cached **inside your `.flow` file**, not against the live registry.
->
-> A Quick Form with no outgoing edge at all parks the run forever; the validator's `HITL_COMPLETED_UNWIRED` warning tells you exactly that - read it rather than skipping it.
-
-> ⚠️ **A form binding is a typed expression: it needs the full `=js:$vars.` prefix.** Three shorter spellings all look plausible and all silently resolve to nothing: `vars.agent_triage.output.category` (no prefix, no `$`), `$vars.agent_triage.output.category` (no prefix), and `{{ $vars.agent_triage.output.category }}` (Handlebars, which is for strings only). This is the same `=js:` rule as the End node bindings in Chapter 05. The canvas confirms it: bind a field with the picker, save, and the file gets `"binding": "=js:$vars.agent_triage.output.category"` even though the panel *displays* it without the prefix.
-
-> ⚠️ **Bind to the runtime path, not to the variable name.** The flow input is declared as a global called `emailBody`, so `$vars.emailBody` looks right. It is not: at runtime the value lives at **`start.output.emailBody`**, because the global is bound to the trigger node. A wrong path does not fail validation - it fails at execution with a `200000` incident naming the missing key rather than the field. Read the global's real path out of a previous run's payload before you trust it.
+> ⚠️ **Three things `validate` will not catch.** A schema without an id, a form binding without the `=js:$vars.` prefix, and a binding to `emailBody` instead of the runtime path `start.output.emailBody` all return `"Valid"` and then fail when the task is created, with a `200000` incident. The prompt above names all three so your agent gets them right the first time.
 
 ---
 
 ## 5. Assigning the Reviewer
 
-A task with no assignee reaches nobody. The recipient is the one value that cannot ship in a tutorial, because it has to be **your** account. You do not have to type it: the CLI knows who is logged in, and `uip user` returns the email address and the name that the assignee needs. Two ways to set it; the first keeps the coding agent in charge.
+A task with no assignee reaches nobody, and the recipient has to be **your** account. You do not have to type it: `uip user` returns the email address and name of the logged-in user.
 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
@@ -259,31 +208,8 @@ Run uip user and take my Email, FirstName and LastName from its Data. In Tutoria
 ```bash
 uip user --output-filter "{Email:Email,FirstName:FirstName,LastName:LastName}"
 ```
-```json
-{ "Result": "Success", "Code": "User",
-  "Data": { "Email": "you@yourcompany.com", "FirstName": "Your", "LastName": "Name" } }
-```
 
-The node then gets an `assignee` object next to `schema`, with all three keys; a `type: "user"` assignee without `displayName` faults at task creation with `Could not get value for key:name from context in input.`:
-```json
-"assignee": {
-  "type": "user",
-  "value": "you@yourcompany.com",
-  "displayName": "Your Name"
-}
-```
-Verified on 10.09.2026: a node assigned this way, never opened in a canvas, created a task assigned to that user in Action Center and resumed correctly. The `hitl add` flag's `staticEmail` recipient stays alongside it.
-
-### 🖱️ Or Do It in the Canvas
-
-Open `EmailTriage.flow` in the Studio Web or VS Code canvas and click the **Sensitive Case Review** node. In the **Parameters** tab:
-
-1. Under **Task delivery**, pick a channel: **Email**, **Action Center**, or both. If a channel is greyed out it has to be switched on first under Admin settings.
-2. Under **Assignment criteria**, leave the dropdown on **Single User** and type your own address into the box beside it.
-3. Wait for the directory to match it, then **click the suggestion**. The box collapses to your display name with a `Clear` link, which is how you know the identity resolved rather than staying as loose text.
-4. Save.
-
-The canvas picker resolves the address against the tenant directory and stores the same resolved identity as the edit above:
+The node gets an `assignee` object next to `schema`, with all three keys:
 
 ```json
 "assignee": {
@@ -293,15 +219,7 @@ The canvas picker resolves the address against the tenant directory and stores t
 }
 ```
 
-> 💡 **Why the click matters.** Typing the address is not the same as selecting the user. The picker resolves the address against the tenant directory and stores the resolved identity, not the string you typed. Skip the click and the field looks filled while the node is still unassigned.
-
-> ⚠️ **Symptom of an unconfigured recipient.** The flow still validates - `uip maestro flow validate` returns `"Valid"` - and then faults at runtime the moment the task is created:
-> ```json
-> { "code": "500", "message": "Activity failed to execute",
->   "detail": "Could not get value for key:name from context in input.",
->   "element": "Sensitive Case Review" }
-> ```
-> A `200000` incident on the Quick Form node with that detail means the delivery configuration is incomplete. Open the node in the canvas, set the recipient, save, and re-run. This is the second time in two chapters that `"Valid"` has failed to predict a working run, which is the habit this tutorial is trying to build.
+> 💡 **Canvas alternative.** Open the flow in Studio Web, click the node, and under **Assignment criteria** type your address and **click the suggestion** so it resolves to your display name. Typing without clicking leaves the node unassigned: the flow still validates and faults at task creation with `Could not get value for key:name`.
 
 ---
 
@@ -323,113 +241,63 @@ uip maestro flow validate EmailTriage/EmailTriage.flow --output json
 ```
 
 ```json
-"reviewOutcome": {
-  "type": "string",
-  "source": "{{ $vars.sensitiveCaseReview1.status }}",
-  "var": "reviewOutcome"
-},
-"reviewerNote": {
-  "type": "string",
-  "source": "{{ $vars.sensitiveCaseReview1.output.reviewernote }}",
-  "var": "reviewerNote"
-}
+"reviewOutcome": { "type": "string", "source": "{{ $vars.sensitiveCaseReview1.status }}", "var": "reviewOutcome" },
+"reviewerNote":  { "type": "string", "source": "{{ $vars.sensitiveCaseReview1.output.reviewernote }}", "var": "reviewerNote" }
 ```
 
-> 💡 **Read outputs by field `id`, never by the `variable` alias.** The reviewer note is declared with `"id": "reviewernote"` and `"variable": "reviewerNote"`. The runtime keys the result object by the **`id`**, so the path is `$vars.sensitiveCaseReview1.output.reviewernote` - lowercase, as written in the `id`. `$vars.sensitiveCaseReview1.output.reviewerNote` returns nothing. The `variable` property only creates a workflow-global alias.
-
-Both are strings, so both use Handlebars. `status` carries the outcome name; `output` carries the filled fields.
+Both are strings, so both use Handlebars. `status` carries the outcome name; `output` carries the filled fields, keyed by the field `id` (lowercase `reviewernote`).
 
 ---
 
 ## 7. Testing Both Branches
 
-One email must reach a human, one must not. Run both.
+One email must reach a human, one must not. The human branch pauses the run until the task is completed, and your coding agent can complete it from the CLI with the `uip tasks` tool.
 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
 ```text
 Debug the EmailTriage flow twice and tell me which branch each run took.
 
-First with emailBody: "This is my third attempt to get my data deleted. I have instructed my solicitor and we will be filing a formal GDPR complaint with the regulator unless you confirm erasure within 7 days."
+First with emailBody: "I recently placed an order and forgot to enter my discount code at checkout." This run should complete without creating a task.
 
-Then with emailBody: "I recently placed an order and forgot to enter my discount code at checkout."
+Then with emailBody: "This is my third attempt to get my data deleted. I have instructed my solicitor and we will be filing a formal GDPR complaint with the regulator unless you confirm erasure within 7 days." This run pauses on a Sensitive Case Review task. While the debug command keeps waiting, list the pending, not deleted Action Center tasks with that title, take the newest one, read its folder id with uip tasks get, and complete it as a QuickFormTask with the action Approve and the reviewer note "yes".
 
-For each run report the department the agent chose, the value of requiresEscalation, and whether the Quick Form task was created. Read these from the run payload, not from the run status.
+For each run report the department the agent chose, requiresEscalation, and whether sensitiveCaseReview1 appears in the payload's elements. For the second run also report reviewOutcome and reviewerNote from the globals.
 ```
 
 ### 💻 Underlying CLI Commands (What the Agent Executes)
 
 ```bash
 cd ./TutorialSolution
+uip maestro flow debug EmailTriage --inputs '{"emailBody": "I recently placed an order and forgot to enter my discount code at checkout."}'
 
 uip maestro flow debug EmailTriage --inputs '{"emailBody": "This is my third attempt to get my data deleted. I have instructed my solicitor and we will be filing a formal GDPR complaint with the regulator unless you confirm erasure within 7 days."}'
-
-uip maestro flow debug EmailTriage --inputs '{"emailBody": "I recently placed an order and forgot to enter my discount code at checkout."}'
-```
-
-### 7.1 What Each Run Should Show
-
-| | Legal complaint | Discount code |
-| :--- | :--- | :--- |
-| `category` | `Legal & Compliance` | `Promotions & Discounts` |
-| `urgencyScore` | `5` | `2` |
-| `requiresEscalation` | **`true`** | **`false`** |
-| Branch taken | Human review | Auto-route |
-| Elements in the payload | includes `sensitiveCaseReview1` | no `sensitiveCaseReview1` |
-| Run behaviour | pauses, waiting for you | completes immediately |
-
-The element list is the proof. `variables.elements` is an array of `{ elementId, inputs, outputs }` - if `sensitiveCaseReview1` appears, the gateway sent the run down the human branch; if it does not, the case was auto-routed. Verified payload from the legal complaint:
-
-```json
-{
-  "category": "Legal & Compliance",
-  "urgencyScore": 5,
-  "requiresEscalation": true,
-  "actionItems": [
-    { "action": "Confirm receipt of the GDPR erasure request and acknowledge the customer's concerns.", "priority": "High" },
-    { "action": "Escalate the case to the Legal & Compliance department immediately for review.", "priority": "High" }
-  ]
-}
-```
-
-> 🎯 **The observation that proves the chapter worked:** the agent never saw the words "Legal & Compliance" or "Required" in its prompt. It retrieved both from a spreadsheet, and a deterministic gateway acted on them. Change one cell in `Departments.xlsx` from `Not required` to `Required`, re-ingest, and a whole department starts routing through a human - with no edit to the prompt, the flow, or the agent's schema.
-
-### 7.2 Completing the Task
-
-The legal-complaint run pauses. There are two ways to act on the task, and both resume the flow through the handle for the outcome you chose, with `reviewOutcome` and `reviewerNote` coming back as flow outputs.
-
-**In Action Center.** Open the task, or the notification if you enabled it, read the three fields the form shows you, leave a note and pick **Approve** or **Reject**. This is what the reviewer does in real life.
-
-**From the CLI.** The `uip tasks` tool (it installs itself on first use) lists and completes tasks, which is what a coding agent or a test script does. Leave the debug command running in one terminal and, in another:
-
-#### 💬 Prompt Your AI Coding Agent (Recommended)
-```text
-The EmailTriage debug run is paused on a Sensitive Case Review task. List the pending Action Center tasks, find the newest one with that title, read its folder id with uip tasks get, and complete it as a QuickFormTask with the action Approve and the reviewer note "yes". Then confirm the debug run resumed and show me reviewOutcome and reviewerNote from its globals.
-```
-
-#### 💻 Underlying CLI Commands (What the Agent Executes)
-```bash
+# ... pauses. In a second terminal:
 uip tasks list --output json --output-filter "[?Status=='Pending' && !IsDeleted && Title=='Sensitive Case Review'].{Id:Id,Status:Status}"
 uip tasks get <taskId> --output json --output-filter "{FolderId:FolderId,Type:Type}"
 uip tasks complete <taskId> --type QuickFormTask --folder-id <folderId> \
   --action Approve --data '{"reviewernote":"yes"}' --output json
 ```
-`complete` answers with `"Code": "TaskCompleted"` and echoes the action and data. Within seconds the paused `debug` command in the other terminal prints its payload with `finalStatus: Completed`. Task ids are numeric, and the folder id comes from `tasks get`, not from `tasks list`. The list also contains tasks that were deleted in Action Center (they keep their old status), so the `!IsDeleted` filter is what tells a live task from a leftover.
 
-Verified globals from a completed run, identical for both routes:
+What each run should show:
 
-```text
-Category           = "Legal & Compliance"
-RequiresEscalation = true
-ReviewOutcome      = "Approve"
-ReviewerNote       = "yes"
-```
+| | Discount code | Legal complaint |
+| :--- | :--- | :--- |
+| `category` | `Promotions & Discounts` | `Legal & Compliance` |
+| `requiresEscalation` | **`false`** | **`true`** |
+| `sensitiveCaseReview1` in the elements | no | yes |
+| Run behaviour | completes immediately | pauses, resumes after `tasks complete` |
+| `reviewOutcome` / `reviewerNote` | empty | `Approve` / `yes` |
+
+> 💡 **Or act as the reviewer yourself.** Instead of the `uip tasks` commands, open the task in Action Center (or the email notification), read the three fields, leave a note and press **Approve** or **Reject**. The paused debug command resumes the same way.
+
+> 🎯 **The observation that proves the chapter worked:** the agent never saw the words "Legal & Compliance" or "Required" in its prompt. It retrieved both from a spreadsheet, and a deterministic gateway acted on them. Change one cell in `Departments.xlsx` from `Not required` to `Required`, re-ingest, and a whole department starts routing through a human, with no edit to the prompt, the flow, or the agent's schema.
 
 ---
 
 ## 8. 📌 Checkpoint: Chapter 07 Done
 
-Both branches ran: one email auto-routed, one paused on the Quick Form and came back with the reviewer's verdict. Record it in the solution's own repository (set up at the end of Chapter 03), so that any later reset can bring the files back to exactly this point. This is the state **Part 3** starts from, and (because Chapter 09 changes nothing on disk) the flow that Part 4 starts from as well.
+Both branches ran: one email auto-routed, one paused on the Quick Form and came back with the reviewer's verdict. Record it in the solution's own repository so that any later reset can bring the files back to exactly this point. This is the state **Part 3** starts from.
 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 ```text
@@ -447,15 +315,12 @@ git -C TutorialSolution tag -f ch07-done
 
 ## 9. Summary Checklist
 
-- [x] Learned why a compliance gate belongs in the graph rather than on the agent's `escalation` handle, and why an exception is not a HITL mechanism at all.
+- [x] Learned why a compliance gate belongs in the graph rather than on the agent's `escalation` handle.
 - [x] Sharpened `requiresEscalation` instead of adding a field, moving the rule into the `Human Review` spreadsheet column.
-- [x] Added a `core.logic.decision` gateway with a `=js:` typed expression, and learned why Handlebars would make every email escalate.
-- [x] Scaffolded a Quick Form task with `uip maestro flow hitl add`: `input` and `output` fields, two named outcomes, `=js:$vars.` form bindings, and a schema id.
-- [x] Bound a field to `start.output.emailBody`, the runtime path, rather than to the global's name.
-- [x] Learned the two wiring styles - `completed` plus `status`, or per-outcome handles plus a cached-definition edit - and why you never mix them.
-- [x] Resolved the recipient in the canvas, and learned the `200000` / `key:name` signature of an unassigned task.
-- [x] Returned the reviewer's verdict as flow outputs, reading `output` by field `id` rather than by the `variable` alias.
-- [x] Tested both branches and proved which one ran from the element list, not from the status.
+- [x] Added a decision gateway with a `=js:` typed expression.
+- [x] Scaffolded a Quick Form task with `uip maestro flow hitl add` and assigned it to yourself with `uip user`.
+- [x] Returned the reviewer's verdict as flow outputs.
+- [x] Tested both branches, completed the task from the CLI, and proved which branch ran from the payload rather than from the status.
 
 ---
 
