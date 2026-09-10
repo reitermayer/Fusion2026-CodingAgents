@@ -4,6 +4,24 @@ In Chapter 04, you scaffolded a baseline flow with a single text output. In real
 
 In this chapter, you will enhance the **`EmailTriage`** project by mastering **Flow Data Types**, the `{{ $vars.NodeId.OutputEnvelope.Property }}` **Handlebars namespacing formula**, and the distinction between **Step Outputs** and mutable **Flow Variables** (via "Update Variable").
 
+## What You Are Going to Build
+
+The canvas does not change in this chapter: it is still the three nodes of Chapter 04. What changes is inside the nodes, so here are their property panels as the Maestro designer shows them when the chapter is done.
+
+**The Manual trigger** keeps its one input argument. Downstream nodes read it as `$vars.start.output.emailBody`:
+
+![Manual trigger panel: one input argument emailBody of type string](../Images/EmailTriage-Ch05-Trigger.png)
+
+**The Triage AI Agent** now declares four typed outputs instead of one string. Note the system prompt field: it holds a placeholder, because the real prompt lives in the agent's own `agent.json`, exactly as Chapter 04 explained:
+
+![Triage AI Agent panel: model gpt-4o-2024-11-20, placeholder system prompt, user prompt with the emailBody token, four outputs category, urgencyScore, requiresEscalation and actionItems](../Images/EmailTriage-Ch05-Agent.png)
+
+**The End node** forwards all four. Look closely at the four bindings: the string uses Handlebars braces, the number, boolean and array use an expression that the designer displays as `= $vars...`. In the file, that expression is stored with the `=js:` prefix. Both are the same binding; the designer only hides the prefix:
+
+![End node panel: category bound with Handlebars, urgencyScore, requiresEscalation and actionItems bound as expressions](../Images/EmailTriage-Ch05-End.png)
+
+> ⚠️ **Opening the flow in the designer rewrites your files.** Within seconds of opening a `.flow` file, the VS Code Maestro extension normalizes the project on disk: it adds icons and a trigger output block to the flow, bumps node versions, creates an `evals/` folder (sometimes also a `simulations.json`), and re-serializes `agent.json` without the schema descriptions you just wrote (in some runs the `actionItems` item definition goes too). Nothing you click, just opening; with the flow closed, nothing changes, verified over several minutes. Look all you like, but before you continue with the next chapter, **close the flow tab first**, then reset to the checkpoint (the next chapter's Mode 1 does exactly that), so that you build on the file the CLI wrote and not on the designer's rewrite. The order matters: while the tab is open, the extension re-applies its rewrite seconds after any reset, so a reset with the flow still open is undone immediately.
+
 ```mermaid
 flowchart LR
     subgraph Ingest ["1. Ingestion"]
@@ -56,7 +74,7 @@ flowchart LR
 >    - 'urgencyScore' (type: number, description: "Urgency score from 1 to 5")
 >    - 'requiresEscalation' (type: boolean, description: "True if customer is at churn risk")
 >    - 'actionItems' (type: array of objects, description: "List of recommended next steps")
->    Edit the file as a complete JSON document, re-read it and confirm it parses, update the system prompt to ask for exactly these four fields, then run uip agent refresh on the agent folder with --inline-in-flow.
+>    Edit the file as a complete JSON document, re-read it and confirm it parses, update the system prompt to ask for exactly these four fields, then run uip agent refresh on the agent folder with --inline-in-flow. The refresh does not touch the flow: in EmailTriage.flow, replace the agent node's agentOutputVariables list (currently the single analysisResult) with the same four ids and types.
 > 2. Forward all four agent outputs (category, urgencyScore, requiresEscalation, actionItems) through the End node as the final flow return arguments.
 > 3. Format the canvas layout and validate the flow with 'uip maestro flow validate'.
 > 4. Run a cloud debug test with input emailBody: "Hi, I was charged twice for my subscription this morning ($120 x 2). I need an immediate refund for the duplicate charge or I will cancel my account!".
@@ -102,7 +120,7 @@ Upgrade the Triage AI Agent in EmailTriage so it returns four strongly-typed var
    - 'urgencyScore' (type: number, description: "Urgency score from 1 to 5")
    - 'requiresEscalation' (type: boolean, description: "True if customer is at churn risk")
    - 'actionItems' (type: array of objects, description: "List of recommended next steps")
-   Edit the file as a complete JSON document, then re-read it and confirm it still parses. Update the system prompt so it asks for exactly these four fields, and run uip agent refresh on the agent folder with --inline-in-flow so the flow node's output variables are regenerated.
+   Edit the file as a complete JSON document, then re-read it and confirm it still parses. Update the system prompt so it asks for exactly these four fields, and run uip agent refresh on the agent folder with --inline-in-flow to regenerate the agent's derived files. The refresh does not touch the flow: in EmailTriage.flow, replace the agent node's agentOutputVariables list (currently the single analysisResult) with the same four ids and types.
 2. Forward all four agent outputs (category, urgencyScore, requiresEscalation, actionItems) through the End node as the final flow return arguments.
 3. Format the canvas layout and validate the flow with 'uip maestro flow validate'.
 ```
@@ -114,7 +132,7 @@ Upgrade the Triage AI Agent in EmailTriage so it returns four strongly-typed var
 > Without the word "forward", coding agents might only declare the variables on the agent without completing the return wiring at the End node!
 
 > ⚙️ **What the Coding Agent Does Behind the Scenes:**  
-> 1. **Typed Agent Schema:** Replaces the agent's `outputSchema` in `agent.json` with the 4 properties (with `actionItems` declared as an `array` of objects), and mirrors them one-per-entry in the flow node's `agentOutputVariables`. The prompt asks for a whole-document edit and a re-read on purpose: an agent that patches the schema line by line can leave the old `analysisResult` entry half-open, and the file then fails to parse at the next validate. That was observed with a smaller model; the re-read catches it before it costs a debug cycle.
+> 1. **Typed Agent Schema:** Replaces the agent's `outputSchema` in `agent.json` with the 4 properties (with `actionItems` declared as an `array` of objects), and mirrors them one-per-entry in the flow node's `agentOutputVariables`. The mirror is a separate edit: `uip agent refresh --inline-in-flow` regenerates the agent's own derived files (`contentTokens`, bindings) but leaves the flow file untouched (verified with CLI 1.201.0). The prompt asks for a whole-document edit and a re-read on purpose: an agent that patches the schema line by line can leave the old `analysisResult` entry half-open, and the file then fails to parse at the next validate. That was observed with a smaller model; the re-read catches it before it costs a debug cycle.
 > 2. **Declarative Code Edit:** Maps each output on the End node: string fields via Handlebars (`{{ $vars... }}`), numbers, booleans, and arrays via JavaScript expressions (`=js:$vars...`), and declares all 4 as `direction: "out"` in `variables.globals`.
 > 3. **Verification Tooling:** Executes `uip agent refresh`, `uip agent validate`, and the `uip` CLI commands below to recalculate canvas layout positions and validate schema correctness.
 
