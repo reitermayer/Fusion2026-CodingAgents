@@ -1,0 +1,3847 @@
+{
+  "id": "3ebf5eaf-bd81-411c-b452-515e4d92530e",
+  "version": "1.9",
+  "name": "EmailTriage",
+  "runtime": "maestro",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "core.trigger.manual",
+      "typeVersion": "1.0",
+      "display": {
+        "label": "Manual trigger",
+        "icon": "play"
+      },
+      "inputs": {
+        "entryPointId": "d2a2ab88-7340-4c16-b86d-13406dfdd9b7",
+        "isDefaultEntryPoint": true
+      },
+      "outputs": {
+        "output": {
+          "type": "object",
+          "description": "Data passed when manually triggering the process.",
+          "source": "null",
+          "var": "output"
+        }
+      }
+    },
+    {
+      "id": "end1",
+      "type": "core.control.end",
+      "typeVersion": "1.0",
+      "display": {
+        "label": "End",
+        "icon": "circle-check"
+      },
+      "inputs": {},
+      "outputs": {
+        "category": {
+          "type": "string",
+          "source": "{{ $vars.agent_triage.output.category }}"
+        },
+        "urgencyScore": {
+          "type": "number",
+          "source": "=js:$vars.agent_triage.output.urgencyScore"
+        },
+        "requiresEscalation": {
+          "type": "boolean",
+          "source": "=js:$vars.agent_triage.output.requiresEscalation"
+        },
+        "actionItems": {
+          "type": "array",
+          "source": "=js:$vars.agent_triage.output.actionItems"
+        },
+        "reviewOutcome": {
+          "type": "string",
+          "source": "{{ $vars.triageReview1.status }}"
+        },
+        "reviewerNote": {
+          "type": "string",
+          "source": "{{ $vars.triageReview1.output.feedback }}"
+        },
+        "confidence": {
+          "type": "number",
+          "source": "=js:$vars.agent_triage.output.confidence"
+        },
+        "reasoning": {
+          "type": "string",
+          "source": "{{ $vars.agent_triage.output.reasoning }}"
+        },
+        "canAutoResolve": {
+          "type": "boolean",
+          "source": "=js:$vars.agent_triage.output.canAutoResolve"
+        },
+        "replyText": {
+          "type": "string",
+          "source": "{{ $vars.agent_triage.output.replyText }}"
+        }
+      }
+    },
+    {
+      "id": "agent_triage",
+      "type": "uipath.agent.autonomous",
+      "typeVersion": "1.4",
+      "display": {
+        "label": "Triage AI Agent",
+        "icon": "autonomous-agent"
+      },
+      "inputs": {
+        "systemPrompt": "Customer Support Triage AI (canonical prompt lives in agent.json)",
+        "userPrompt": "Triage this email: {{ $vars.start.output.emailBody }}",
+        "model": "gpt-4o-2024-11-20",
+        "mode": "standard",
+        "agentInputVariables": [
+          {
+            "id": "start__output__emailBody",
+            "type": "string",
+            "binding": "=$vars.start.output.emailBody"
+          }
+        ],
+        "agentOutputVariables": [
+          {
+            "id": "category",
+            "type": "string"
+          },
+          {
+            "id": "urgencyScore",
+            "type": "number"
+          },
+          {
+            "id": "requiresEscalation",
+            "type": "boolean"
+          },
+          {
+            "id": "actionItems",
+            "type": "array"
+          },
+          {
+            "id": "confidence",
+            "type": "number"
+          },
+          {
+            "id": "reasoning",
+            "type": "string"
+          },
+          {
+            "id": "canAutoResolve",
+            "type": "boolean"
+          },
+          {
+            "id": "replyText",
+            "type": "string"
+          }
+        ],
+        "source": "7269ed1a-4ac2-480e-9fdd-6c906a2a5eda"
+      },
+      "outputs": {
+        "error": {
+          "type": "object",
+          "description": "Error information if the node fails",
+          "schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "required": [
+              "code",
+              "message",
+              "detail",
+              "category",
+              "status"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code as a string"
+              },
+              "message": {
+                "type": "string",
+                "description": "High-level error message"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Detailed error description"
+              },
+              "category": {
+                "type": "string",
+                "description": "Error category"
+              },
+              "status": {
+                "type": "integer",
+                "description": "HTTP status code"
+              }
+            },
+            "additionalProperties": false
+          },
+          "source": "=Error",
+          "var": "error"
+        }
+      }
+    },
+    {
+      "id": "organizationindex1",
+      "type": "uipath.agent.resource.context.index.organizationindex.<your-organizationindex-id>",
+      "typeVersion": "1.0.0",
+      "display": {
+        "label": "OrganizationIndex",
+        "icon": "context"
+      },
+      "inputs": {
+        "indexId": "<your-organizationindex-id>",
+        "indexName": "OrganizationIndex",
+        "folderKey": "<your-tutorialsolution-folder-key>",
+        "folderPath": "TutorialSolution",
+        "retrievalMode": "semantic",
+        "query": {
+          "mode": "prompt",
+          "textValue": "",
+          "promptValue": "The query for the Semantic strategy",
+          "argumentPath": ""
+        },
+        "threshold": 0,
+        "resultCount": 3,
+        "fileExtension": "All",
+        "folderPathPrefix": {
+          "mode": "text-builder",
+          "textValue": "",
+          "promptValue": "",
+          "argumentPath": ""
+        },
+        "citations": "enabled",
+        "outputColumns": [],
+        "webSearchGrounding": {
+          "value": "enabled"
+        },
+        "source": "45f558d3-c31e-4f67-91c2-3a3539fd96b8"
+      }
+    },
+    {
+      "id": "triageReview1",
+      "type": "uipath.human-in-the-loop.quick-form",
+      "typeVersion": "1.1",
+      "display": {
+        "label": "Triage Review",
+        "icon": "users"
+      },
+      "inputs": {
+        "type": "quick",
+        "schema": {
+          "id": "5f2197e6-ab6e-4724-970c-b2a110b73060",
+          "fields": [
+            {
+              "id": "emailbody",
+              "label": "Customer email",
+              "type": "string",
+              "direction": "input",
+              "binding": "=js:$vars.start.output.emailBody"
+            },
+            {
+              "id": "ticketid",
+              "label": "Ticket id",
+              "type": "string",
+              "direction": "input",
+              "binding": "=js:$vars.start.output.ticketId"
+            },
+            {
+              "id": "department",
+              "label": "Department the agent proposed",
+              "type": "string",
+              "direction": "input",
+              "binding": "=js:$vars.agent_triage.output.category"
+            },
+            {
+              "id": "urgency",
+              "label": "Urgency (1-5)",
+              "type": "string",
+              "direction": "input",
+              "binding": "=js:String($vars.agent_triage.output.urgencyScore)"
+            },
+            {
+              "id": "confidence",
+              "label": "Confidence (0-100)",
+              "type": "string",
+              "direction": "input",
+              "binding": "=js:String($vars.agent_triage.output.confidence)"
+            },
+            {
+              "id": "reasoning",
+              "label": "Reasoning",
+              "type": "string",
+              "direction": "input",
+              "binding": "=js:$vars.agent_triage.output.reasoning"
+            },
+            {
+              "id": "feedback",
+              "label": "Feedback (why you corrected or denied)",
+              "type": "string",
+              "direction": "output",
+              "variable": "feedback"
+            },
+            {
+              "id": "correcteddepartment",
+              "label": "Corrected department (Modify only)",
+              "type": "string",
+              "direction": "output",
+              "variable": "correctedDepartment"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "approve",
+              "name": "Approve",
+              "type": "string",
+              "isPrimary": true,
+              "action": "Continue"
+            },
+            {
+              "id": "modify",
+              "name": "Modify",
+              "type": "string",
+              "isPrimary": false,
+              "action": "End"
+            },
+            {
+              "id": "deny",
+              "name": "Deny",
+              "type": "string",
+              "isPrimary": false,
+              "action": "End"
+            }
+          ],
+          "schemaId": "d7c054a9-4297-42b4-80aa-c7762d22cdff"
+        },
+        "recipient": {
+          "channels": [
+            "Email",
+            "ActionCenter"
+          ],
+          "connections": {},
+          "assignee": {
+            "type": "staticEmail",
+            "value": "reviewer@example.com"
+          }
+        },
+        "title": "Triage Review",
+        "priority": "Medium",
+        "assignee": {
+          "type": "user",
+          "value": "reviewer@example.com",
+          "displayName": "Johannes Reitermayer"
+        }
+      },
+      "outputs": {
+        "output": {
+          "type": "object",
+          "source": "=result",
+          "var": "output",
+          "description": "Task result data"
+        },
+        "status": {
+          "type": "string",
+          "source": "=result.Action",
+          "var": "status",
+          "description": "Task completion outcome"
+        }
+      }
+    },
+    {
+      "id": "createEntityRecord1",
+      "type": "uipath.connector.uipath-uipath-dataservice.create-entity-record",
+      "typeVersion": "1.0.0",
+      "display": {
+        "label": "Create Entity Record",
+        "icon": "https://cloud.uipath.com/<your-org-id>/studio_/typecache/icons/98381fa079bbcf73264f551006d6ef7580fb53992f3d9f94361eb5d9e06040cb.svg"
+      },
+      "inputs": {
+        "detail": {
+          "connector": "uipath-uipath-dataservice",
+          "connectionId": "<your-dataservice-connection-id>",
+          "connectionResourceId": "<your-dataservice-connection-id>",
+          "connectionFolderKey": "<your-personal-workspace-folder-key>",
+          "method": "POST",
+          "endpoint": "/v2/{entityName}/CreateEntityRecord",
+          "bodyParameters": {
+            "TicketId": "{{ $vars.start.output.ticketId }}",
+            "Phase": "=js:$vars.start.output.phase",
+            "EmailBody": "{{ $vars.start.output.emailBody }}",
+            "ProposedDepartment": "{{ $vars.agent_triage.output.category }}",
+            "Confidence": "=js:$vars.agent_triage.output.confidence",
+            "HumanReviewRequired": "=js:$vars.agent_triage.output.requiresEscalation",
+            "Reasoning": "{{ $vars.agent_triage.output.reasoning }}",
+            "Department": "{{ $vars.agent_triage.output.category }}",
+            "Outcome": 1
+          },
+          "pathParameters": {
+            "entityName": "TriageDecision"
+          },
+          "uiPathActivityTypeId": "dfd2bc7a-ca4b-3316-8a1f-57c9e106dfbf",
+          "errorState": {
+            "issues": []
+          },
+          "configuration": "=jsonString:{\"essentialConfiguration\":{\"connectorVersion\":\"1.73.0\",\"customFieldsRequestDetails\":{\"objectActionName\":\"GenerateSchema\",\"parameterValues\":[[\"entityName\",\"TriageDecision\"]]},\"instanceParameters\":{\"connectorKey\":\"uipath-uipath-dataservice\",\"objectName\":\"CreateEntityRecordCurated\",\"httpMethod\":\"POST\",\"activityType\":\"Curated\",\"version\":\"1.0.0\",\"supportsStreaming\":false,\"subType\":\"standard\"},\"objectName\":\"CreateEntityRecordCurated\",\"operation\":\"create\",\"packageVersion\":\"1.0.0\",\"httpMethod\":\"POST\",\"path\":\"/v2/{entityName}/CreateEntityRecord\",\"unifiedTypesCompatible\":true,\"savedJitInputFieldId\":\"in_CreateEntityRecordCurated\"}}"
+        }
+      },
+      "outputs": {
+        "output": {
+          "type": "object",
+          "description": "The return value of the connector.",
+          "source": "=result.response",
+          "var": "output"
+        },
+        "error": {
+          "type": "object",
+          "description": "Error information if the node fails",
+          "schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "required": [
+              "code",
+              "message",
+              "detail",
+              "category",
+              "status"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code as a string"
+              },
+              "message": {
+                "type": "string",
+                "description": "High-level error message"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Detailed error description"
+              },
+              "category": {
+                "type": "string",
+                "description": "Error category"
+              },
+              "status": {
+                "type": "integer",
+                "description": "HTTP status code"
+              }
+            },
+            "additionalProperties": false
+          },
+          "source": "=Error",
+          "var": "error"
+        }
+      }
+    },
+    {
+      "id": "createEntityRecord2",
+      "type": "uipath.connector.uipath-uipath-dataservice.create-entity-record",
+      "typeVersion": "1.0.0",
+      "display": {
+        "label": "Create Entity Record 2",
+        "icon": "https://cloud.uipath.com/<your-org-id>/studio_/typecache/icons/98381fa079bbcf73264f551006d6ef7580fb53992f3d9f94361eb5d9e06040cb.svg"
+      },
+      "inputs": {
+        "detail": {
+          "connector": "uipath-uipath-dataservice",
+          "connectionId": "<your-dataservice-connection-id>",
+          "connectionResourceId": "<your-dataservice-connection-id>",
+          "connectionFolderKey": "<your-personal-workspace-folder-key>",
+          "method": "POST",
+          "endpoint": "/v2/{entityName}/CreateEntityRecord",
+          "bodyParameters": {
+            "TicketId": "{{ $vars.start.output.ticketId }}",
+            "Phase": "=js:$vars.start.output.phase",
+            "EmailBody": "{{ $vars.start.output.emailBody }}",
+            "ProposedDepartment": "{{ $vars.agent_triage.output.category }}",
+            "Confidence": "=js:$vars.agent_triage.output.confidence",
+            "HumanReviewRequired": "=js:$vars.agent_triage.output.requiresEscalation",
+            "Reasoning": "{{ $vars.agent_triage.output.reasoning }}",
+            "Department": "{{ $vars.triageReview1.output.correcteddepartment }}",
+            "Feedback": "{{ $vars.triageReview1.output.feedback }}",
+            "Outcome": 2
+          },
+          "pathParameters": {
+            "entityName": "TriageDecision"
+          },
+          "uiPathActivityTypeId": "dfd2bc7a-ca4b-3316-8a1f-57c9e106dfbf",
+          "errorState": {
+            "issues": []
+          },
+          "configuration": "=jsonString:{\"essentialConfiguration\":{\"connectorVersion\":\"1.73.0\",\"customFieldsRequestDetails\":{\"objectActionName\":\"GenerateSchema\",\"parameterValues\":[[\"entityName\",\"TriageDecision\"]]},\"instanceParameters\":{\"connectorKey\":\"uipath-uipath-dataservice\",\"objectName\":\"CreateEntityRecordCurated\",\"httpMethod\":\"POST\",\"activityType\":\"Curated\",\"version\":\"1.0.0\",\"supportsStreaming\":false,\"subType\":\"standard\"},\"objectName\":\"CreateEntityRecordCurated\",\"operation\":\"create\",\"packageVersion\":\"1.0.0\",\"httpMethod\":\"POST\",\"path\":\"/v2/{entityName}/CreateEntityRecord\",\"unifiedTypesCompatible\":true,\"savedJitInputFieldId\":\"in_CreateEntityRecordCurated\"}}"
+        }
+      },
+      "outputs": {
+        "output": {
+          "type": "object",
+          "description": "The return value of the connector.",
+          "source": "=result.response",
+          "var": "output"
+        },
+        "error": {
+          "type": "object",
+          "description": "Error information if the node fails",
+          "schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "required": [
+              "code",
+              "message",
+              "detail",
+              "category",
+              "status"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code as a string"
+              },
+              "message": {
+                "type": "string",
+                "description": "High-level error message"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Detailed error description"
+              },
+              "category": {
+                "type": "string",
+                "description": "Error category"
+              },
+              "status": {
+                "type": "integer",
+                "description": "HTTP status code"
+              }
+            },
+            "additionalProperties": false
+          },
+          "source": "=Error",
+          "var": "error"
+        }
+      }
+    },
+    {
+      "id": "createEntityRecord3",
+      "type": "uipath.connector.uipath-uipath-dataservice.create-entity-record",
+      "typeVersion": "1.0.0",
+      "display": {
+        "label": "Create Entity Record 3",
+        "icon": "https://cloud.uipath.com/<your-org-id>/studio_/typecache/icons/98381fa079bbcf73264f551006d6ef7580fb53992f3d9f94361eb5d9e06040cb.svg"
+      },
+      "inputs": {
+        "detail": {
+          "connector": "uipath-uipath-dataservice",
+          "connectionId": "<your-dataservice-connection-id>",
+          "connectionResourceId": "<your-dataservice-connection-id>",
+          "connectionFolderKey": "<your-personal-workspace-folder-key>",
+          "method": "POST",
+          "endpoint": "/v2/{entityName}/CreateEntityRecord",
+          "bodyParameters": {
+            "TicketId": "{{ $vars.start.output.ticketId }}",
+            "Phase": "=js:$vars.start.output.phase",
+            "EmailBody": "{{ $vars.start.output.emailBody }}",
+            "ProposedDepartment": "{{ $vars.agent_triage.output.category }}",
+            "Confidence": "=js:$vars.agent_triage.output.confidence",
+            "HumanReviewRequired": "=js:$vars.agent_triage.output.requiresEscalation",
+            "Reasoning": "{{ $vars.agent_triage.output.reasoning }}",
+            "Department": "{{ $vars.agent_triage.output.category }}",
+            "Feedback": "{{ $vars.triageReview1.output.feedback }}",
+            "Outcome": 3
+          },
+          "pathParameters": {
+            "entityName": "TriageDecision"
+          },
+          "uiPathActivityTypeId": "dfd2bc7a-ca4b-3316-8a1f-57c9e106dfbf",
+          "errorState": {
+            "issues": []
+          },
+          "configuration": "=jsonString:{\"essentialConfiguration\":{\"connectorVersion\":\"1.73.0\",\"customFieldsRequestDetails\":{\"objectActionName\":\"GenerateSchema\",\"parameterValues\":[[\"entityName\",\"TriageDecision\"]]},\"instanceParameters\":{\"connectorKey\":\"uipath-uipath-dataservice\",\"objectName\":\"CreateEntityRecordCurated\",\"httpMethod\":\"POST\",\"activityType\":\"Curated\",\"version\":\"1.0.0\",\"supportsStreaming\":false,\"subType\":\"standard\"},\"objectName\":\"CreateEntityRecordCurated\",\"operation\":\"create\",\"packageVersion\":\"1.0.0\",\"httpMethod\":\"POST\",\"path\":\"/v2/{entityName}/CreateEntityRecord\",\"unifiedTypesCompatible\":true,\"savedJitInputFieldId\":\"in_CreateEntityRecordCurated\"}}"
+        }
+      },
+      "outputs": {
+        "output": {
+          "type": "object",
+          "description": "The return value of the connector.",
+          "source": "=result.response",
+          "var": "output"
+        },
+        "error": {
+          "type": "object",
+          "description": "Error information if the node fails",
+          "schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "required": [
+              "code",
+              "message",
+              "detail",
+              "category",
+              "status"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code as a string"
+              },
+              "message": {
+                "type": "string",
+                "description": "High-level error message"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Detailed error description"
+              },
+              "category": {
+                "type": "string",
+                "description": "Error category"
+              },
+              "status": {
+                "type": "integer",
+                "description": "HTTP status code"
+              }
+            },
+            "additionalProperties": false
+          },
+          "source": "=Error",
+          "var": "error"
+        }
+      }
+    },
+    {
+      "id": "queryEntityRecords1",
+      "type": "uipath.agent.resource.tool.connector.uipath-uipath-dataservice.query-entity-records",
+      "typeVersion": "1.0.0",
+      "display": {
+        "label": "Query Entity Records",
+        "description": "Earlier triage decisions from the TriageDecision entity. Each record is an email that was routed by this process and confirmed (Outcome 1), corrected (Outcome 2) or denied (Outcome 3) by a human reviewer. Outcome 0 and 4 rows were not reviewed and are not precedent.",
+        "icon": "https://cloud.uipath.com/<your-org-id>/studio_/typecache/icons/98381fa079bbcf73264f551006d6ef7580fb53992f3d9f94361eb5d9e06040cb.svg"
+      },
+      "inputs": {
+        "source": "783cd9cb-09a2-4563-b3a1-201200e8af63",
+        "detail": {
+          "connector": "uipath-uipath-dataservice",
+          "connectionId": "<your-dataservice-connection-id>",
+          "connectionResourceId": "<your-dataservice-connection-id>",
+          "connectionFolderKey": "<your-personal-workspace-folder-key>",
+          "method": "POST",
+          "endpoint": "/v2/{entityName}/qer",
+          "bodyParameters": {},
+          "queryParameters": {
+            "limit": 100,
+            "expansionLevel": 1,
+            "isAscending": false,
+            "start": 0
+          },
+          "pathParameters": {
+            "entityName": "TriageDecision"
+          },
+          "uiPathActivityTypeId": "703065b9-a310-33b8-9d4d-12df0a6f520b",
+          "errorState": {
+            "issues": []
+          },
+          "configuration": "=jsonString:{\"essentialConfiguration\":{\"connectorVersion\":\"1.73.0\",\"customFieldsRequestDetails\":{\"objectActionName\":\"GenerateSchema\",\"parameterValues\":[[\"entityName\",\"TriageDecision\"]]},\"instanceParameters\":{\"connectorKey\":\"uipath-uipath-dataservice\",\"objectName\":\"QueryEntityRecordsCurated\",\"httpMethod\":\"POST\",\"activityType\":\"Curated\",\"version\":\"1.0.0\",\"supportsStreaming\":false,\"subType\":\"standard\"},\"objectName\":\"QueryEntityRecordsCurated\",\"operation\":\"list\",\"packageVersion\":\"1.0.0\",\"httpMethod\":\"POST\",\"path\":\"/v2/{entityName}/qer\",\"unifiedTypesCompatible\":true}}",
+          "inputMetadata": {
+            "operation": "list",
+            "pagination": {
+              "maxPageSize": 1000
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "decision1",
+      "type": "core.logic.decision",
+      "typeVersion": "1.3",
+      "display": {
+        "label": "Confident and not Required?",
+        "icon": "trending-up-down"
+      },
+      "inputs": {
+        "trueLabel": "Auto-route",
+        "falseLabel": "Human review",
+        "expression": "=js:$vars.agent_triage.output.confidence > 90 && $vars.agent_triage.output.requiresEscalation === false"
+      }
+    },
+    {
+      "id": "createEntityRecord4",
+      "type": "uipath.connector.uipath-uipath-dataservice.create-entity-record",
+      "typeVersion": "1.0.0",
+      "display": {
+        "label": "Write row: Auto",
+        "icon": "https://cloud.uipath.com/<your-org-id>/studio_/typecache/icons/98381fa079bbcf73264f551006d6ef7580fb53992f3d9f94361eb5d9e06040cb.svg"
+      },
+      "inputs": {
+        "detail": {
+          "connector": "uipath-uipath-dataservice",
+          "connectionId": "<your-dataservice-connection-id>",
+          "connectionResourceId": "<your-dataservice-connection-id>",
+          "connectionFolderKey": "<your-personal-workspace-folder-key>",
+          "method": "POST",
+          "endpoint": "/v2/{entityName}/CreateEntityRecord",
+          "bodyParameters": {
+            "TicketId": "{{ $vars.start.output.ticketId }}",
+            "Phase": "=js:$vars.start.output.phase",
+            "EmailBody": "{{ $vars.start.output.emailBody }}",
+            "ProposedDepartment": "{{ $vars.agent_triage.output.category }}",
+            "Department": "{{ $vars.agent_triage.output.category }}",
+            "Outcome": 0,
+            "Confidence": "=js:$vars.agent_triage.output.confidence",
+            "HumanReviewRequired": "=js:$vars.agent_triage.output.requiresEscalation",
+            "Reasoning": "{{ $vars.agent_triage.output.reasoning }}"
+          },
+          "pathParameters": {
+            "entityName": "TriageDecision"
+          },
+          "uiPathActivityTypeId": "dfd2bc7a-ca4b-3316-8a1f-57c9e106dfbf",
+          "errorState": {
+            "issues": []
+          },
+          "configuration": "=jsonString:{\"essentialConfiguration\":{\"connectorVersion\":\"1.73.0\",\"customFieldsRequestDetails\":{\"objectActionName\":\"GenerateSchema\",\"parameterValues\":[[\"entityName\",\"TriageDecision\"]]},\"instanceParameters\":{\"connectorKey\":\"uipath-uipath-dataservice\",\"objectName\":\"CreateEntityRecordCurated\",\"httpMethod\":\"POST\",\"activityType\":\"Curated\",\"version\":\"1.0.0\",\"supportsStreaming\":false,\"subType\":\"standard\"},\"objectName\":\"CreateEntityRecordCurated\",\"operation\":\"create\",\"packageVersion\":\"1.0.0\",\"httpMethod\":\"POST\",\"path\":\"/v2/{entityName}/CreateEntityRecord\",\"unifiedTypesCompatible\":true,\"savedJitInputFieldId\":\"in_CreateEntityRecordCurated\"}}"
+        }
+      },
+      "outputs": {
+        "output": {
+          "type": "object",
+          "description": "The return value of the connector.",
+          "source": "=result.response",
+          "var": "output"
+        },
+        "error": {
+          "type": "object",
+          "description": "Error information if the node fails",
+          "schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "required": [
+              "code",
+              "message",
+              "detail",
+              "category",
+              "status"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code as a string"
+              },
+              "message": {
+                "type": "string",
+                "description": "High-level error message"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Detailed error description"
+              },
+              "category": {
+                "type": "string",
+                "description": "Error category"
+              },
+              "status": {
+                "type": "integer",
+                "description": "HTTP status code"
+              }
+            },
+            "additionalProperties": false
+          },
+          "source": "=Error",
+          "var": "error"
+        }
+      }
+    },
+    {
+      "id": "sendEmail1",
+      "type": "uipath.connector.uipath-google-gmail.send-email",
+      "typeVersion": "1.0.0",
+      "display": {
+        "label": "Notify: auto-routed",
+        "icon": "https://cloud.uipath.com/<your-org-id>/studio_/typecache/icons/70091673b4573a26ec5090fa697c3bf61a0bedf4c77a302986b69d53bea30191.svg"
+      },
+      "inputs": {
+        "detail": {
+          "connector": "uipath-google-gmail",
+          "connectionId": "<your-gmail-connection-id>",
+          "connectionResourceId": "<your-gmail-connection-id>",
+          "connectionFolderKey": "<your-personal-workspace-folder-key>",
+          "method": "POST",
+          "endpoint": "/SendEmail",
+          "bodyParameters": {
+            "To": "reviewer@example.com",
+            "Subject": "[Triage] {{ $vars.start.output.ticketId }} auto-routed to {{ $vars.agent_triage.output.category }}",
+            "Body": "Ticket {{ $vars.start.output.ticketId }} was routed without review.\n\nDepartment: {{ $vars.agent_triage.output.category }}\nConfidence: {{ $vars.agent_triage.output.confidence }}\nReasoning: {{ $vars.agent_triage.output.reasoning }}\n\nOriginal email:\n{{ $vars.start.output.emailBody }}"
+          },
+          "uiPathActivityTypeId": "f2a5320d-a0d1-3aec-af8f-5b16ad9665a0",
+          "errorState": {
+            "issues": []
+          },
+          "configuration": "=jsonString:{\"essentialConfiguration\":{\"connectorVersion\":\"1.24.8\",\"customFieldsRequestDetails\":null,\"instanceParameters\":{\"connectorKey\":\"uipath-google-gmail\",\"objectName\":\"SendEmail\",\"httpMethod\":\"POST\",\"activityType\":\"Curated\",\"version\":\"1.0.0\",\"supportsStreaming\":false,\"subType\":\"standard\"},\"objectName\":\"SendEmail\",\"operation\":\"create\",\"packageVersion\":\"1.0.0\",\"httpMethod\":\"POST\",\"path\":\"/SendEmail\",\"unifiedTypesCompatible\":true,\"savedJitInputFieldId\":\"in_SendEmail\"}}",
+          "multipartParameters": [
+            {
+              "name": "file",
+              "dataType": "file"
+            },
+            {
+              "name": "body",
+              "dataType": "string"
+            }
+          ],
+          "inputMetadata": {
+            "type": "multipart",
+            "multipart": {
+              "bodyFieldName": "body"
+            }
+          }
+        }
+      },
+      "outputs": {
+        "output": {
+          "type": "object",
+          "description": "The return value of the connector.",
+          "source": "=result.response",
+          "var": "output"
+        },
+        "error": {
+          "type": "object",
+          "description": "Error information if the node fails",
+          "schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "required": [
+              "code",
+              "message",
+              "detail",
+              "category",
+              "status"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code as a string"
+              },
+              "message": {
+                "type": "string",
+                "description": "High-level error message"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Detailed error description"
+              },
+              "category": {
+                "type": "string",
+                "description": "Error category"
+              },
+              "status": {
+                "type": "integer",
+                "description": "HTTP status code"
+              }
+            },
+            "additionalProperties": false
+          },
+          "source": "=Error",
+          "var": "error"
+        }
+      }
+    },
+    {
+      "id": "sendReply1",
+      "type": "uipath.connector.uipath-google-gmail.send-email",
+      "typeVersion": "1.0.0",
+      "display": {
+        "label": "Send reply",
+        "icon": "https://cloud.uipath.com/<your-org-id>/studio_/typecache/icons/70091673b4573a26ec5090fa697c3bf61a0bedf4c77a302986b69d53bea30191.svg"
+      },
+      "inputs": {
+        "detail": {
+          "connector": "uipath-google-gmail",
+          "connectionId": "<your-gmail-connection-id>",
+          "connectionResourceId": "<your-gmail-connection-id>",
+          "connectionFolderKey": "<your-personal-workspace-folder-key>",
+          "method": "POST",
+          "endpoint": "/SendEmail",
+          "bodyParameters": {
+            "To": "reviewer@example.com",
+            "Subject": "Re: {{ $vars.start.output.subject }}",
+            "Body": "To: {{ $vars.start.output.fromAddress }}\n\n{{ $vars.agent_triage.output.replyText }}"
+          },
+          "uiPathActivityTypeId": "f2a5320d-a0d1-3aec-af8f-5b16ad9665a0",
+          "errorState": {
+            "issues": []
+          },
+          "configuration": "=jsonString:{\"essentialConfiguration\":{\"connectorVersion\":\"1.24.8\",\"customFieldsRequestDetails\":null,\"instanceParameters\":{\"connectorKey\":\"uipath-google-gmail\",\"objectName\":\"SendEmail\",\"httpMethod\":\"POST\",\"activityType\":\"Curated\",\"version\":\"1.0.0\",\"supportsStreaming\":false,\"subType\":\"standard\"},\"objectName\":\"SendEmail\",\"operation\":\"create\",\"packageVersion\":\"1.0.0\",\"httpMethod\":\"POST\",\"path\":\"/SendEmail\",\"unifiedTypesCompatible\":true,\"savedJitInputFieldId\":\"in_SendEmail\"}}",
+          "multipartParameters": [
+            {
+              "name": "file",
+              "dataType": "file"
+            },
+            {
+              "name": "body",
+              "dataType": "string"
+            }
+          ],
+          "inputMetadata": {
+            "type": "multipart",
+            "multipart": {
+              "bodyFieldName": "body"
+            }
+          }
+        }
+      },
+      "outputs": {
+        "output": {
+          "type": "object",
+          "description": "The return value of the connector.",
+          "source": "=result.response",
+          "var": "output"
+        },
+        "error": {
+          "type": "object",
+          "description": "Error information if the node fails",
+          "schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "required": [
+              "code",
+              "message",
+              "detail",
+              "category",
+              "status"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code as a string"
+              },
+              "message": {
+                "type": "string",
+                "description": "High-level error message"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Detailed error description"
+              },
+              "category": {
+                "type": "string",
+                "description": "Error category"
+              },
+              "status": {
+                "type": "integer",
+                "description": "HTTP status code"
+              }
+            },
+            "additionalProperties": false
+          },
+          "source": "=Error",
+          "var": "error"
+        }
+      }
+    },
+    {
+      "id": "decision2",
+      "type": "core.logic.decision",
+      "typeVersion": "1.3",
+      "display": {
+        "label": "Answerable from the FAQ?",
+        "icon": "trending-up-down"
+      },
+      "inputs": {
+        "trueLabel": "Reply",
+        "falseLabel": "Route",
+        "expression": "=js:$vars.agent_triage.output.canAutoResolve === true && $vars.agent_triage.output.confidence > 90 && $vars.agent_triage.output.requiresEscalation === false"
+      }
+    },
+    {
+      "id": "createEntityRecord5",
+      "type": "uipath.connector.uipath-uipath-dataservice.create-entity-record",
+      "typeVersion": "1.0.0",
+      "display": {
+        "label": "Write row: AutoResolved",
+        "icon": "https://cloud.uipath.com/<your-org-id>/studio_/typecache/icons/98381fa079bbcf73264f551006d6ef7580fb53992f3d9f94361eb5d9e06040cb.svg"
+      },
+      "inputs": {
+        "detail": {
+          "connector": "uipath-uipath-dataservice",
+          "connectionId": "<your-dataservice-connection-id>",
+          "connectionResourceId": "<your-dataservice-connection-id>",
+          "connectionFolderKey": "<your-personal-workspace-folder-key>",
+          "method": "POST",
+          "endpoint": "/v2/{entityName}/CreateEntityRecord",
+          "bodyParameters": {
+            "TicketId": "{{ $vars.start.output.ticketId }}",
+            "Phase": "=js:$vars.start.output.phase",
+            "EmailBody": "{{ $vars.start.output.emailBody }}",
+            "ProposedDepartment": "{{ $vars.agent_triage.output.category }}",
+            "Department": "{{ $vars.agent_triage.output.category }}",
+            "Outcome": 4,
+            "ReplyText": "{{ $vars.agent_triage.output.replyText }}",
+            "Confidence": "=js:$vars.agent_triage.output.confidence",
+            "HumanReviewRequired": "=js:$vars.agent_triage.output.requiresEscalation",
+            "Reasoning": "{{ $vars.agent_triage.output.reasoning }}"
+          },
+          "pathParameters": {
+            "entityName": "TriageDecision"
+          },
+          "uiPathActivityTypeId": "dfd2bc7a-ca4b-3316-8a1f-57c9e106dfbf",
+          "errorState": {
+            "issues": []
+          },
+          "configuration": "=jsonString:{\"essentialConfiguration\":{\"connectorVersion\":\"1.73.0\",\"customFieldsRequestDetails\":{\"objectActionName\":\"GenerateSchema\",\"parameterValues\":[[\"entityName\",\"TriageDecision\"]]},\"instanceParameters\":{\"connectorKey\":\"uipath-uipath-dataservice\",\"objectName\":\"CreateEntityRecordCurated\",\"httpMethod\":\"POST\",\"activityType\":\"Curated\",\"version\":\"1.0.0\",\"supportsStreaming\":false,\"subType\":\"standard\"},\"objectName\":\"CreateEntityRecordCurated\",\"operation\":\"create\",\"packageVersion\":\"1.0.0\",\"httpMethod\":\"POST\",\"path\":\"/v2/{entityName}/CreateEntityRecord\",\"unifiedTypesCompatible\":true,\"savedJitInputFieldId\":\"in_CreateEntityRecordCurated\"}}"
+        }
+      },
+      "outputs": {
+        "output": {
+          "type": "object",
+          "description": "The return value of the connector.",
+          "source": "=result.response",
+          "var": "output"
+        },
+        "error": {
+          "type": "object",
+          "description": "Error information if the node fails",
+          "schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "required": [
+              "code",
+              "message",
+              "detail",
+              "category",
+              "status"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code as a string"
+              },
+              "message": {
+                "type": "string",
+                "description": "High-level error message"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Detailed error description"
+              },
+              "category": {
+                "type": "string",
+                "description": "Error category"
+              },
+              "status": {
+                "type": "integer",
+                "description": "HTTP status code"
+              }
+            },
+            "additionalProperties": false
+          },
+          "source": "=Error",
+          "var": "error"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "start-output-agent_triage-input",
+      "sourceNodeId": "start",
+      "sourcePort": "output",
+      "targetNodeId": "agent_triage",
+      "targetPort": "input"
+    },
+    {
+      "id": "edge_agent_triage_context_organizationindex1_input",
+      "sourceNodeId": "agent_triage",
+      "sourcePort": "context",
+      "targetNodeId": "organizationindex1",
+      "targetPort": "input"
+    },
+    {
+      "id": "triageReview1-outcome-approve-createEntityRecord1-input",
+      "sourceNodeId": "triageReview1",
+      "sourcePort": "outcome-approve",
+      "targetNodeId": "createEntityRecord1",
+      "targetPort": "input"
+    },
+    {
+      "id": "triageReview1-outcome-modify-createEntityRecord2-input",
+      "sourceNodeId": "triageReview1",
+      "sourcePort": "outcome-modify",
+      "targetNodeId": "createEntityRecord2",
+      "targetPort": "input"
+    },
+    {
+      "id": "triageReview1-outcome-deny-createEntityRecord3-input",
+      "sourceNodeId": "triageReview1",
+      "sourcePort": "outcome-deny",
+      "targetNodeId": "createEntityRecord3",
+      "targetPort": "input"
+    },
+    {
+      "id": "createEntityRecord1-output-end1-input",
+      "sourceNodeId": "createEntityRecord1",
+      "sourcePort": "output",
+      "targetNodeId": "end1",
+      "targetPort": "input"
+    },
+    {
+      "id": "createEntityRecord2-output-end1-input",
+      "sourceNodeId": "createEntityRecord2",
+      "sourcePort": "output",
+      "targetNodeId": "end1",
+      "targetPort": "input"
+    },
+    {
+      "id": "createEntityRecord3-output-end1-input",
+      "sourceNodeId": "createEntityRecord3",
+      "sourcePort": "output",
+      "targetNodeId": "end1",
+      "targetPort": "input"
+    },
+    {
+      "id": "edge_agent_triage_tool_queryEntityRecords1_input",
+      "sourceNodeId": "agent_triage",
+      "sourcePort": "tool",
+      "targetNodeId": "queryEntityRecords1",
+      "targetPort": "input"
+    },
+    {
+      "id": "edge_decision1_true_createEntityRecord4_input",
+      "sourceNodeId": "decision1",
+      "sourcePort": "true",
+      "targetNodeId": "createEntityRecord4",
+      "targetPort": "input"
+    },
+    {
+      "id": "edge_decision1_false_triageReview1_input",
+      "sourceNodeId": "decision1",
+      "sourcePort": "false",
+      "targetNodeId": "triageReview1",
+      "targetPort": "input"
+    },
+    {
+      "id": "edge_agent_triage_success_decision2_input",
+      "sourceNodeId": "agent_triage",
+      "sourcePort": "success",
+      "targetNodeId": "decision2",
+      "targetPort": "input"
+    },
+    {
+      "id": "edge_decision2_true_sendReply1_input",
+      "sourceNodeId": "decision2",
+      "sourcePort": "true",
+      "targetNodeId": "sendReply1",
+      "targetPort": "input"
+    },
+    {
+      "id": "edge_decision2_false_decision1_input",
+      "sourceNodeId": "decision2",
+      "sourcePort": "false",
+      "targetNodeId": "decision1",
+      "targetPort": "input"
+    },
+    {
+      "id": "edge_sendReply1_output_createEntityRecord5_input",
+      "sourceNodeId": "sendReply1",
+      "sourcePort": "output",
+      "targetNodeId": "createEntityRecord5",
+      "targetPort": "input"
+    },
+    {
+      "id": "edge_createEntityRecord5_output_end1_input",
+      "sourceNodeId": "createEntityRecord5",
+      "sourcePort": "output",
+      "targetNodeId": "end1",
+      "targetPort": "input"
+    },
+    {
+      "id": "edge_createEntityRecord4_output_sendEmail1_input",
+      "sourceNodeId": "createEntityRecord4",
+      "sourcePort": "output",
+      "targetNodeId": "sendEmail1",
+      "targetPort": "input"
+    },
+    {
+      "id": "edge_sendEmail1_output_end1_input",
+      "sourceNodeId": "sendEmail1",
+      "sourcePort": "output",
+      "targetNodeId": "end1",
+      "targetPort": "input"
+    }
+  ],
+  "definitions": [
+    {
+      "nodeType": "core.trigger.manual",
+      "version": "1.0",
+      "category": "trigger",
+      "description": "Start the process manually",
+      "tags": [
+        "trigger",
+        "start",
+        "manual"
+      ],
+      "sortOrder": 80,
+      "display": {
+        "label": "Manual trigger",
+        "icon": "play",
+        "shape": "circle"
+      },
+      "handleConfiguration": [
+        {
+          "position": "right",
+          "handles": [
+            {
+              "id": "output",
+              "type": "source",
+              "handleType": "output",
+              "showButton": true,
+              "constraints": {
+                "forbiddenTargetCategories": [
+                  "trigger"
+                ]
+              }
+            }
+          ],
+          "visible": true
+        }
+      ],
+      "model": {
+        "type": "bpmn:StartEvent",
+        "entryPointId": true
+      },
+      "outputDefinition": {
+        "output": {
+          "type": "object",
+          "description": "Data passed when manually triggering the process.",
+          "source": "null",
+          "var": "output"
+        }
+      },
+      "toolbarExtensions": {
+        "design": {
+          "actions": [
+            {
+              "id": "change-trigger-type",
+              "icon": "square-mouse-pointer",
+              "label": "Change trigger type"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "nodeType": "core.control.end",
+      "version": "1.0",
+      "category": "control-flow",
+      "description": "Mark the end of a process path",
+      "tags": [
+        "control-flow",
+        "end",
+        "finish",
+        "complete"
+      ],
+      "sortOrder": 66,
+      "display": {
+        "label": "End",
+        "icon": "circle-check",
+        "shape": "circle"
+      },
+      "handleConfiguration": [
+        {
+          "position": "left",
+          "handles": [
+            {
+              "id": "input",
+              "type": "target",
+              "handleType": "input"
+            }
+          ]
+        }
+      ],
+      "model": {
+        "type": "bpmn:EndEvent"
+      },
+      "runtimeConstraints": {
+        "exclude": [
+          "api-function"
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.agent.autonomous",
+      "version": "1.4",
+      "category": "agent",
+      "description": "AI agent that completes tasks autonomously",
+      "tags": [
+        "agentic",
+        "ai",
+        "autonomous",
+        "agent"
+      ],
+      "sortOrder": 10,
+      "supportsErrorHandling": true,
+      "display": {
+        "label": "Autonomous agent",
+        "icon": "autonomous-agent",
+        "shape": "rectangle"
+      },
+      "handleConfiguration": [
+        {
+          "position": "top",
+          "handles": [
+            {
+              "id": "memory",
+              "type": "source",
+              "handleType": "artifact",
+              "label": "Memory",
+              "showButton": true,
+              "constraints": {
+                "allowedTargets": [
+                  {
+                    "nodeType": "uipath.agent.resource.memory.*"
+                  }
+                ],
+                "maxConnections": 1,
+                "validationMessage": "Only Memory nodes can connect here",
+                "addNodePanel": {
+                  "searchScope": "deep",
+                  "searchProviders": [],
+                  "refreshOnFocus": "memory"
+                }
+              }
+            },
+            {
+              "id": "escalation",
+              "type": "source",
+              "handleType": "artifact",
+              "label": "Escalations",
+              "showButton": true,
+              "constraints": {
+                "allowedTargets": [
+                  {
+                    "nodeType": "uipath.agent.resource.escalation"
+                  },
+                  {
+                    "nodeType": "uipath.agent.resource.escalation.*"
+                  }
+                ],
+                "validationMessage": "Only Agent Escalation nodes can connect here",
+                "addNodePanel": {
+                  "searchScope": "deep",
+                  "searchProviders": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "position": "bottom",
+          "handles": [
+            {
+              "id": "context",
+              "type": "source",
+              "handleType": "artifact",
+              "label": "Context",
+              "showButton": true,
+              "constraints": {
+                "allowedTargets": [
+                  {
+                    "nodeType": "uipath.agent.resource.context.*"
+                  }
+                ],
+                "validationMessage": "Only Context resource nodes can connect here",
+                "addNodePanel": {
+                  "searchScope": "deep",
+                  "searchProviders": [],
+                  "refreshOnFocus": "context",
+                  "createNewActions": [
+                    {
+                      "label": "Create new Context",
+                      "icon": "plus",
+                      "description": "Opens in a new tab",
+                      "urlTemplate": "/{org}/agents_/indexes/add",
+                      "categoryId": "agent"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "id": "tool",
+              "type": "source",
+              "handleType": "artifact",
+              "label": "Tools",
+              "showButton": true,
+              "constraints": {
+                "allowedTargets": [
+                  {
+                    "nodeType": "uipath.agent.resource.tool.*"
+                  }
+                ],
+                "validationMessage": "Only Tool resource nodes can connect here",
+                "addNodePanel": {
+                  "searchScope": "deep",
+                  "searchProviders": [],
+                  "refreshOnFocus": "mcp",
+                  "createNewActions": [
+                    {
+                      "label": "Create new MCP server",
+                      "icon": "plus",
+                      "urlTemplate": "/{org}/{tenant}/orchestrator_/mcp",
+                      "categoryId": "agent.tool.mcp"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "position": "left",
+          "handles": [
+            {
+              "id": "input",
+              "type": "target",
+              "handleType": "input"
+            }
+          ]
+        },
+        {
+          "position": "right",
+          "handles": [
+            {
+              "id": "success",
+              "type": "source",
+              "handleType": "output",
+              "isDefaultForType": true
+            },
+            {
+              "id": "error",
+              "label": "Error",
+              "type": "source",
+              "handleType": "output",
+              "visible": "{inputs.errorHandlingEnabled}",
+              "constraints": {
+                "maxConnections": 1
+              }
+            }
+          ]
+        }
+      ],
+      "form": {
+        "id": "settings-form",
+        "title": "Agent settings",
+        "metadata": {
+          "propertyPanel": {
+            "sectionTabs": {
+              "section-advanced": "advanced"
+            }
+          }
+        },
+        "mode": "onChange",
+        "reValidateMode": "onChange",
+        "sections": [
+          {
+            "id": "section-1",
+            "title": "Agent settings",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.mode",
+                "type": "custom",
+                "component": "agent-harness-picker",
+                "label": ""
+              },
+              {
+                "name": "inputs.model",
+                "type": "custom",
+                "component": "agent-model-picker",
+                "label": "Model",
+                "componentProps": {
+                  "placeholder": "gpt-4o-2024-11-20"
+                }
+              },
+              {
+                "name": "inputs.systemPrompt",
+                "type": "custom",
+                "component": "prompt-editor",
+                "label": "System prompt",
+                "componentProps": {
+                  "multiline": true,
+                  "minRows": 4,
+                  "maxRows": 20,
+                  "placeholder": "Enter the system prompt"
+                }
+              },
+              {
+                "name": "inputs.userPrompt",
+                "type": "custom",
+                "component": "prompt-editor",
+                "label": "User prompt",
+                "componentProps": {
+                  "multiline": true,
+                  "minRows": 3,
+                  "maxRows": 15,
+                  "placeholder": "Enter the user prompt"
+                }
+              }
+            ]
+          },
+          {
+            "id": "section-advanced",
+            "title": "Advanced settings",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.temperature",
+                "type": "slider",
+                "label": "Temperature",
+                "defaultValue": 0,
+                "min": 0,
+                "max": 1,
+                "step": 0.01
+              },
+              {
+                "name": "inputs.maxTokenPerResponse",
+                "type": "slider",
+                "label": "Maximum tokens per response",
+                "defaultValue": 16384,
+                "min": 0,
+                "step": 1,
+                "maxRef": {
+                  "fromField": "inputs.modelMaxTokens",
+                  "fallback": 16384
+                }
+              },
+              {
+                "name": "inputs.maxIterations",
+                "type": "slider",
+                "label": "Maximum iterations",
+                "defaultValue": 25,
+                "min": 1,
+                "max": 100,
+                "step": 1
+              }
+            ]
+          },
+          {
+            "id": "guardrails",
+            "collapsible": false,
+            "fields": [
+              {
+                "name": "inputs.guardrails",
+                "type": "custom",
+                "component": "guardrails-editor",
+                "label": "",
+                "componentProps": {
+                  "toolName": "Agent",
+                  "scope": "Agent"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "inputDefinition": {
+        "type": "object",
+        "properties": {
+          "systemPrompt": {
+            "type": "string",
+            "minLength": 1,
+            "errorMessage": {
+              "minLength": "System prompt is required"
+            }
+          },
+          "userPrompt": {
+            "type": "string",
+            "minLength": 1,
+            "errorMessage": {
+              "minLength": "User prompt is required"
+            }
+          },
+          "model": {
+            "type": "string",
+            "minLength": 1,
+            "errorMessage": {
+              "minLength": "Model is required"
+            }
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "advanced"
+            ]
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "maxTokenPerResponse": {
+            "type": "number",
+            "minimum": 0
+          },
+          "modelMaxTokens": {
+            "type": "number",
+            "minimum": 0
+          },
+          "maxIterations": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "guardrails": {
+            "type": "array"
+          },
+          "agentInputVariables": {
+            "type": "array"
+          },
+          "agentOutputVariables": {
+            "type": "array"
+          }
+        },
+        "required": [
+          "systemPrompt",
+          "userPrompt",
+          "model"
+        ]
+      },
+      "inputDefaults": {
+        "systemPrompt": "You are an agentic assistant.",
+        "userPrompt": "What is the current date?",
+        "model": "gpt-4o-2024-11-20",
+        "mode": "standard",
+        "agentInputVariables": [],
+        "agentOutputVariables": [
+          {
+            "id": "content",
+            "type": "string"
+          }
+        ]
+      },
+      "outputDefinition": {
+        "output": {
+          "type": "object",
+          "description": "Agent response",
+          "var": "output",
+          "properties": {
+            "content": {
+              "type": "string",
+              "description": "The agent response text"
+            }
+          }
+        },
+        "error": {
+          "type": "object",
+          "description": "Error information if the node fails",
+          "source": "=Error",
+          "var": "error",
+          "schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "required": [
+              "code",
+              "message",
+              "detail",
+              "category",
+              "status"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code as a string"
+              },
+              "message": {
+                "type": "string",
+                "description": "High-level error message"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Detailed error description"
+              },
+              "category": {
+                "type": "string",
+                "description": "Error category"
+              },
+              "status": {
+                "type": "integer",
+                "description": "HTTP status code"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "model": {
+        "source": true,
+        "type": "bpmn:ServiceTask",
+        "serviceType": "Orchestrator.StartInlineAgentJob",
+        "version": "v2",
+        "context": [
+          {
+            "name": "_label",
+            "type": "string",
+            "value": ""
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "value": ""
+          },
+          {
+            "name": "entryPoint",
+            "type": "string",
+            "value": ""
+          }
+        ]
+      },
+      "debug": {
+        "runtime": "bpmnEngine"
+      }
+    },
+    {
+      "nodeType": "uipath.agent.resource.context.index.organizationindex.<your-organizationindex-id>",
+      "version": "1.0.0",
+      "category": "agent",
+      "tags": [
+        "agent-context",
+        "index"
+      ],
+      "description": "Organizational department taxonomy",
+      "sortOrder": 510,
+      "display": {
+        "label": "OrganizationIndex",
+        "description": "Organizational department taxonomy",
+        "icon": "context",
+        "shape": "circle"
+      },
+      "handleConfiguration": [
+        {
+          "position": "top",
+          "handles": [
+            {
+              "id": "input",
+              "type": "target",
+              "handleType": "artifact",
+              "constraints": {
+                "maxConnections": 1,
+                "allowedSources": [
+                  {
+                    "nodeType": "uipath.agent.autonomous",
+                    "handleId": "context"
+                  },
+                  {
+                    "nodeType": "uipath.agent.conversational",
+                    "handleId": "context"
+                  },
+                  {
+                    "nodeType": "uipath.agent.voice",
+                    "handleId": "context"
+                  }
+                ],
+                "validationMessage": "Only Agent's context handle can connect here"
+              }
+            }
+          ]
+        }
+      ],
+      "model": {
+        "source": true
+      },
+      "form": {
+        "id": "context-index-form",
+        "title": "Context index",
+        "sections": [
+          {
+            "id": "index-settings",
+            "title": "Index settings",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs",
+                "type": "custom",
+                "component": "index-settings-editor",
+                "label": ""
+              }
+            ]
+          }
+        ]
+      },
+      "inputDefinition": {
+        "type": "object",
+        "properties": {
+          "indexId": {
+            "type": "string"
+          },
+          "indexName": {
+            "type": "string"
+          },
+          "folderKey": {
+            "type": "string"
+          },
+          "folderPath": {
+            "type": "string"
+          },
+          "retrievalMode": {
+            "type": "string"
+          },
+          "query": {
+            "type": "object"
+          },
+          "threshold": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "resultCount": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 40
+          },
+          "fileExtension": {
+            "type": "string"
+          },
+          "folderPathPrefix": {
+            "type": "object"
+          },
+          "citations": {
+            "type": "string"
+          },
+          "outputColumns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "webSearchGrounding": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "retrievalMode": {
+                  "not": {
+                    "enum": [
+                      "deeprag",
+                      "batchtransform"
+                    ]
+                  }
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "query": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "mode": {
+                          "const": "prompt"
+                        },
+                        "promptValue": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "mode",
+                        "promptValue"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "mode": {
+                          "const": "text-builder"
+                        },
+                        "textValue": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "mode",
+                        "textValue"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "mode": {
+                          "const": "variable"
+                        },
+                        "argumentPath": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "mode",
+                        "argumentPath"
+                      ]
+                    }
+                  ],
+                  "errorMessage": "Query is required"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "retrievalMode": {
+                  "const": "deeprag"
+                }
+              },
+              "required": [
+                "retrievalMode"
+              ]
+            },
+            "then": {
+              "properties": {
+                "query": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "mode": {
+                          "const": "prompt"
+                        },
+                        "promptValue": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "mode",
+                        "promptValue"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "mode": {
+                          "const": "text-builder"
+                        },
+                        "textValue": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "mode",
+                        "textValue"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "mode": {
+                          "const": "variable"
+                        },
+                        "argumentPath": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "mode",
+                        "argumentPath"
+                      ]
+                    }
+                  ],
+                  "errorMessage": "DeepRAG task is required"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "retrievalMode": {
+                  "const": "batchtransform"
+                }
+              },
+              "required": [
+                "retrievalMode"
+              ]
+            },
+            "then": {
+              "properties": {
+                "query": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "mode": {
+                          "const": "prompt"
+                        },
+                        "promptValue": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "mode",
+                        "promptValue"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "mode": {
+                          "const": "text-builder"
+                        },
+                        "textValue": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "mode",
+                        "textValue"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "mode": {
+                          "const": "variable"
+                        },
+                        "argumentPath": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "mode",
+                        "argumentPath"
+                      ]
+                    }
+                  ],
+                  "errorMessage": "Batch transform task is required"
+                },
+                "outputColumns": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "description": {
+                        "type": "string",
+                        "minLength": 1,
+                        "errorMessage": "Description is required for every output column"
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "description"
+                    ]
+                  },
+                  "errorMessage": {
+                    "minItems": "At least one output column is required"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "inputDefaults": {
+        "indexId": "<your-organizationindex-id>",
+        "indexName": "OrganizationIndex",
+        "folderKey": "<your-tutorialsolution-folder-key>",
+        "folderPath": "TutorialSolution",
+        "retrievalMode": "semantic",
+        "query": {
+          "mode": "prompt",
+          "textValue": "",
+          "promptValue": "The query for the Semantic strategy",
+          "argumentPath": ""
+        },
+        "threshold": 0,
+        "resultCount": 3,
+        "fileExtension": "All",
+        "folderPathPrefix": {
+          "mode": "text-builder",
+          "textValue": "",
+          "promptValue": "",
+          "argumentPath": ""
+        },
+        "citations": "enabled",
+        "outputColumns": [],
+        "webSearchGrounding": {
+          "value": "enabled"
+        }
+      }
+    },
+    {
+      "nodeType": "uipath.human-in-the-loop.quick-form",
+      "version": "1.1",
+      "category": "human-task",
+      "description": "Fast inline approvals with inline debug",
+      "tags": [
+        "human-task",
+        "hitl",
+        "human-in-the-loop",
+        "quick-form",
+        "approval"
+      ],
+      "sortOrder": 50,
+      "display": {
+        "label": "Quick Form",
+        "icon": "users",
+        "shape": "square"
+      },
+      "handleConfiguration": [
+        {
+          "position": "left",
+          "handles": [
+            {
+              "id": "input",
+              "type": "target",
+              "handleType": "input"
+            }
+          ],
+          "visible": true
+        },
+        {
+          "position": "right",
+          "handles": [
+            {
+              "id": "completed",
+              "type": "source",
+              "handleType": "output",
+              "showButton": true,
+              "constraints": {
+                "forbiddenTargetCategories": [
+                  "trigger"
+                ]
+              }
+            }
+          ],
+          "visible": true
+        }
+      ],
+      "model": {
+        "type": "bpmn:UserTask",
+        "serviceType": "Actions.HITL"
+      },
+      "inputDefaults": {
+        "schema": {
+          "fields": [],
+          "outcomes": [
+            {
+              "id": "submit",
+              "name": "Submit",
+              "type": "string",
+              "isPrimary": true,
+              "action": "Continue"
+            }
+          ]
+        },
+        "recipient": {
+          "channels": [
+            "Email",
+            "ActionCenter"
+          ],
+          "connections": {},
+          "assignee": {
+            "type": "group"
+          }
+        }
+      },
+      "outputDefinition": {
+        "output": {
+          "type": "object",
+          "description": "Task result data",
+          "source": "=result",
+          "var": "output"
+        },
+        "status": {
+          "type": "string",
+          "description": "Task completion status (completed, cancelled, timeout)",
+          "source": "=result.Action",
+          "var": "status"
+        }
+      },
+      "form": {
+        "id": "hitl-quick-form-properties",
+        "title": "Quick Form Task Configuration",
+        "sections": [
+          {
+            "id": "delivery",
+            "title": "Task delivery",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.recipient",
+                "type": "custom",
+                "component": "hitl-channel-selector",
+                "label": "Delivery Channels",
+                "description": "Select where the task should be sent"
+              }
+            ]
+          },
+          {
+            "id": "schema",
+            "title": "Schema",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.schema",
+                "type": "custom",
+                "component": "hitl-schema-editor",
+                "label": "Task Schema",
+                "description": "Define the input and output parameters for this task"
+              }
+            ]
+          },
+          {
+            "id": "additional-properties",
+            "title": "Additional properties",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.title",
+                "type": "text",
+                "label": "Task title"
+              },
+              {
+                "name": "inputs.priority",
+                "type": "select",
+                "label": "Priority",
+                "options": [
+                  {
+                    "label": "Low",
+                    "value": "Low"
+                  },
+                  {
+                    "label": "Medium",
+                    "value": "Medium"
+                  },
+                  {
+                    "label": "High",
+                    "value": "High"
+                  }
+                ]
+              },
+              {
+                "name": "inputs.labels",
+                "type": "text",
+                "label": "Labels",
+                "placeholder": "Comma-separated (e.g. finance,approval)"
+              },
+              {
+                "name": "inputs.memorySpace",
+                "type": "custom",
+                "component": "hitl-memory-space-picker",
+                "label": "Memory space",
+                "description": "Attach a memory space so this task's inputs and outputs are written to it"
+              }
+            ]
+          }
+        ]
+      },
+      "runtimeConstraints": {
+        "exclude": [
+          "api-function"
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.connector.uipath-uipath-dataservice.create-entity-record",
+      "version": "1.0.0",
+      "category": "connector.72495",
+      "tags": [
+        "connector",
+        "activity"
+      ],
+      "sortOrder": 520,
+      "supportsErrorHandling": true,
+      "description": "Creates a new record for the selected Entity in Data Fabric",
+      "display": {
+        "label": "Create Entity Record",
+        "description": "Creates a new record for the selected Entity in Data Fabric",
+        "icon": "https://cloud.uipath.com/<your-org-id>/studio_/typecache/icons/98381fa079bbcf73264f551006d6ef7580fb53992f3d9f94361eb5d9e06040cb.svg",
+        "sourceDisplayName": "UiPath Data Fabric"
+      },
+      "handleConfiguration": [
+        {
+          "position": "left",
+          "handles": [
+            {
+              "id": "input",
+              "type": "target",
+              "handleType": "input",
+              "label": ""
+            }
+          ]
+        },
+        {
+          "position": "right",
+          "handles": [
+            {
+              "id": "output",
+              "type": "source",
+              "handleType": "output",
+              "label": ""
+            },
+            {
+              "id": "error",
+              "label": "Error",
+              "type": "source",
+              "handleType": "output",
+              "visible": "{inputs.errorHandlingEnabled}",
+              "constraints": {
+                "maxConnections": 1
+              }
+            }
+          ]
+        }
+      ],
+      "model": {
+        "type": "bpmn:SendTask",
+        "serviceType": "Intsvc.ActivityExecution",
+        "bindings": {
+          "resource": "connection",
+          "resourceKey": "",
+          "values": [
+            {
+              "name": "uipath-uipath-dataservice connection",
+              "propertyAttribute": "ConnectionId"
+            },
+            {
+              "name": "FolderKey",
+              "propertyAttribute": "FolderKey"
+            }
+          ]
+        },
+        "context": [
+          {
+            "name": "connectorKey",
+            "type": "string",
+            "value": "uipath-uipath-dataservice"
+          },
+          {
+            "name": "operation",
+            "type": "string"
+          },
+          {
+            "name": "objectName",
+            "value": "CreateEntityRecordCurated",
+            "type": "string"
+          },
+          {
+            "name": "method",
+            "type": "string",
+            "value": "POST"
+          },
+          {
+            "name": "connection",
+            "type": "string",
+            "value": "<bindings.uipath-uipath-dataservice connection>"
+          },
+          {
+            "name": "folderKey",
+            "type": "string",
+            "value": "<bindings.FolderKey>"
+          },
+          {
+            "name": "activityConfigurationVersion",
+            "type": "string",
+            "value": "v1"
+          },
+          {
+            "name": "metadata",
+            "body": {
+              "telemetryData": {
+                "connectorKey": "uipath-uipath-dataservice",
+                "connectorName": "Create Entity Record"
+              },
+              "inputMetadata": {},
+              "errorState": {
+                "hasError": true
+              }
+            },
+            "type": "json"
+          }
+        ]
+      },
+      "form": {
+        "id": "connector-properties",
+        "title": "Connector configuration",
+        "sections": [
+          {
+            "id": "connector",
+            "title": "Connector",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "label": "",
+                "name": "inputs.detail",
+                "type": "custom",
+                "component": "dap-config",
+                "componentProps": {
+                  "connectorDetail": {
+                    "isAppActivity": false,
+                    "packageId": "72495",
+                    "svgIconUrl": "icons/98381fa079bbcf73264f551006d6ef7580fb53992f3d9f94361eb5d9e06040cb.svg",
+                    "displayName": "Create Entity Record",
+                    "assemblyQualifiedName": "UiPath.IntegrationService.Activities.Runtime.Activities.ConnectorActivity, UiPath.IntegrationService.Activities.Runtime, Version=1.32.0.0, Culture=neutral, PublicKeyToken=null",
+                    "description": "Creates a new record for the selected Entity in Data Fabric",
+                    "category": "",
+                    "activityColor": "#E56D5C",
+                    "configuration": "{\"connectorKey\":\"uipath-uipath-dataservice\",\"objectName\":\"CreateEntityRecordCurated\",\"httpMethod\":\"POST\",\"activityType\":\"Curated\",\"version\":\"1.0.0\",\"supportsStreaming\":false,\"subType\":\"standard\"}",
+                    "uiPathActivityTypeId": "dfd2bc7a-ca4b-3316-8a1f-57c9e106dfbf",
+                    "isExperimental": false,
+                    "helpUrlTemplate": "https://docs.uipath.com/{0}/activities/other/latest/integration-service/uipath-uipath-dataservice-Create-Entity-Record",
+                    "isEnabled": true,
+                    "targetPlatform": "CrossPlatform",
+                    "isAdvanced": false,
+                    "isRestricted": false,
+                    "hasWpfOnlyDesigner": false,
+                    "tags": [
+                      ""
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "inputDefinition": {},
+      "inputDefaults": {},
+      "outputDefinition": {
+        "output": {
+          "type": "object",
+          "description": "The return value of the connector.",
+          "source": "=result.response",
+          "var": "output"
+        },
+        "error": {
+          "type": "object",
+          "description": "Error information if the node fails",
+          "source": "=Error",
+          "var": "error",
+          "schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "required": [
+              "code",
+              "message",
+              "detail",
+              "category",
+              "status"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code as a string"
+              },
+              "message": {
+                "type": "string",
+                "description": "High-level error message"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Detailed error description"
+              },
+              "category": {
+                "type": "string",
+                "description": "Error category"
+              },
+              "status": {
+                "type": "integer",
+                "description": "HTTP status code"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "debug": {
+        "runtime": "bpmnEngine"
+      }
+    },
+    {
+      "nodeType": "uipath.agent.resource.tool.connector.uipath-uipath-dataservice.query-entity-records",
+      "version": "1.0.0",
+      "category": "agent.tool.connector.72495",
+      "tags": [
+        "agent-tool",
+        "connector",
+        "activity"
+      ],
+      "sortOrder": 530,
+      "description": "Retrieves a list of records for the selected Entity from Data Fabric, according to specified filters.",
+      "display": {
+        "label": "Query Entity Records",
+        "description": "Retrieves a list of records for the selected Entity from Data Fabric, according to specified filters.",
+        "icon": "https://cloud.uipath.com/<your-org-id>/studio_/typecache/icons/98381fa079bbcf73264f551006d6ef7580fb53992f3d9f94361eb5d9e06040cb.svg",
+        "sourceDisplayName": "UiPath Data Fabric",
+        "shape": "circle"
+      },
+      "handleConfiguration": [
+        {
+          "position": "top",
+          "handles": [
+            {
+              "id": "input",
+              "type": "target",
+              "handleType": "artifact",
+              "isDefaultForType": true,
+              "constraints": {
+                "maxConnections": 1,
+                "allowedSources": [
+                  {
+                    "nodeType": "uipath.agent.autonomous",
+                    "handleId": "tool"
+                  },
+                  {
+                    "nodeType": "uipath.agent.conversational",
+                    "handleId": "tool"
+                  },
+                  {
+                    "nodeType": "uipath.agent.voice",
+                    "handleId": "tool"
+                  }
+                ],
+                "validationMessage": "Only Agent's tool handle can connect here"
+              }
+            }
+          ]
+        }
+      ],
+      "model": {
+        "type": "bpmn:SendTask",
+        "serviceType": "Intsvc.ActivityExecution",
+        "bindings": {
+          "resource": "connection",
+          "resourceKey": "",
+          "values": [
+            {
+              "name": "uipath-uipath-dataservice connection",
+              "propertyAttribute": "ConnectionId"
+            },
+            {
+              "name": "FolderKey",
+              "propertyAttribute": "FolderKey"
+            }
+          ]
+        },
+        "context": [
+          {
+            "name": "connectorKey",
+            "type": "string",
+            "value": "uipath-uipath-dataservice"
+          },
+          {
+            "name": "operation",
+            "type": "string"
+          },
+          {
+            "name": "objectName",
+            "value": "QueryEntityRecordsCurated",
+            "type": "string"
+          },
+          {
+            "name": "method",
+            "type": "string",
+            "value": "POST"
+          },
+          {
+            "name": "connection",
+            "type": "string",
+            "value": "<bindings.uipath-uipath-dataservice connection>"
+          },
+          {
+            "name": "folderKey",
+            "type": "string",
+            "value": "<bindings.FolderKey>"
+          },
+          {
+            "name": "activityConfigurationVersion",
+            "type": "string",
+            "value": "v1"
+          },
+          {
+            "name": "metadata",
+            "body": {
+              "telemetryData": {
+                "connectorKey": "uipath-uipath-dataservice",
+                "connectorName": "Query Entity Records"
+              },
+              "inputMetadata": {},
+              "errorState": {
+                "hasError": true
+              }
+            },
+            "type": "json"
+          }
+        ],
+        "source": true
+      },
+      "form": {
+        "id": "connector-properties",
+        "title": "Connector configuration",
+        "sections": [
+          {
+            "id": "connector",
+            "title": "Connector",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "label": "",
+                "name": "inputs.detail",
+                "type": "custom",
+                "component": "dap-config",
+                "componentProps": {
+                  "connectorDetail": {
+                    "isAppActivity": false,
+                    "packageId": "72495",
+                    "svgIconUrl": "icons/98381fa079bbcf73264f551006d6ef7580fb53992f3d9f94361eb5d9e06040cb.svg",
+                    "displayName": "Query Entity Records",
+                    "assemblyQualifiedName": "UiPath.IntegrationService.Activities.Runtime.Activities.ConnectorActivity, UiPath.IntegrationService.Activities.Runtime, Version=1.32.0.0, Culture=neutral, PublicKeyToken=null",
+                    "description": "Retrieves a list of records for the selected Entity from Data Fabric, according to specified filters.",
+                    "category": "",
+                    "activityColor": "#E56D5C",
+                    "configuration": "{\"connectorKey\":\"uipath-uipath-dataservice\",\"objectName\":\"QueryEntityRecordsCurated\",\"httpMethod\":\"POST\",\"activityType\":\"Curated\",\"version\":\"1.0.0\",\"supportsStreaming\":false,\"subType\":\"standard\"}",
+                    "uiPathActivityTypeId": "703065b9-a310-33b8-9d4d-12df0a6f520b",
+                    "isExperimental": false,
+                    "helpUrlTemplate": "https://docs.uipath.com/{0}/activities/other/latest/integration-service/uipath-uipath-dataservice-Query-Entity-Records",
+                    "isEnabled": true,
+                    "targetPlatform": "CrossPlatform",
+                    "isAdvanced": false,
+                    "isRestricted": false,
+                    "hasWpfOnlyDesigner": false,
+                    "tags": [
+                      ""
+                    ]
+                  },
+                  "allowPromptMode": true,
+                  "allowExpressionEditor": false
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "inputDefinition": {
+        "type": "object",
+        "properties": {}
+      },
+      "inputDefaults": {},
+      "outputDefinition": {}
+    },
+    {
+      "nodeType": "core.logic.decision",
+      "version": "1.3",
+      "category": "control-flow",
+      "description": "Branch on a true or false condition",
+      "tags": [
+        "control-flow",
+        "if",
+        "loop",
+        "switch"
+      ],
+      "sortOrder": 61,
+      "display": {
+        "label": "Decision",
+        "icon": "trending-up-down"
+      },
+      "handleConfiguration": [
+        {
+          "position": "left",
+          "handles": [
+            {
+              "id": "input",
+              "type": "target",
+              "handleType": "input"
+            }
+          ],
+          "visible": true
+        },
+        {
+          "position": "right",
+          "handles": [
+            {
+              "id": "true",
+              "type": "source",
+              "handleType": "output",
+              "label": "{inputs.trueLabel}"
+            },
+            {
+              "id": "false",
+              "type": "source",
+              "handleType": "output",
+              "label": "{inputs.falseLabel}"
+            }
+          ],
+          "visible": true
+        }
+      ],
+      "debug": {
+        "runtime": "clientScript"
+      },
+      "model": {
+        "type": "bpmn:InclusiveGateway"
+      },
+      "inputDefinition": {
+        "type": "object",
+        "properties": {
+          "expression": {
+            "type": "string",
+            "minLength": 1,
+            "errorMessage": "Add a condition"
+          },
+          "trueLabel": {
+            "type": "string"
+          },
+          "falseLabel": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "expression"
+        ]
+      },
+      "outputDefinition": {
+        "matchedCase": {
+          "type": "string",
+          "description": "The label of the matched branch (true/false label)",
+          "var": "matchedCase"
+        },
+        "matchedCaseId": {
+          "type": "string",
+          "description": "The branch that was taken (true or false)",
+          "var": "matchedCaseId"
+        }
+      },
+      "inputDefaults": {
+        "trueLabel": "True",
+        "falseLabel": "False"
+      },
+      "form": {
+        "id": "decision-properties",
+        "title": "Decision configuration",
+        "sections": [
+          {
+            "id": "condition",
+            "title": "Condition",
+            "fields": [
+              {
+                "name": "inputs.expression",
+                "type": "custom",
+                "component": "code-editor",
+                "componentProps": {
+                  "singleLine": true,
+                  "mode": "expression",
+                  "toggleable": false,
+                  "language": "javascript",
+                  "returnType": "boolean",
+                  "validationMode": "expression",
+                  "showVariableButton": true,
+                  "placeholder": "$vars.httpRequest1.output.statusCode >= 200 && $vars.httpRequest1.output.statusCode < 300"
+                },
+                "label": "Condition",
+                "description": "The condition must be a JavaScript expression that evaluates to true or false."
+              },
+              {
+                "name": "inputs.trueLabel",
+                "type": "text",
+                "label": "True branch label",
+                "description": "This label appears on the true branch."
+              },
+              {
+                "name": "inputs.falseLabel",
+                "type": "text",
+                "label": "False branch label",
+                "description": "This label appears on the false branch."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.connector.uipath-google-gmail.send-email",
+      "version": "1.0.0",
+      "category": "connector.72537",
+      "tags": [
+        "connector",
+        "activity",
+        "API.File.Upload.Optional"
+      ],
+      "sortOrder": 520,
+      "supportsErrorHandling": true,
+      "description": "Sends an email message",
+      "display": {
+        "label": "Send Email",
+        "description": "Sends an email message",
+        "icon": "https://cloud.uipath.com/<your-org-id>/studio_/typecache/icons/70091673b4573a26ec5090fa697c3bf61a0bedf4c77a302986b69d53bea30191.svg",
+        "sourceDisplayName": "Gmail"
+      },
+      "handleConfiguration": [
+        {
+          "position": "left",
+          "handles": [
+            {
+              "id": "input",
+              "type": "target",
+              "handleType": "input",
+              "label": ""
+            }
+          ]
+        },
+        {
+          "position": "right",
+          "handles": [
+            {
+              "id": "output",
+              "type": "source",
+              "handleType": "output",
+              "label": ""
+            },
+            {
+              "id": "error",
+              "label": "Error",
+              "type": "source",
+              "handleType": "output",
+              "visible": "{inputs.errorHandlingEnabled}",
+              "constraints": {
+                "maxConnections": 1
+              }
+            }
+          ]
+        }
+      ],
+      "model": {
+        "type": "bpmn:SendTask",
+        "serviceType": "Intsvc.ActivityExecution",
+        "bindings": {
+          "resource": "connection",
+          "resourceKey": "",
+          "values": [
+            {
+              "name": "uipath-google-gmail connection",
+              "propertyAttribute": "ConnectionId"
+            },
+            {
+              "name": "FolderKey",
+              "propertyAttribute": "FolderKey"
+            }
+          ]
+        },
+        "context": [
+          {
+            "name": "connectorKey",
+            "type": "string",
+            "value": "uipath-google-gmail"
+          },
+          {
+            "name": "operation",
+            "type": "string"
+          },
+          {
+            "name": "objectName",
+            "value": "SendEmail",
+            "type": "string"
+          },
+          {
+            "name": "method",
+            "type": "string",
+            "value": "POST"
+          },
+          {
+            "name": "connection",
+            "type": "string",
+            "value": "<bindings.uipath-google-gmail connection>"
+          },
+          {
+            "name": "folderKey",
+            "type": "string",
+            "value": "<bindings.FolderKey>"
+          },
+          {
+            "name": "activityConfigurationVersion",
+            "type": "string",
+            "value": "v1"
+          },
+          {
+            "name": "metadata",
+            "body": {
+              "telemetryData": {
+                "connectorKey": "uipath-google-gmail",
+                "connectorName": "Send Email"
+              },
+              "inputMetadata": {},
+              "errorState": {
+                "hasError": true
+              }
+            },
+            "type": "json"
+          }
+        ]
+      },
+      "form": {
+        "id": "connector-properties",
+        "title": "Connector configuration",
+        "sections": [
+          {
+            "id": "connector",
+            "title": "Connector",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "label": "",
+                "name": "inputs.detail",
+                "type": "custom",
+                "component": "dap-config",
+                "componentProps": {
+                  "connectorDetail": {
+                    "isAppActivity": false,
+                    "packageId": "72537",
+                    "svgIconUrl": "icons/70091673b4573a26ec5090fa697c3bf61a0bedf4c77a302986b69d53bea30191.svg",
+                    "displayName": "Send Email",
+                    "assemblyQualifiedName": "UiPath.IntegrationService.Activities.Runtime.Activities.ConnectorActivity, UiPath.IntegrationService.Activities.Runtime, Version=1.32.0.0, Culture=neutral, PublicKeyToken=null",
+                    "description": "Sends an email message",
+                    "category": "",
+                    "activityColor": "#E56D5C",
+                    "configuration": "{\"connectorKey\":\"uipath-google-gmail\",\"objectName\":\"SendEmail\",\"httpMethod\":\"POST\",\"activityType\":\"Curated\",\"version\":\"1.0.0\",\"supportsStreaming\":false,\"subType\":\"standard\"}",
+                    "uiPathActivityTypeId": "f2a5320d-a0d1-3aec-af8f-5b16ad9665a0",
+                    "isExperimental": false,
+                    "helpUrlTemplate": "https://docs.uipath.com/{0}/activities/other/latest/integration-service/uipath-google-gmail-Send-Email",
+                    "isEnabled": true,
+                    "targetPlatform": "CrossPlatform",
+                    "isAdvanced": false,
+                    "isRestricted": false,
+                    "hasWpfOnlyDesigner": false,
+                    "tags": [
+                      "API.File.Upload.Optional"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "inputDefinition": {},
+      "inputDefaults": {},
+      "outputDefinition": {
+        "output": {
+          "type": "object",
+          "description": "The return value of the connector.",
+          "source": "=result.response",
+          "var": "output"
+        },
+        "error": {
+          "type": "object",
+          "description": "Error information if the node fails",
+          "source": "=Error",
+          "var": "error",
+          "schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "required": [
+              "code",
+              "message",
+              "detail",
+              "category",
+              "status"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code as a string"
+              },
+              "message": {
+                "type": "string",
+                "description": "High-level error message"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Detailed error description"
+              },
+              "category": {
+                "type": "string",
+                "description": "Error category"
+              },
+              "status": {
+                "type": "integer",
+                "description": "HTTP status code"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "debug": {
+        "runtime": "bpmnEngine"
+      }
+    }
+  ],
+  "variables": {
+    "globals": [
+      {
+        "id": "emailBody",
+        "direction": "in",
+        "type": "string",
+        "defaultValue": "",
+        "triggerNodeId": "start"
+      },
+      {
+        "id": "category",
+        "direction": "out",
+        "type": "string"
+      },
+      {
+        "id": "urgencyScore",
+        "direction": "out",
+        "type": "number"
+      },
+      {
+        "id": "requiresEscalation",
+        "direction": "out",
+        "type": "boolean"
+      },
+      {
+        "id": "actionItems",
+        "direction": "out",
+        "type": "array",
+        "subType": "object"
+      },
+      {
+        "id": "reviewOutcome",
+        "direction": "out",
+        "type": "string"
+      },
+      {
+        "id": "reviewerNote",
+        "direction": "out",
+        "type": "string"
+      },
+      {
+        "id": "ticketId",
+        "direction": "in",
+        "type": "string",
+        "defaultValue": "",
+        "triggerNodeId": "start"
+      },
+      {
+        "id": "phase",
+        "direction": "in",
+        "type": "number",
+        "defaultValue": 1,
+        "triggerNodeId": "start"
+      },
+      {
+        "id": "confidence",
+        "direction": "out",
+        "type": "number"
+      },
+      {
+        "id": "reasoning",
+        "direction": "out",
+        "type": "string"
+      },
+      {
+        "id": "fromAddress",
+        "direction": "in",
+        "type": "string",
+        "defaultValue": "",
+        "triggerNodeId": "start"
+      },
+      {
+        "id": "subject",
+        "direction": "in",
+        "type": "string",
+        "defaultValue": "",
+        "triggerNodeId": "start"
+      },
+      {
+        "id": "canAutoResolve",
+        "direction": "out",
+        "type": "boolean"
+      },
+      {
+        "id": "replyText",
+        "direction": "out",
+        "type": "string"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "start.output",
+        "type": "object",
+        "description": "Data passed when manually triggering the process.",
+        "binding": {
+          "nodeId": "start",
+          "outputId": "output"
+        }
+      },
+      {
+        "id": "end1.category",
+        "type": "string",
+        "binding": {
+          "nodeId": "end1",
+          "outputId": "category"
+        }
+      },
+      {
+        "id": "end1.urgencyScore",
+        "type": "number",
+        "binding": {
+          "nodeId": "end1",
+          "outputId": "urgencyScore"
+        }
+      },
+      {
+        "id": "end1.requiresEscalation",
+        "type": "boolean",
+        "binding": {
+          "nodeId": "end1",
+          "outputId": "requiresEscalation"
+        }
+      },
+      {
+        "id": "end1.actionItems",
+        "type": "array",
+        "binding": {
+          "nodeId": "end1",
+          "outputId": "actionItems"
+        }
+      },
+      {
+        "id": "end1.reviewOutcome",
+        "type": "string",
+        "binding": {
+          "nodeId": "end1",
+          "outputId": "reviewOutcome"
+        }
+      },
+      {
+        "id": "end1.reviewerNote",
+        "type": "string",
+        "binding": {
+          "nodeId": "end1",
+          "outputId": "reviewerNote"
+        }
+      },
+      {
+        "id": "end1.confidence",
+        "type": "number",
+        "binding": {
+          "nodeId": "end1",
+          "outputId": "confidence"
+        }
+      },
+      {
+        "id": "end1.reasoning",
+        "type": "string",
+        "binding": {
+          "nodeId": "end1",
+          "outputId": "reasoning"
+        }
+      },
+      {
+        "id": "end1.canAutoResolve",
+        "type": "boolean",
+        "binding": {
+          "nodeId": "end1",
+          "outputId": "canAutoResolve"
+        }
+      },
+      {
+        "id": "end1.replyText",
+        "type": "string",
+        "binding": {
+          "nodeId": "end1",
+          "outputId": "replyText"
+        }
+      },
+      {
+        "id": "agent_triage.output",
+        "type": "object",
+        "description": "Agent response",
+        "binding": {
+          "nodeId": "agent_triage",
+          "outputId": "output"
+        }
+      },
+      {
+        "id": "agent_triage.error",
+        "type": "object",
+        "schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "required": [
+            "code",
+            "message",
+            "detail",
+            "category",
+            "status"
+          ],
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Error code as a string"
+            },
+            "message": {
+              "type": "string",
+              "description": "High-level error message"
+            },
+            "detail": {
+              "type": "string",
+              "description": "Detailed error description"
+            },
+            "category": {
+              "type": "string",
+              "description": "Error category"
+            },
+            "status": {
+              "type": "integer",
+              "description": "HTTP status code"
+            }
+          },
+          "additionalProperties": false
+        },
+        "description": "Error information if the node fails",
+        "binding": {
+          "nodeId": "agent_triage",
+          "outputId": "error"
+        }
+      },
+      {
+        "id": "triageReview1.output",
+        "type": "object",
+        "description": "Task result data",
+        "binding": {
+          "nodeId": "triageReview1",
+          "outputId": "output"
+        }
+      },
+      {
+        "id": "triageReview1.status",
+        "type": "string",
+        "description": "Task completion outcome",
+        "binding": {
+          "nodeId": "triageReview1",
+          "outputId": "status"
+        }
+      },
+      {
+        "id": "createEntityRecord1.output",
+        "type": "object",
+        "description": "The return value of the connector.",
+        "binding": {
+          "nodeId": "createEntityRecord1",
+          "outputId": "output"
+        }
+      },
+      {
+        "id": "createEntityRecord1.error",
+        "type": "object",
+        "schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "required": [
+            "code",
+            "message",
+            "detail",
+            "category",
+            "status"
+          ],
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Error code as a string"
+            },
+            "message": {
+              "type": "string",
+              "description": "High-level error message"
+            },
+            "detail": {
+              "type": "string",
+              "description": "Detailed error description"
+            },
+            "category": {
+              "type": "string",
+              "description": "Error category"
+            },
+            "status": {
+              "type": "integer",
+              "description": "HTTP status code"
+            }
+          },
+          "additionalProperties": false
+        },
+        "description": "Error information if the node fails",
+        "binding": {
+          "nodeId": "createEntityRecord1",
+          "outputId": "error"
+        }
+      },
+      {
+        "id": "createEntityRecord2.output",
+        "type": "object",
+        "description": "The return value of the connector.",
+        "binding": {
+          "nodeId": "createEntityRecord2",
+          "outputId": "output"
+        }
+      },
+      {
+        "id": "createEntityRecord2.error",
+        "type": "object",
+        "schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "required": [
+            "code",
+            "message",
+            "detail",
+            "category",
+            "status"
+          ],
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Error code as a string"
+            },
+            "message": {
+              "type": "string",
+              "description": "High-level error message"
+            },
+            "detail": {
+              "type": "string",
+              "description": "Detailed error description"
+            },
+            "category": {
+              "type": "string",
+              "description": "Error category"
+            },
+            "status": {
+              "type": "integer",
+              "description": "HTTP status code"
+            }
+          },
+          "additionalProperties": false
+        },
+        "description": "Error information if the node fails",
+        "binding": {
+          "nodeId": "createEntityRecord2",
+          "outputId": "error"
+        }
+      },
+      {
+        "id": "createEntityRecord3.output",
+        "type": "object",
+        "description": "The return value of the connector.",
+        "binding": {
+          "nodeId": "createEntityRecord3",
+          "outputId": "output"
+        }
+      },
+      {
+        "id": "createEntityRecord3.error",
+        "type": "object",
+        "schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "required": [
+            "code",
+            "message",
+            "detail",
+            "category",
+            "status"
+          ],
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Error code as a string"
+            },
+            "message": {
+              "type": "string",
+              "description": "High-level error message"
+            },
+            "detail": {
+              "type": "string",
+              "description": "Detailed error description"
+            },
+            "category": {
+              "type": "string",
+              "description": "Error category"
+            },
+            "status": {
+              "type": "integer",
+              "description": "HTTP status code"
+            }
+          },
+          "additionalProperties": false
+        },
+        "description": "Error information if the node fails",
+        "binding": {
+          "nodeId": "createEntityRecord3",
+          "outputId": "error"
+        }
+      },
+      {
+        "id": "decision1.matchedCase",
+        "type": "string",
+        "description": "The label of the matched branch (true/false label)",
+        "binding": {
+          "nodeId": "decision1",
+          "outputId": "matchedCase"
+        }
+      },
+      {
+        "id": "decision1.matchedCaseId",
+        "type": "string",
+        "description": "The branch that was taken (true or false)",
+        "binding": {
+          "nodeId": "decision1",
+          "outputId": "matchedCaseId"
+        }
+      },
+      {
+        "id": "createEntityRecord4.output",
+        "type": "object",
+        "description": "The return value of the connector.",
+        "binding": {
+          "nodeId": "createEntityRecord4",
+          "outputId": "output"
+        }
+      },
+      {
+        "id": "createEntityRecord4.error",
+        "type": "object",
+        "schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "required": [
+            "code",
+            "message",
+            "detail",
+            "category",
+            "status"
+          ],
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Error code as a string"
+            },
+            "message": {
+              "type": "string",
+              "description": "High-level error message"
+            },
+            "detail": {
+              "type": "string",
+              "description": "Detailed error description"
+            },
+            "category": {
+              "type": "string",
+              "description": "Error category"
+            },
+            "status": {
+              "type": "integer",
+              "description": "HTTP status code"
+            }
+          },
+          "additionalProperties": false
+        },
+        "description": "Error information if the node fails",
+        "binding": {
+          "nodeId": "createEntityRecord4",
+          "outputId": "error"
+        }
+      },
+      {
+        "id": "sendEmail1.output",
+        "type": "object",
+        "description": "The return value of the connector.",
+        "binding": {
+          "nodeId": "sendEmail1",
+          "outputId": "output"
+        }
+      },
+      {
+        "id": "sendEmail1.error",
+        "type": "object",
+        "schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "required": [
+            "code",
+            "message",
+            "detail",
+            "category",
+            "status"
+          ],
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Error code as a string"
+            },
+            "message": {
+              "type": "string",
+              "description": "High-level error message"
+            },
+            "detail": {
+              "type": "string",
+              "description": "Detailed error description"
+            },
+            "category": {
+              "type": "string",
+              "description": "Error category"
+            },
+            "status": {
+              "type": "integer",
+              "description": "HTTP status code"
+            }
+          },
+          "additionalProperties": false
+        },
+        "description": "Error information if the node fails",
+        "binding": {
+          "nodeId": "sendEmail1",
+          "outputId": "error"
+        }
+      },
+      {
+        "id": "sendReply1.output",
+        "type": "object",
+        "description": "The return value of the connector.",
+        "binding": {
+          "nodeId": "sendReply1",
+          "outputId": "output"
+        }
+      },
+      {
+        "id": "sendReply1.error",
+        "type": "object",
+        "schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "required": [
+            "code",
+            "message",
+            "detail",
+            "category",
+            "status"
+          ],
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Error code as a string"
+            },
+            "message": {
+              "type": "string",
+              "description": "High-level error message"
+            },
+            "detail": {
+              "type": "string",
+              "description": "Detailed error description"
+            },
+            "category": {
+              "type": "string",
+              "description": "Error category"
+            },
+            "status": {
+              "type": "integer",
+              "description": "HTTP status code"
+            }
+          },
+          "additionalProperties": false
+        },
+        "description": "Error information if the node fails",
+        "binding": {
+          "nodeId": "sendReply1",
+          "outputId": "error"
+        }
+      },
+      {
+        "id": "decision2.matchedCase",
+        "type": "string",
+        "description": "The label of the matched branch (true/false label)",
+        "binding": {
+          "nodeId": "decision2",
+          "outputId": "matchedCase"
+        }
+      },
+      {
+        "id": "decision2.matchedCaseId",
+        "type": "string",
+        "description": "The branch that was taken (true or false)",
+        "binding": {
+          "nodeId": "decision2",
+          "outputId": "matchedCaseId"
+        }
+      },
+      {
+        "id": "createEntityRecord5.output",
+        "type": "object",
+        "description": "The return value of the connector.",
+        "binding": {
+          "nodeId": "createEntityRecord5",
+          "outputId": "output"
+        }
+      },
+      {
+        "id": "createEntityRecord5.error",
+        "type": "object",
+        "schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "required": [
+            "code",
+            "message",
+            "detail",
+            "category",
+            "status"
+          ],
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Error code as a string"
+            },
+            "message": {
+              "type": "string",
+              "description": "High-level error message"
+            },
+            "detail": {
+              "type": "string",
+              "description": "Detailed error description"
+            },
+            "category": {
+              "type": "string",
+              "description": "Error category"
+            },
+            "status": {
+              "type": "integer",
+              "description": "HTTP status code"
+            }
+          },
+          "additionalProperties": false
+        },
+        "description": "Error information if the node fails",
+        "binding": {
+          "nodeId": "createEntityRecord5",
+          "outputId": "error"
+        }
+      }
+    ]
+  },
+  "bindings": [
+    {
+      "id": "b6MoOPG7D",
+      "name": "uipath-uipath-dataservice connection",
+      "type": "string",
+      "resource": "connection",
+      "resourceKey": "<your-dataservice-connection-id>",
+      "default": "<your-dataservice-connection-id>",
+      "propertyAttribute": "ConnectionId"
+    },
+    {
+      "id": "b3uNMIT2j",
+      "name": "FolderKey",
+      "type": "string",
+      "resource": "connection",
+      "resourceKey": "<your-dataservice-connection-id>",
+      "default": "<your-personal-workspace-folder-key>",
+      "propertyAttribute": "FolderKey"
+    },
+    {
+      "id": "bDDNluypa",
+      "name": "uipath-google-gmail connection",
+      "type": "string",
+      "resource": "connection",
+      "resourceKey": "<your-gmail-connection-id>",
+      "default": "<your-gmail-connection-id>",
+      "propertyAttribute": "ConnectionId"
+    }
+  ],
+  "layout": {
+    "nodes": {
+      "start": {
+        "position": {
+          "x": 0,
+          "y": -192
+        },
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "collapsed": false
+      },
+      "end1": {
+        "position": {
+          "x": 1152,
+          "y": -384
+        },
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "collapsed": false
+      },
+      "agent_triage": {
+        "position": {
+          "x": 192,
+          "y": -288
+        },
+        "size": {
+          "width": 288,
+          "height": 96
+        },
+        "collapsed": false
+      },
+      "organizationindex1": {
+        "position": {
+          "x": 192,
+          "y": -96
+        },
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "collapsed": false
+      },
+      "triageReview1": {
+        "position": {
+          "x": 960,
+          "y": 192
+        },
+        "size": {
+          "width": 96,
+          "height": 128
+        },
+        "collapsed": false
+      },
+      "createEntityRecord1": {
+        "position": {
+          "x": 1152,
+          "y": 0
+        },
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "collapsed": false
+      },
+      "createEntityRecord2": {
+        "position": {
+          "x": 1152,
+          "y": 192
+        },
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "collapsed": false
+      },
+      "createEntityRecord3": {
+        "position": {
+          "x": 1152,
+          "y": 384
+        },
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "collapsed": false
+      },
+      "queryEntityRecords1": {
+        "position": {
+          "x": 384,
+          "y": -96
+        },
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "collapsed": false
+      },
+      "decision1": {
+        "position": {
+          "x": 768,
+          "y": 0
+        },
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "collapsed": false
+      },
+      "createEntityRecord4": {
+        "position": {
+          "x": 960,
+          "y": -192
+        },
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "collapsed": false
+      },
+      "sendEmail1": {
+        "position": {
+          "x": 1152,
+          "y": -192
+        },
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "collapsed": false
+      },
+      "sendReply1": {
+        "position": {
+          "x": 768,
+          "y": -384
+        },
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "collapsed": false
+      },
+      "decision2": {
+        "position": {
+          "x": 576,
+          "y": -192
+        },
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "collapsed": false
+      },
+      "createEntityRecord5": {
+        "position": {
+          "x": 960,
+          "y": -384
+        },
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "collapsed": false
+      }
+    }
+  }
+}

@@ -5,6 +5,12 @@ This repository provides a hands-on tutorial on using **Coding Agents** integrat
 ### 🎯 What You Will Build
 An **email triage process** for a support inbox. A Maestro flow reads an incoming email, retrieves the department directory from a Context Grounding index, proposes a department, and hands the sensitive cases to a human in Action Center. Every human decision is written back as a row in a Data Fabric entity, and those rows are what lets the process earn more autonomy over time.
 
+This is the finished flow, as Studio Web draws it at the end of Chapter 14. Every node in it is created by prompting a coding agent:
+
+![The finished EmailTriage flow in Studio Web: trigger, Triage AI Agent with its index and precedent tool, the FAQ gate, the confidence gate, the Triage Review form and the entity writes](Images/EmailTriage-V3-Flow.png)
+
+The flow file behind this picture is [Reference/EmailTriage.flow](Reference/EmailTriage.flow), with the tenant ids replaced by placeholders: import it into a new Studio Web project to look ahead, and the unset connections show you where your own go. Read the picture left to right. The **Triage AI Agent** has two resources below it: the **OrganizationIndex** holding the department directory, and **Query Entity Records**, the tool it uses to look up earlier human decisions. Two decision gates follow. "Answerable from the FAQ?" sends emails the agent can answer itself to **Send reply**. "Confident and not Required?" auto-routes the routine cases and sends the rest to the **Triage Review** form, where a person approves, modifies or denies. Every path ends in a **Create Entity Record** write, so each outcome becomes a row the next run can learn from.
+
 You build the same flow three times, and a fixed batch of nine emails plus one scoreboard measures each version:
 
 ```mermaid
@@ -131,6 +137,8 @@ Tutorial/
 │   ├── TriageBatch.csv                      <-- The nine test emails every phase runs (Chapter 11)
 │   ├── ExtraEmails.csv                      <-- Optional: 33 easy one-line emails, three per department, for extra runs (Chapter 11)
 │   └── SupportFAQ.txt                        <-- The knowledge base V3 answers from (Chapter 14)
+├── Images/                                  <-- Screenshots used in the README
+├── Reference/                               <-- EmailTriage.flow as it looks at the end of Chapter 14, tenant ids replaced by placeholders
 └── TutorialSolution/                        <-- Active student solution (gitignored)
     ├── TutorialSolution.uipx                <-- Parent Solution manifest
     ├── EmailTriage/                         <-- Chapters 04 to 14 Email Triage flow
