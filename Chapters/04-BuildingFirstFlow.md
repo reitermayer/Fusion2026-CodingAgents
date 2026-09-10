@@ -4,6 +4,14 @@ In this chapter, you will build your first end-to-end agentic workflow by adding
 
 You will learn why scaffolding flows with an **AI Coding Agent** (Claude Code or Google Antigravity) is dramatically faster than manual visual canvas design, how to discover and assign cloud LLM models, and how to debug and inspect live agent decisions directly from your terminal.
 
+## What You Are Going to Build
+
+Three nodes, one straight line. This is the flow as Studio Web shows it when the chapter is done:
+
+![The Chapter 04 flow in Studio Web: Manual trigger, Triage AI Agent, End](../Images/EmailTriage-Ch04-Flow.png)
+
+The **Manual trigger** receives one input, the email text. The **Triage AI Agent** reads it and returns a one-line analysis. The **End** node hands that analysis back as the flow's result. The diagram below adds what the canvas hides: the argument names, the model, and how the email travels from the trigger into the agent's prompt.
+
 ```mermaid
 flowchart LR
     subgraph Ingestion ["1. Ingestion (Start Trigger)"]
