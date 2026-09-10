@@ -47,11 +47,12 @@ flowchart LR
 > 1. Sharpen the Triage AI Agent's system prompt so requiresEscalation is read from the retrieved department's Human Review column rather than from the agent's own sense of how serious the email sounds. Do not add any new output fields.
 > 2. Add a decision node to the flow that branches on the agent's requiresEscalation output.
 > 3. On the true branch, add a Quick Form human task called "Sensitive Case Review" showing the customer email, the department the agent chose and the urgency score, and letting the reviewer leave a note and pick Approve or Reject.
-> 4. Wire the false branch straight to the End node, and wire the Quick Form's Approve and Reject outcome handles to the End node as well.
-> 5. Add two flow outputs, reviewOutcome and reviewerNote, carrying the reviewer's decision back out of the flow.
-> 6. Format and validate the flow, then refresh and validate the inline agent.
-> 7. Run a cloud debug with a GDPR complaint email mentioning a solicitor, and report which branch it took and what the agent returned.
-> 8. Finish with the checkpoint: commit everything in TutorialSolution to its own git repository with the message "Chapter 07 done" and move the tag ch07-done to that commit.
+> 4. Assign the task to me: run uip user, and set the Quick Form node's assignee to a resolved user with type "user", my Email as the value and "FirstName LastName" as the displayName.
+> 5. Wire the false branch straight to the End node, and wire the Quick Form's Approve and Reject outcome handles to the End node as well.
+> 6. Add two flow outputs, reviewOutcome and reviewerNote, carrying the reviewer's decision back out of the flow.
+> 7. Format and validate the flow, then refresh and validate the inline agent.
+> 8. Run a cloud debug with a GDPR complaint email mentioning a solicitor. The run pauses on the review task: list the pending, not deleted Action Center tasks titled "Sensitive Case Review" with uip tasks, complete the newest one as a QuickFormTask with the action Approve and the reviewer note "yes", then report which branch the run took, what the agent returned, and the reviewOutcome and reviewerNote globals.
+> 9. Finish with the checkpoint: commit everything in TutorialSolution to its own git repository with the message "Chapter 07 done" and move the tag ch07-done to that commit.
 > ```
 >
 > ---
@@ -195,7 +196,7 @@ The CLI has a dedicated scaffolder for HITL nodes: one command takes the label, 
 cd ./TutorialSolution
 uip maestro flow hitl add EmailTriage/EmailTriage.flow \
   --label "Sensitive Case Review" --priority High \
-  --assignee "you@yourcompany.com" \
+  --assignee "$(uip user --output-filter Email --output plain)" \
   --schema '{"title":"Sensitive Case Review","inputs":[{"name":"emailbody","binding":"start.output.emailBody"},{"name":"department","binding":"agent_triage.output.category"},{"name":"urgency","binding":"agent_triage.output.urgencyScore"}],"outputs":[{"name":"reviewernote","variable":"reviewerNote"}],"outcomes":[{"name":"Approve"},{"name":"Reject"}]}' \
   --output json
 uip maestro flow format EmailTriage/EmailTriage.flow
@@ -208,7 +209,7 @@ The CLI names the node from its label: `Sensitive Case Review` becomes `sensitiv
 2. **Labels.** The scaffolder uses each field's id as its label, so the reviewer sees `EMAILBODY` and `URGENCY`. Give the fields real labels.
 3. **The schema id.** CLI `1.201` writes one (`"id": "<uuid>"` inside `schema`) and it must stay; see the warning after the JSON.
 
-The assignee is stored as a plain email and is resolved in Section 5.
+The assignee is stored as a plain email, read from the logged-in account with `uip user`, and is resolved in Section 5.
 
 The schema inside the finished, verified node:
 
@@ -245,17 +246,25 @@ The schema inside the finished, verified node:
 
 ## 5. Assigning the Reviewer
 
-A task with no assignee reaches nobody. The recipient is the one value that cannot ship in a tutorial, because it has to be **your** account. Two ways to set it; the first keeps the coding agent in charge.
+A task with no assignee reaches nobody. The recipient is the one value that cannot ship in a tutorial, because it has to be **your** account. You do not have to type it: the CLI knows who is logged in, and `uip user` returns the email address and the name that the assignee needs. Two ways to set it; the first keeps the coding agent in charge.
 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
 ```text
-In TutorialSolution/EmailTriage, assign the Sensitive Case Review task to me: set the Quick Form node's assignee to a resolved user with type "user", my email address as the value, and my display name. Keep the recipient channels Email and ActionCenter. Then validate the flow.
+Run uip user and take my Email, FirstName and LastName from its Data. In TutorialSolution/EmailTriage, assign the Sensitive Case Review task to me: set the Quick Form node's assignee to a resolved user with type "user", the Email as the value, and "FirstName LastName" as the displayName. Keep the recipient channels Email and ActionCenter. Then validate the flow and show me the assignee object you wrote.
 ```
 
-### 💻 Underlying Edit (What the Agent Writes)
+### 💻 Underlying CLI Command and Edit (What the Agent Executes)
 
-The node gets an `assignee` object next to `schema`, with all three keys; a `type: "user"` assignee without `displayName` faults at task creation with `Could not get value for key:name from context in input.`:
+```bash
+uip user --output-filter "{Email:Email,FirstName:FirstName,LastName:LastName}"
+```
+```json
+{ "Result": "Success", "Code": "User",
+  "Data": { "Email": "you@yourcompany.com", "FirstName": "Your", "LastName": "Name" } }
+```
+
+The node then gets an `assignee` object next to `schema`, with all three keys; a `type: "user"` assignee without `displayName` faults at task creation with `Could not get value for key:name from context in input.`:
 ```json
 "assignee": {
   "type": "user",
