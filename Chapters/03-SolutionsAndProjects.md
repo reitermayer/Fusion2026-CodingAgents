@@ -52,7 +52,7 @@ flowchart TD
 > 1. Create a new solution folder and solution named TutorialSolution.
 > 2. Inside TutorialSolution, initialize a starter Maestro flow project named Project03.
 > 3. List all registered projects to confirm assignment.
-> 4. Unassign and delete Project03 to demonstrate project lifecycle cleanup, including its leftover solution artifacts, then confirm the solution reports no assigned projects and no leftover files named after the project.
+> 4. Delete Project03 by hand: remove its directory, delete both of its artifacts under resources/solution_folder, and remove its entry from TutorialSolution.uipx. Then confirm the solution lists no projects.
 > 5. Turn TutorialSolution into its own git repository: add a .gitignore that ignores dist/, userProfile/ and .DS_Store, commit everything with the message "Chapter 03 done" and tag the commit ch03-done.
 > ```
 >
@@ -79,6 +79,8 @@ Before diving into commands, understand the architectural transformation in the 
 ## 2. Creating the Solution and Starter Project
 
 You will create the **`TutorialSolution`** folder and scaffold your first project inside it.
+
+`Project03` is a throwaway, and the number in its name only says which chapter created it. It exists so you can watch what registering a project does to the solution manifest, and Section 6 deletes it again, so that the solution is empty when Chapter 04 adds the real project, `EmailTriage`. That is also what makes this chapter safe to repeat: whatever you try with `Project03`, the checkpoint at the end records a clean solution.
 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 Open Claude Code or Google Antigravity in your root directory and paste:
@@ -132,10 +134,6 @@ TutorialSolution/
     ├── Project03.flow           <-- Declarative JSON flow graph
     └── operate.json             <-- Runtime / entry-point metadata
 ```
-
-> 💡 **Two things students often ask about:**
-> - There is no `definitions.json`. Solution resources live as one file per resource under `resources/solution_folder/`, and registering a single project writes **two** artifacts: `package/<ProjectName>.json` and `process/<type>/<ProjectName>.json`. Delete a project the wrong way and both are left behind (see Section 6).
-> - A `userProfile/` directory may appear later. It is created by the CLI on operations such as `uip solution resources refresh`, not by `uip solution init`, so do not expect it in a freshly scaffolded solution.
 
 ---
 
@@ -201,23 +199,21 @@ uip solution projects list
 
 ---
 
-## 6. Deleting and Unassigning an Unused Project
+## 6. Deleting the Starter Project
 
-In real-world development, temporary experiments or scaffolded prototypes become obsolete. As a solution architect, you need to know how to clean up unused projects.
+`Project03` has done its job. Remove it now, so that the solution is empty when Chapter 04 adds `EmailTriage`.
 
-Since `Project03` was only created to learn the solution lifecycle, you will now unassign and remove it so that `TutorialSolution` is clean and ready for Chapter 04.
-
-> ⚠️ **Why not just `uip solution projects remove Project03`?**
-> That is the correct command in general, and it is what you will use from Chapter 04 onward. It cannot be used here: `Project03` is the **only** project in the solution, and the CLI deliberately refuses to unregister the last one, replying *"Cannot remove the only project in the solution. Add another project first, or delete the solution folder manually."* So this one time you clean up by hand, which means you also have to clean up what the CLI would normally have removed for you.
+> ⚠️ **Why not `uip solution projects remove Project03`?**
+> That is the normal command, and you will use it from Chapter 04 on. It refuses here, because `Project03` is the only project in the solution: *"Cannot remove the only project in the solution. Add another project first, or delete the solution folder manually."* So this one time you do by hand the three things the command does for you: delete the project folder, delete the two artifacts that registering it wrote (Section 3), and remove its entry from the manifest.
 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 ```text
-Unassign and delete Project03 from TutorialSolution, remove its directory from disk, and delete its leftover solution package artifact so the solution is completely clean.
+Delete Project03 from TutorialSolution by hand: remove its directory, delete both of its artifacts under resources/solution_folder, and remove its entry from TutorialSolution.uipx. Then confirm the solution lists no projects.
 ```
 
 ### 💻 Underlying Actions (What the Agent Executes)
 
-1. **Delete the project directory and every leftover artifact named after it:**
+1. **Delete the project folder and both artifacts.** Searching by name catches `package/Project03.json` and `process/flow/Project03.json` in one go:
    ```bash
    # macOS / Linux:
    rm -rf Project03
@@ -227,16 +223,15 @@ Unassign and delete Project03 from TutorialSolution, remove its directory from d
    Remove-Item -Recurse -Force .\Project03
    Get-ChildItem -Recurse -Filter Project03.json .\resources\solution_folder | Remove-Item -Force
    ```
-   *Registering one project writes two artifacts (`package/` and `process/flow/`). Search by name rather than deleting a single known path, so nothing is missed.*
 
-2. **Unassign the project** by opening `TutorialSolution.uipx` and setting `"Projects": []`.
+2. **Remove the manifest entry** by opening `TutorialSolution.uipx` and setting `"Projects": []`.
 
-3. **Verify `TutorialSolution` has no assigned projects** (expect `"Data": []`):
+3. **Verify** that the solution lists no projects (expect `"Data": []`):
    ```bash
    uip solution projects list
    ```
 
-> 💡 **Why deleting the artifacts matters:** `uip solution projects remove` prunes a project's artifacts automatically. A hand-edit of the manifest does not, so the `Project03.json` files under `resources/solution_folder/` survive, still bound to the `projectKey` of a project that no longer exists. If you later create a project named `Project03` again, it is issued a **new** project key, which no longer matches the leftovers, and the scaffold logs an ERROR-level `Project name already exists` with `"ProjectArtifacts": { "Created": false }`. **Either leftover file is enough to trigger it**, which is why step 1 searches by name. The message is misleading rather than fatal: the project files are still written and the project is still registered. Note that `uip solution resources refresh` does **not** clean these up.
+> 💡 **Why step 1 deletes the artifacts:** they stay bound to the key of the project you just removed. A later project with the same name gets a new key, and the scaffold then reports `Project name already exists` with `"ProjectArtifacts": { "Created": false }`, even though it still writes the files. Deleting both artifacts now avoids that.
 
 ---
 
@@ -281,7 +276,7 @@ git -C TutorialSolution tag -f ch03-done
 - [x] Scaffolded and assigned the starter project: `Project03`.
 - [x] Understood the **Assign and Unassign** mechanism in `TutorialSolution.uipx`.
 - [x] Inspected assigned projects using `uip solution projects list`.
-- [x] Unassigned and deleted `Project03` to prepare a clean container for Chapter 04.
+- [x] Deleted `Project03` by hand (folder, both artifacts, manifest entry) so the solution is empty for Chapter 04.
 
 ---
 
