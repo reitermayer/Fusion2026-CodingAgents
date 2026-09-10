@@ -34,14 +34,18 @@ flowchart LR
 >
 > **Mode 1: 🔄 Reset the Data Fabric Artifacts (Clean Baseline)**
 >
-> This chapter creates two tenant-level Data Fabric objects and nothing else: the `TriageOutcome` choice set and the `TriageDecision` entity. The reset removes both so the chapter can be repeated from scratch. Your `EmailTriage` flow is not touched.
+> This chapter creates two tenant-level Data Fabric objects and nothing else: the `TriageOutcome` choice set and the `TriageDecision` entity. The reset removes both so the chapter can be repeated from scratch, and puts the files back on the Chapter 07 checkpoint, which this chapter does not change.
 >
 > 💬 *Prompt your AI Coding Agent:*
 > ```text
-> Prepare a clean baseline for Chapter 09. If a Data Fabric entity named TriageDecision exists, delete it, and if a choice set named TriageOutcome exists, delete it too. Delete the entity before the choice set, because the entity's Outcome field references the choice set. Skip anything that does not exist rather than failing, and finish by listing entities and choice sets so I can see that neither remains. Do not touch any other entity, and do not touch the EmailTriage flow.
+> Prepare a clean baseline for Chapter 09. Reset TutorialSolution to its ch07-done checkpoint: hard-reset the solution's own git repository to that tag and remove untracked files. Then, if a Data Fabric entity named TriageDecision exists, delete it, and if a choice set named TriageOutcome exists, delete it too. Delete the entity before the choice set, because the entity's Outcome field references the choice set. Skip anything that does not exist rather than failing, and finish by listing entities and choice sets so I can see that neither remains. Do not touch any other entity.
 > ```
 > 💻 *Underlying CLI / Shell Commands:*
 > ```bash
+> # 0. Files: back to the Chapter 07 checkpoint
+> git -C TutorialSolution reset -q --hard ch07-done
+> git -C TutorialSolution clean -qfd
+>
 > # 1. See what exists before removing anything
 > uip df entities list --output table
 > uip df choice-sets list --output table
@@ -68,7 +72,7 @@ flowchart LR
 > ```text
 > Give the EmailTriage process a memory of its decisions in Data Fabric:
 > 1. Create a tenant-level choice set named TriageOutcome with exactly five values: Auto, Approved, Modified, Denied, AutoResolved.
-> 2. Create a tenant-level entity named TriageDecision with these fields: TicketId (text, 20), Phase (whole number 1 to 3), EmailBody (multiline text, 10000), ProposedDepartment (text, 200), Department (text, 200), Outcome (single choice from TriageOutcome), Confidence (decimal), HumanReviewRequired (boolean), Reasoning (multiline text, 10000), Feedback (multiline text, 2000), ReplyText (multiline text, 5000). Mark TicketId, Phase, EmailBody, ProposedDepartment, Department and Outcome as required.
+> 2. Create a tenant-level entity named TriageDecision from the template triage-decision.entity.json in the repository root, after replacing its <CHOICE_SET_ID> placeholder with the new choice set id. The fields are: TicketId (text, 20), Phase (whole number 1 to 3), EmailBody (multiline text, 10000), ProposedDepartment (text, 200), Department (text, 200), Outcome (single choice from TriageOutcome), Confidence (decimal), HumanReviewRequired (boolean), Reasoning (multiline text, 10000), Feedback (multiline text, 2000), ReplyText (multiline text, 5000). Mark TicketId, Phase, EmailBody, ProposedDepartment, Department and Outcome as required.
 > 3. Read the entity schema back and show me every field with its type, length and required flag, so I can compare it with the list above.
 > 4. Insert one test record for ticket T00 at phase 0 with Outcome Approved, list the records to prove the write worked, then delete that test record and confirm the entity is empty again.
 > 5. Finish with the checkpoint: record an empty commit in TutorialSolution's own git repository with the message "Chapter 09 done: TriageOutcome and TriageDecision created in the tenant" and move the tag ch09-done to it.
@@ -183,7 +187,7 @@ uip df choice-sets list-values <CHOICE_SET_ID> --limit 100 --output table \
 
 ## 5. Creating the TriageDecision Entity
 
-The entity definition is a JSON document with a `fields` array. The CLI accepts it inline with `--body` or from a file with `--file`; for eleven fields a file is easier to review, and it can live in the repository next to the chapter.
+The entity definition is a JSON document with a `fields` array. The CLI accepts it inline with `--body` or from a file with `--file`; for eleven fields a file is easier to review, so the repository ships it as `triage-decision.entity.json` in the root, with one placeholder for the choice set id from Section 4.
 
 ### 💬 Prompt Your AI Coding Agent (Recommended)
 
@@ -202,7 +206,7 @@ Create a tenant-level Data Fabric entity named TriageDecision, display name "Tri
 - Feedback: multiline text, max length 2000
 - ReplyText: multiline text, max length 5000
 
-Write the definition to a file named triage-decision.entity.json in the repository root first, then create the entity from that file. Report the entity id.
+The repository root already holds triage-decision.entity.json as a template: replace its <CHOICE_SET_ID> placeholder with the id of the TriageOutcome choice set you just created, then create the entity from that file. Report the entity id.
 ```
 
 ### 💻 Underlying CLI Commands (What the Agent Executes)

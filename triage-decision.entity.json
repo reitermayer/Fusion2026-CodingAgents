@@ -7,7 +7,7 @@
     { "fieldName": "EmailBody",           "type": "MULTILINE_TEXT",    "lengthLimit": 10000, "isRequired": true },
     { "fieldName": "ProposedDepartment",  "type": "STRING",            "lengthLimit": 200,   "isRequired": true },
     { "fieldName": "Department",          "type": "STRING",            "lengthLimit": 200,   "isRequired": true },
-    { "fieldName": "Outcome",             "type": "CHOICE_SET_SINGLE", "choiceSetId": "a11ef34a-50aa-f111-9b32-000d3a69a13b", "isRequired": true },
+    { "fieldName": "Outcome",             "type": "CHOICE_SET_SINGLE", "choiceSetId": "<CHOICE_SET_ID>", "isRequired": true },
     { "fieldName": "Confidence",          "type": "DECIMAL",           "decimalPrecision": 2 },
     { "fieldName": "HumanReviewRequired", "type": "BOOLEAN" },
     { "fieldName": "Reasoning",           "type": "MULTILINE_TEXT",    "lengthLimit": 10000 },
