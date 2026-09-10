@@ -8,6 +8,10 @@ In this chapter you add a **Human-in-the-Loop** checkpoint to `EmailTriage`: a d
 
 ## What You Are Going to Build
 
+Six nodes: the gateway after the agent splits the run into a human-review branch and an auto-route branch, and the review task returns to End through its Approve or Reject outcome.
+
+![The Chapter 07 flow in the designer: Manual trigger, Triage AI Agent with the OrganizationIndex below it, the Needs human review? gateway, the Sensitive Case Review task with Approve and Reject edges, and End](../Images/EmailTriage-Ch07-Flow.png)
+
 ```mermaid
 flowchart LR
     S["🟢 start"] --> A["🤖 agent_triage"]
